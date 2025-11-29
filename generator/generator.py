@@ -291,10 +291,16 @@ onMounted(async () => {{
 
 
     def _generate_java_controller(self, schema_data):
-        """Java Spring Boot Controller 생성"""
+        """JSON 스키마를 분석하여 Controller 생성 (Improved)"""
         screen_id = schema_data.get('screenId', 'UNKNOWN')
         screen_name = schema_data.get('screenName', '화면명')
         package = schema_data.get('package', 'com.dowinsys.system')
+        api_paths = schema_data.get('api', {})
+        
+        # API 경로에서 base path 추출 (/api/v1/cost/COST001/search -> /api/v1/cost)
+        search_path = api_paths.get('search', '')
+        parts = search_path.split('/')
+        base_path = '/'.join(parts[:-2]) if len(parts) >= 2 else '/api/v1'
         
         controller = f'''package {package};
 
@@ -310,60 +316,95 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/system/menu")
+@RequestMapping("{base_path}")
 @RequiredArgsConstructor
 public class {screen_id}Controller {{
 
     private final {screen_id}Service service;
 
     /**
-     * 메뉴 목록 조회 (트리 구조)
+     * {screen_name} 조회
      */
-    @GetMapping("/tree")
-    public List<Map<String, Object>> getMenuTree() {{
-        log.info("메뉴 트리 조회 요청");
-        return service.getMenuTree();
+    @PostMapping("/{screen_id}/search")
+    public List<Map<String, Object>> search(@RequestBody Map<String, Object> params) {{
+        log.info("{screen_name} 조회 요청: {{}}", params);
+        return service.search(params);
     }}
 
     /**
-     * 메뉴 추가
+     * {screen_name} 생성
      */
-    @PostMapping
-    public Map<String, Object> addMenu(@RequestBody Map<String, Object> menuData) {{
-        log.info("메뉴 추가 요청: {{}}", menuData);
-        return service.addMenu(menuData);
+    @PostMapping("/{screen_id}/create")
+    public Map<String, Object> create(@RequestBody Map<String, Object> data) {{
+        log.info("{screen_name} 생성 요청: {{}}", data);
+        return service.create(data);
     }}
 
     /**
-     * 메뉴 수정
+     * {screen_name} 수정
      */
-    @PutMapping
-    public Map<String, Object> updateMenu(@RequestBody Map<String, Object> menuData) {{
-        log.info("메뉴 수정 요청: {{}}", menuData);
-        return service.updateMenu(menuData);
+    @PutMapping("/{screen_id}/update")
+    public Map<String, Object> update(@RequestBody Map<String, Object> data) {{
+        log.info("{screen_name} 수정 요청: {{}}", data);
+        return service.update(data);
     }}
 
     /**
-     * 메뉴 삭제
+     * {screen_name} 삭제
      */
-    @DeleteMapping("/{{menuId}}")
-    public Map<String, Object> deleteMenu(@PathVariable String menuId) {{
-        log.info("메뉴 삭제 요청: {{}}", menuId);
-        return service.deleteMenu(menuId);
+    @DeleteMapping("/{screen_id}/delete/{{id}}")
+    public Map<String, Object> delete(@PathVariable String id) {{
+        log.info("{screen_name} 삭제 요청: {{}}", id);
+        return service.delete(id);
     }}
 }}
 '''
         return controller
 
 
+    def _camel_to_snake(self, field_name):
+        """camelCase를 snake_case로 변환"""
+        import re
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', field_name)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
     def _generate_mybatis_mapper(self, schema_data):
-        """MyBatis Mapper XML 생성"""
+        """JSON 스키마를 분석하여 MyBatis Mapper XML 생성 (Improved)"""
         screen_id = schema_data.get('screenId', 'UNKNOWN')
         package = schema_data.get('package', 'com.dowinsys.system')
-        table_name = schema_data.get('tableName', 'doi_sys_menu')
+        table_name = schema_data.get('tableName', 'unknown_table')
+        grid_columns = schema_data.get('gridColumns', [])
+        search_conditions = schema_data.get('searchConditions', [])
         
-        # 그리드 컬럼에서 DB 컬럼명 추출
-        columns = schema_data.get('gridColumns', [])
+        # gridColumns에서 SELECT 절 생성
+        select_fields = []
+        for col in grid_columns:
+            field_name = col.get('field', '')
+            if field_name and field_name != 'actions':
+                db_column = self._camel_to_snake(field_name)
+                select_fields.append(f"        {db_column}")
+        
+        select_clause = ",\n".join(select_fields) if select_fields else "        *"
+        
+        # searchConditions에서 WHERE 절 생성
+        where_conditions = []
+        for cond in search_conditions:
+            field = cond.get('field', cond.get('id', ''))  # field 또는 id 사용
+            required = cond.get('required', False)
+            
+            if field:
+                db_column = self._camel_to_snake(field)
+                
+                if required:
+                    # 필수 조건: 직접 추가
+                    where_conditions.append(f"        AND {db_column} = #{{{field}}}")
+                else:
+                    # 선택 조건: <if test> 태그 사용
+                    where_conditions.append(f'''        <if test="{field} != null and {field} != ''">
+            AND {db_column} = #{{{field}}}
+        </if>''')
+        
+        where_clause = "\n".join(where_conditions) if where_conditions else "        <!-- 동적 조건 없음 -->"
         
         mapper = f'''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -371,62 +412,37 @@ public class {screen_id}Controller {{
 
 <mapper namespace="{package}.{screen_id}Mapper">
 
-    <!-- 메뉴 목록 조회 (전체) -->
-    <select id="selectMenuList" resultType="map">
+    <!-- {screen_id} 조회 -->
+    <select id="search" resultType="map">
         SELECT
-            menu_id AS menuId,
-            up_menu_id AS upMenuId,
-            menu_nm AS menuName,
-            menu_url AS menuUrl,
-            sort_no AS sortNo,
-            use_yn AS useYn,
-            icon_cls AS iconCls,
-            reg_dt AS regDt
+{select_clause}
         FROM {table_name}
-        WHERE use_yn = 'Y'
-        ORDER BY sort_no
+        WHERE 1=1
+{where_clause}
+        ORDER BY reg_dt DESC
     </select>
 
-    <!-- 메뉴 추가 -->
-    <insert id="insertMenu" parameterType="map">
+    <!-- {screen_id} 생성 -->
+    <insert id="create" parameterType="map">
         INSERT INTO {table_name} (
-            menu_id,
-            up_menu_id,
-            menu_nm,
-            menu_url,
-            sort_no,
-            use_yn,
-            icon_cls,
-            reg_dt
+{select_clause}
         ) VALUES (
-            #{{menuId}},
-            #{{upMenuId}},
-            #{{menuName}},
-            #{{menuUrl}},
-            #{{sortNo}},
-            #{{useYn}},
-            #{{iconCls}},
-            GETDATE()
+{",\n".join([f"        #{{{col.get('field', '')}}}" for col in grid_columns if col.get('field') and col.get('field') != 'actions'])}
         )
     </insert>
 
-    <!-- 메뉴 수정 -->
-    <update id="updateMenu" parameterType="map">
+    <!-- {screen_id} 수정 -->
+    <update id="update" parameterType="map">
         UPDATE {table_name}
         SET
-            up_menu_id = #{{upMenuId}},
-            menu_nm = #{{menuName}},
-            menu_url = #{{menuUrl}},
-            sort_no = #{{sortNo}},
-            use_yn = #{{useYn}},
-            icon_cls = #{{iconCls}}
-        WHERE menu_id = #{{menuId}}
+{",\n".join([f"            {self._camel_to_snake(col.get('field', ''))} = #{{{col.get('field', '')}}}" for col in grid_columns if col.get('field') and col.get('field') != 'actions'])}
+        WHERE id = #{{id}}
     </update>
 
-    <!-- 메뉴 삭제 -->
-    <delete id="deleteMenu" parameterType="string">
+    <!-- {screen_id} 삭제 -->
+    <delete id="delete" parameterType="string">
         DELETE FROM {table_name}
-        WHERE menu_id = #{{menuId}}
+        WHERE id = #{{id}}
     </delete>
 
 </mapper>

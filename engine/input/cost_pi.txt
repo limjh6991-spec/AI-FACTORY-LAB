@@ -1,0 +1,24 @@
+화면명: 부서별 월별 원가 조회
+화면ID: COST001
+패키지: com.dowinsys.cost.monthly
+테이블: doi_cost_monthly_dept_cost
+
+1. 검색 조건
+   - 기준년월 (YearMonth, 필수): base_ym
+   - 부서코드 (Select): dept_code
+   - 계정코드 (Select): account_code
+
+2. 그리드 컬럼 (DB 컬럼 매핑)
+   - 기준년월 (String, PK): base_ym
+   - 부서코드 (String, PK): dept_code
+   - 계정코드 (String, PK): account_code
+   - 당월금액 (Number): current_amount
+   - 전월금액 (Number): previous_amount
+   - 증감금액 (Number): variance_amount
+   - 증감율 (Number): variance_rate
+
+3. API 경로
+   - 조회: /api/v1/cost/COST001/search
+   - 생성: /api/v1/cost/COST001/create
+   - 수정: /api/v1/cost/COST001/update
+   - 삭제: /api/v1/cost/COST001/delete
