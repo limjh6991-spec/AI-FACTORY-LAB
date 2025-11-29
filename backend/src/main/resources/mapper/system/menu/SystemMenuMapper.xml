@@ -32,13 +32,13 @@
             icon_cls,
             reg_dt
         ) VALUES (
-            #{menuId},
-            #{upMenuId},
-            #{menuName},
-            #{menuUrl},
-            #{sortNo},
-            #{useYn},
-            #{iconCls},
+            #{menu_id},
+            #{up_menu_id},
+            #{menu_nm},
+            #{menu_url},
+            #{sort_no},
+            #{use_yn},
+            #{icon_cls},
             GETDATE()
         )
     </insert>
@@ -47,13 +47,13 @@
     <update id="updateMenu" parameterType="map">
         UPDATE new_doi_sys_menu
         SET
-            up_menu_id = #{upMenuId},
-            menu_nm = #{menuName},
-            menu_url = #{menuUrl},
-            sort_no = #{sortNo},
-            use_yn = #{useYn},
-            icon_cls = #{iconCls}
-        WHERE menu_id = #{menuId}
+            up_menu_id = #{up_menu_id},
+            menu_nm = #{menu_nm},
+            menu_url = #{menu_url},
+            sort_no = #{sort_no},
+            use_yn = #{use_yn},
+            icon_cls = #{icon_cls}
+        WHERE menu_id = #{menu_id}
     </update>
 
     <!-- 메뉴 삭제 -->

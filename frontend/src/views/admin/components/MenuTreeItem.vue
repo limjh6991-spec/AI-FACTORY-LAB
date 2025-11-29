@@ -6,7 +6,7 @@
       @click="$emit('select', menu)"
     >
       <i :class="menu.iconCls || 'bi-folder'" class="menu-icon"></i>
-      <span class="menu-name">{{ menu.menuName }}</span>
+      <span class="menu-name">{{ menu.menuNm || menu.menuName }}</span>
       <span v-if="menu.children && menu.children.length > 0" class="badge bg-secondary ms-2">
         {{ menu.children.length }}
       </span>

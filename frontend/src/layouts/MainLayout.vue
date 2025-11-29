@@ -6,9 +6,13 @@
       </div>
       
       <div class="sidebar-menu">
+        <!-- 디버깅: 메뉴 개수 표시 -->
+        <div v-if="menuItems.length === 0" style="color: white; padding: 10px; font-size: 12px;">
+          ⏳ 메뉴 로딩 중... (총 {{ menus.length }}개)
+        </div>
         <SidebarItem 
           v-for="route in menuItems" 
-          :key="route.id" 
+          :key="route.menuId" 
           :item="route"
         />
       </div>
@@ -16,7 +20,7 @@
       <div class="sidebar-menu-bottom">
         <SidebarItem 
           v-for="route in adminMenuItems" 
-          :key="route.id" 
+          :key="route.menuId" 
           :item="route"
         />
       </div>
@@ -34,22 +38,45 @@
       </div>
 
       <section class="app-main">
-        <transition name="fade-transform" mode="out-in">
-          <router-view />
-        </transition>
+        <router-view v-slot="{ Component }">
+          <transition name="fade-transform" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </section>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed, onMounted } from 'vue'
 import { useMenuStore } from '@/stores/menu'
 import { storeToRefs } from 'pinia'
 import SidebarItem from './components/SidebarItem.vue'
 import Breadcrumb from './components/Breadcrumb.vue'
 
 const menuStore = useMenuStore()
-const { menuItems, adminMenuItems } = storeToRefs(menuStore)
+const { menus } = storeToRefs(menuStore)
+
+// 컴포넌트 마운트 시 DB에서 메뉴 로드
+onMounted(async () => {
+  console.log('🔄 MainLayout 마운트 - 메뉴 로드 시작')
+  await menuStore.fetchMenuList()
+  console.log('📋 로드된 메뉴:', menus.value)
+})
+
+// 메뉴를 일반 메뉴와 관리자 메뉴로 분리
+const menuItems = computed(() => {
+  const items = menus.value.filter(menu => menu.menuId !== 'M003')
+  console.log('📌 일반 메뉴:', items)
+  return items
+})
+
+const adminMenuItems = computed(() => {
+  const items = menus.value.filter(menu => menu.menuId === 'M003')
+  console.log('⚙️ 관리자 메뉴:', items)
+  return items
+})
 </script>
 
 <style lang="scss" scoped>

@@ -14,7 +14,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/system/menu")
+@RequestMapping("/system/menu")
 @RequiredArgsConstructor
 public class SystemMenuController {
 

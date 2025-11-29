@@ -11,58 +11,40 @@ export const useMenuStore = defineStore('menu', () => {
   // API Base URL
   const API_BASE = '/api/system/menu'
 
-  // Helper: 트리 구조 변환 (Flat List -> Tree)
-  const buildTree = (flatList) => {
-    const map = {}
-    const roots = []
-
-    // 1단계: 맵 생성
-    flatList.forEach(item => {
-      map[item.menuId] = { ...item, children: [] }
-    })
-
-    // 2단계: 부모-자식 연결
-    flatList.forEach(item => {
-      if (item.upMenuId && map[item.upMenuId]) {
-        map[item.upMenuId].children.push(map[item.menuId])
-      } else {
-        roots.push(map[item.menuId])
-      }
-    })
-
-    // 3단계: 정렬 (sortNo 기준)
-    const sortRecursive = (nodes) => {
-      nodes.sort((a, b) => a.sortNo - b.sortNo)
-      nodes.forEach(node => {
-        if (node.children && node.children.length > 0) {
-          sortRecursive(node.children)
-        }
-      })
+  // Helper: API 응답을 프론트엔드 형식으로 변환
+  const mapMenuData = (menu) => {
+    return {
+      menuId: menu.menuId,
+      upMenuId: menu.upMenuId,
+      menuNm: menu.menuName || menu.menuNm, // API는 menuName으로 반환
+      menuUrl: menu.menuUrl,
+      sortNo: menu.sortNo,
+      useYn: menu.useYn,
+      iconCls: menu.iconCls,
+      regDt: menu.regDt,
+      children: menu.children ? menu.children.map(mapMenuData) : []
     }
-    sortRecursive(roots)
-
-    return roots
   }
 
   // Action 1: 메뉴 목록 조회
   const fetchMenuList = async () => {
     isLoading.value = true
     try {
+      console.log('🔍 메뉴 API 호출 시작:', `${API_BASE}/tree`)
       const response = await axios.get(`${API_BASE}/tree`)
+      console.log('📥 API 응답 받음:', response.data)
       
-      // 백엔드가 Tree로 주는 경우
-      if (Array.isArray(response.data) && response.data[0]?.children) {
-        menus.value = response.data
-      } 
-      // 백엔드가 Flat List로 주는 경우
-      else {
-        flatMenus.value = response.data
-        menus.value = buildTree(response.data)
+      // 백엔드가 Tree로 주는 경우 - 필드명 매핑
+      if (Array.isArray(response.data)) {
+        menus.value = response.data.map(mapMenuData)
+        console.log('✅ 메뉴 로드 완료 (개수: ' + menus.value.length + '):', menus.value)
+      } else {
+        console.warn('⚠️ 예상치 못한 응답 형식:', response.data)
       }
       
-      console.log('✅ 메뉴 로드 완료:', menus.value)
     } catch (error) {
       console.error('❌ 메뉴 조회 실패:', error)
+      console.error('에러 상세:', error.response)
       menus.value = []
     } finally {
       isLoading.value = false
@@ -108,71 +90,11 @@ export const useMenuStore = defineStore('menu', () => {
     }
   }
 
-  // 기존 정적 메뉴 (화면 생성 전까지 사용)
-  const menuItems = ref([
-    {
-      id: 'dashboard',
-      label: '대시보드',
-      icon: 'bi-speedometer2',
-      path: '/'
-    },
-    {
-      id: 'cost',
-      label: '원가 관리',
-      icon: 'bi-calculator',
-      children: [
-        {
-          id: 'cost-level1',
-          label: '원가 조회',
-          icon: 'bi-search',
-          children: [
-            {
-              id: 'cost-001',
-              label: '제품별 원가',
-              icon: 'bi-box',
-              path: '/standard/COST001'
-            },
-            {
-              id: 'cost-002',
-              label: '부서별 원가',
-              icon: 'bi-building',
-              path: '/standard/COST002'
-            }
-          ]
-        }
-      ]
-    }
-  ])
-
-  const adminMenuItems = ref([
-    {
-      id: 'admin',
-      label: '관리자',
-      icon: 'bi-gear-fill',
-      children: [
-        {
-          id: 'screen-generator',
-          label: '화면 생성기',
-          icon: 'bi-magic',
-          path: '/admin/screen-generator'
-        },
-        {
-          id: 'menu-generator',
-          label: '메뉴 관리',
-          icon: 'bi-list-ul',
-          path: '/admin/menu-generator'
-        }
-      ]
-    }
-  ])
-
   return {
     // State
     menus,
     flatMenus,
     isLoading,
-    menuItems,
-    adminMenuItems,
     
     // Actions
     fetchMenuList,

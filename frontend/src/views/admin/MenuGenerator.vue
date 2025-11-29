@@ -195,7 +195,7 @@ const formModel = reactive({
   useYn: 'Y'
 })
 
-const isEditMode = computed(() => !!formModel.menuId && selectedMenuId.value !== null)
+const isEditMode = computed(() => selectedMenuId.value !== null)
 
 // 메뉴 선택
 const selectMenu = (menu) => {
@@ -203,7 +203,7 @@ const selectMenu = (menu) => {
   Object.assign(formModel, {
     menuId: menu.menuId,
     upMenuId: menu.upMenuId || null,
-    menuName: menu.menuName,
+    menuName: menu.menuNm || menu.menuName, // DB 필드명 대응
     menuUrl: menu.menuUrl || '',
     iconCls: menu.iconCls || '',
     sortNo: menu.sortNo || 0,
@@ -244,6 +244,8 @@ const saveMenu = async () => {
       use_yn: formModel.useYn
     }
 
+    console.log('💾 저장 시도:', { isEditMode: isEditMode.value, menuData })
+
     if (isEditMode.value) {
       await menuStore.updateMenu(menuData)
       alert('✅ 메뉴가 수정되었습니다.')
@@ -254,6 +256,7 @@ const saveMenu = async () => {
 
     resetForm()
   } catch (error) {
+    console.error('❌ 저장 실패:', error)
     alert('❌ 저장 실패: ' + error.message)
   }
 }

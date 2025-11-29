@@ -120,25 +120,26 @@ public class SystemMenuServiceImpl implements SystemMenuService {
         
         try {
             // 메뉴 ID 자동 생성 (필요한 경우)
-            if (menuData.get("menuId") == null) {
+            if (menuData.get("menu_id") == null) {
                 String newMenuId = generateMenuId();
-                menuData.put("menuId", newMenuId);
+                menuData.put("menu_id", newMenuId);
             }
             
             // 기본값 설정
-            if (menuData.get("useYn") == null) {
-                menuData.put("useYn", "Y");
+            if (menuData.get("use_yn") == null) {
+                menuData.put("use_yn", "Y");
             }
-            if (menuData.get("sortNo") == null) {
-                menuData.put("sortNo", 99);
+            if (menuData.get("sort_no") == null) {
+                menuData.put("sort_no", 99);
             }
             
+            log.info("메뉴 추가 최종 데이터: {}", menuData);
             int insertCount = menuMapper.insertMenu(menuData);
             
             if (insertCount > 0) {
                 result.put("success", true);
                 result.put("message", "메뉴가 추가되었습니다.");
-                result.put("menuId", menuData.get("menuId"));
+                result.put("menuId", menuData.get("menu_id"));
             } else {
                 result.put("success", false);
                 result.put("message", "메뉴 추가에 실패했습니다.");

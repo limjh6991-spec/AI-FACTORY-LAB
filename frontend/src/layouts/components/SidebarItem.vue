@@ -2,20 +2,20 @@
   <div class="sidebar-item">
     <!-- Single Menu Item (no children) -->
     <router-link
-      v-if="!item.children"
-      :to="item.path"
+      v-if="!item.children || item.children.length === 0"
+      :to="item.menuUrl || item.path"
       class="menu-link"
       active-class="is-active"
     >
-      <i v-if="item.icon" :class="item.icon" class="menu-icon"></i>
-      <span class="menu-title">{{ item.label }}</span>
+      <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
+      <span class="menu-title">{{ item.menuNm || item.label }}</span>
     </router-link>
 
     <!-- Menu with Children (Submenu) -->
     <div v-else class="submenu">
       <div class="submenu-title" @click="toggleSubmenu">
-        <i v-if="item.icon" :class="item.icon" class="menu-icon"></i>
-        <span class="menu-title">{{ item.label }}</span>
+        <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
+        <span class="menu-title">{{ item.menuNm || item.label }}</span>
         <i class="bi bi-chevron-down arrow" :class="{ 'is-opened': isOpened }"></i>
       </div>
       
@@ -23,7 +23,7 @@
         <div v-show="isOpened" class="submenu-wrapper">
           <SidebarItem
             v-for="child in item.children"
-            :key="child.id"
+            :key="child.menuId || child.id"
             :item="child"
             class="nested-menu"
           />
