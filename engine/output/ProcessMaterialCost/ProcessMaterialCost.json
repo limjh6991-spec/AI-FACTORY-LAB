@@ -1,0 +1,84 @@
+{
+  "screenId": "ProcessMaterialCost",
+  "screenName": "공정별 재료비 현황",
+  "description": "공정별 재료비 현황을 조회합니다.",
+  "package": "com.dowinsys.cost.material",
+  "tableName": "doi_mfg_mat_cost",
+  "searchConditions": [
+    {
+      "id": "searchMonth",
+      "label": "조회월",
+      "type": "date",
+      "required": true,
+      "defaultValue": ""
+    },
+    {
+      "id": "processCode",
+      "label": "공정",
+      "type": "select",
+      "required": false,
+      "defaultValue": "",
+      "options": []
+    },
+    {
+      "id": "materialName",
+      "label": "자재명",
+      "type": "input",
+      "required": false,
+      "defaultValue": ""
+    }
+  ],
+  "gridColumns": [
+    {
+      "field": "processName",
+      "header": "공정명",
+      "width": 150,
+      "align": "left",
+      "dataType": "text"
+    },
+    {
+      "field": "materialCode",
+      "header": "자재코드",
+      "width": 120,
+      "align": "center",
+      "dataType": "text"
+    },
+    {
+      "field": "materialName",
+      "header": "자재명",
+      "width": 200,
+      "align": "left",
+      "dataType": "text"
+    },
+    {
+      "field": "qty",
+      "header": "수량",
+      "width": 100,
+      "align": "right",
+      "dataType": "number",
+      "format": "#,##0"
+    },
+    {
+      "field": "price",
+      "header": "단가",
+      "width": 120,
+      "align": "right",
+      "dataType": "number",
+      "format": "#,##0"
+    },
+    {
+      "field": "amount",
+      "header": "금액",
+      "width": 150,
+      "align": "right",
+      "dataType": "number",
+      "format": "#,##0"
+    }
+  ],
+  "api": {
+    "search": "/api/v1/cost/ProcessMaterialCost/search",
+    "create": "/api/v1/cost/ProcessMaterialCost/create",
+    "update": "/api/v1/cost/ProcessMaterialCost/update",
+    "delete": "/api/v1/cost/ProcessMaterialCost/delete"
+  }
+}

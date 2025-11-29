@@ -1,8 +1,8 @@
 <template>
   <div class="sidebar-item">
-    <!-- Single Menu Item (no children) -->
+    <!-- Single Menu Item (no children) with valid URL -->
     <router-link
-      v-if="!item.children || item.children.length === 0"
+      v-if="(!item.children || item.children.length === 0) && (item.menuUrl || item.path)"
       :to="item.menuUrl || item.path"
       class="menu-link"
       active-class="is-active"
@@ -10,6 +10,15 @@
       <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
       <span class="menu-title">{{ item.menuNm || item.label }}</span>
     </router-link>
+
+    <!-- Single Menu Item without URL (disabled) -->
+    <div
+      v-else-if="!item.children || item.children.length === 0"
+      class="menu-link disabled"
+    >
+      <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
+      <span class="menu-title">{{ item.menuNm || item.label }}</span>
+    </div>
 
     <!-- Menu with Children (Submenu) -->
     <div v-else class="submenu">
@@ -121,6 +130,16 @@ const toggleSubmenu = () => {
       &:hover {
         background-color: rgba(0, 0, 0, 0.1);
         color: #fff;
+      }
+
+      &.disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+
+        &:hover {
+          background-color: transparent;
+          color: #bfcbd9;
+        }
       }
     }
 

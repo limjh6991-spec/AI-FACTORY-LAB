@@ -105,25 +105,68 @@
 - API 키 관리: `.env` 파일 + 진단 도구 (`scripts/verify_key.py`)
 - Git 커밋: `48b8d21` (FastAPI 가상환경 문제 해결)
 
-### 🚧 Phase 3: 실제 화면 생성 및 프로젝트 통합 (Current Focus)
-> **"생성된 코드를 실제 프로젝트에 적용하기"**
-* [ ] **실제 화면 생성:**
-    * 원가 조회 화면 (COST001, COST002) PI 작성
-    * AI 생성기로 코드 생성
-* [ ] **프로젝트 통합:**
-    * 생성된 Vue 파일을 `frontend/src/views/` 이동
-    * 생성된 Java 파일을 `backend/src/main/java/` 이동
-    * 생성된 Mapper를 `backend/src/main/resources/mapper/` 이동
-* [ ] **라우터 설정:** Vue Router에 생성된 화면 경로 추가
-* [ ] **DB 연동 테스트:** 실제 데이터 조회 확인
-* [ ] **StandardPage.vue 개선:** JSON 기반 동적 렌더링 컴포넌트 고도화
+### ✅ Phase 3: StandardPage 동적 렌더링 시스템 구축 (Completed - 2025.11.29)
+> **"JSON 스키마 기반 범용 화면 엔진 완성"**
+* [x] **StandardPage.vue 구현:**
+    * JSON 스키마를 읽어 검색 조건, 그리드를 자동 생성
+    * Props 기반 RealGrid 통합 (Options API)
+    * 동적 필드 매핑 (스네이크 → 카멜 케이스 자동 변환)
+* [x] **실제 화면 구현 (COST001):**
+    * 부서별 월별 원가 조회 화면 완성
+    * JSON 스키마: `frontend/public/schemas/COST001.json`
+    * Backend API: `COST001Controller`, `COST001Service`, `COST001Mapper`
+    * 테스트 데이터: `new_doi_cost_monthly_dept_cost` 테이블 (12건)
+* [x] **RealGrid 완벽 통합:**
+    * CSS 파일 설정 (`realgrid-style.css`, `realgrid-sky-blue.css`)
+    * 컬럼 너비 비율 자동 조정 (`fillWidth` 설정)
+    * 데이터 바인딩 및 watch 기반 자동 갱신
+* [x] **UI/UX 최적화:**
+    * 컴팩트 인라인 폼 (검색 조건 한 줄 배치)
+    * 제목 폰트 축소, 불필요한 텍스트 제거
+    * 엑셀 다운로드 버튼 검색 영역으로 이동
+* [x] **범용 데이터 변환:**
+    * `snakeToCamel()` 함수로 어떤 API든 자동 처리
+    * 복잡한 그리드도 코드 수정 없이 작동
+* [x] **Backend 설정:**
+    * MyBatis `map-underscore-to-camel-case: true` 설정
+    * CORS 설정 (포트 8081 허용)
+    * Context-path: `/api`
+
+**주요 성과:**
+- 실제 동작하는 화면: http://localhost:8081/cost/cost001 ✅
+- 12건 데이터 조회 및 그리드 표시 정상 작동 ✅
+- JSON 스키마만으로 100% 화면 렌더링 성공 ✅
+- Git 커밋: StandardPage 동적 렌더링 완성
+
+**생성된 주요 파일:**
+- `frontend/src/views/StandardPage.vue` (범용 동적 페이지)
+- `frontend/public/schemas/COST001.json` (화면 스키마)
+- `backend/.../COST001Controller.java`
+- `backend/.../COST001Service.java`
+- `backend/.../COST001Mapper.xml`
+- `scripts/create_cost_table.py` (테스트 데이터 생성)
+
+### 🚧 Phase 4: 추가 화면 생성 및 엔진 고도화 (Next Focus)
+> **"생성 엔진 품질 향상 및 다양한 화면 구현"**
+* [ ] **추가 화면 생성:**
+    * COST002, COST003 화면 JSON 스키마 작성
+    * StandardPage.vue로 자동 렌더링 검증
+* [ ] **AI 생성 엔진 개선:**
+    * 생성 코드 품질 향상
+    * StandardPage 기반 코드 생성 템플릿 개선
+* [ ] **프로젝트 통합 자동화:**
+    * 생성된 파일 자동 배치 스크립트
+    * Git 커밋 자동화
+* [ ] **테스트 자동화:**
+    * 생성된 화면 자동 테스트
+    * API 엔드포인트 자동 검증
 
 **진행 예정 작업:**
-- 실제 원가 관련 PI 문서 작성
-- 생성 코드 품질 검증 및 개선
-- RealGrid 연동 코드 추가
+- 추가 원가 관련 화면 스키마 작성
+- AI 생성 코드 StandardPage 호환성 개선
+- 자동 배포 스크립트 작성
 
-### 🔮 Phase 4: 개발자 포털 & 고도화 (Future)
+### 🔮 Phase 5: 개발자 포털 & 고도화 (Future)
 > **"누구나 쉽게 쓰는 공장 만들기"**
 * [x] **화면 생성기 UI:** 웹 브라우저에서 PI 입력 가능 (`/admin/screen-generator`)
 * [ ] **생성 코드 미리보기:** 생성된 코드를 웹에서 바로 확인
@@ -137,34 +180,37 @@
 
 ## 📝 4. Action Items (To-Do List)
 
-### 🔥 우선순위 1: 실제 화면 생성 및 통합
-1.  **[PI]** 원가 조회 화면 PI 문서 작성 (COST001, COST002)
-2.  **[Test]** 화면 생성기로 코드 생성 및 품질 확인
-3.  **[Integration]** 생성된 코드를 프로젝트 폴더로 이동
-4.  **[Router]** Vue Router 설정 추가
+### 🔥 우선순위 1: 추가 화면 구현 및 검증
+1.  **[Schema]** COST002, COST003 JSON 스키마 작성
+2.  **[Test]** StandardPage.vue로 자동 렌더링 검증
+3.  **[Backend]** 추가 Controller/Service/Mapper 구현
+4.  **[DB]** 테스트 데이터 준비
 5.  **[Verify]** 실제 화면 동작 테스트
 
-### 🎯 우선순위 2: 코드 생성 품질 개선
-1.  **[Prompt]** PI 파싱 정확도 향상
-2.  **[Template]** 생성 코드 템플릿 고도화
-3.  **[DB]** 실제 DB 연동 로직 추가
-4.  **[Grid]** RealGrid 구현 코드 추가
+### 🎯 우선순위 2: AI 생성 엔진 개선
+1.  **[Template]** StandardPage 호환 코드 생성 템플릿 개선
+2.  **[Prompt]** JSON 스키마 생성 품질 향상
+3.  **[Integration]** 파일 자동 배치 스크립트 작성
+4.  **[Quality]** 생성 코드 검증 자동화
 
 ### 📚 우선순위 3: 문서화 및 유지보수
-1.  **[Doc]** 사용자 가이드 작성
-2.  **[Example]** 샘플 PI 문서 라이브러리 구축
-3.  **[Test]** 단위 테스트 추가
+1.  **[Doc]** StandardPage 사용 가이드 작성
+2.  **[Example]** 샘플 JSON 스키마 라이브러리 구축
+3.  **[Test]** E2E 테스트 추가
 
 ---
 
-## 📊 5. Current Status (2025.11.29)
+## 📊 5. Current Status (2025.11.29 - 18:45)
 
 ### ✅ 완료된 기능
 1. **DB 기반 동적 메뉴 시스템** (Frontend + Backend 연동)
 2. **메뉴 관리 CRUD** (추가/수정/삭제)
 3. **AI 코드 생성기** (Gemini 2.5 Flash)
 4. **파일 자동 저장** (5개 파일: JSON, Vue, Router, Java, Mapper)
-5. **전체 시스템 통합** (Vue + Spring Boot + FastAPI)
+5. **StandardPage 동적 렌더링 시스템** ⭐ NEW
+6. **실제 동작하는 화면 (COST001)** ⭐ NEW
+7. **RealGrid 완벽 통합** ⭐ NEW
+8. **범용 데이터 변환 (snakeToCamel)** ⭐ NEW
 
 ### 🌐 서비스 상태
 - **Frontend**: http://localhost:8081 ✅
@@ -172,20 +218,40 @@
 - **AI Engine**: http://localhost:8000 ✅
 - **Database**: MS SQL Server (172.16.200.204:1433) ✅
 
+### 🎯 최근 구현 완료 (Phase 3)
+- ✅ StandardPage.vue 범용 동적 페이지 구현
+- ✅ COST001 화면 완성 (부서별 월별 원가 조회)
+- ✅ RealGrid CSS 로딩, 컬럼 너비 자동 조정
+- ✅ 인라인 폼 UI 최적화 (제목 축소, 검색 조건 한 줄 배치)
+- ✅ 엑셀 다운로드 버튼 이동, 초기화 버튼 제거
+- ✅ 스네이크↔카멜 케이스 자동 변환 함수
+- ✅ 12건 테스트 데이터 생성 및 조회 성공
+
 ### 📁 주요 파일
 ```
 frontend/
   src/
+    views/
+      StandardPage.vue          # ⭐ 범용 동적 페이지 (NEW)
+      cost/COST001.vue         # 실제 화면 예시
     stores/menu.js              # 메뉴 상태 관리
     layouts/MainLayout.vue      # 메인 레이아웃
-    views/admin/
-      MenuGenerator.vue         # 메뉴 관리
-      ScreenGenerator.vue       # 화면 생성기
+    components/RealGrid.vue     # ⭐ Props 기반 그리드 (개선)
+  public/
+    schemas/COST001.json        # ⭐ 화면 스키마 (NEW)
+    lib/
+      realgrid-style.css        # ⭐ RealGrid CSS (NEW)
+      realgrid-sky-blue.css     # ⭐ RealGrid 테마 (NEW)
 backend/
   src/main/java/com/dowinsys/
-    system/menu/               # 메뉴 CRUD
+    cost/monthly/              # ⭐ COST001 API (NEW)
+      COST001Controller.java
+      COST001Service.java
+      COST001ServiceImpl.java
   src/main/resources/
-    mapper/system/menu/        # MyBatis Mapper
+    mapper/cost/               # ⭐ COST001 Mapper (NEW)
+      COST001Mapper.xml
+    application.yml            # MyBatis 설정 (map-underscore-to-camel-case)
 engine/
   server.py                    # FastAPI 서버
   output/                      # 생성된 코드 저장소
@@ -193,10 +259,22 @@ generator/
   generator.py                 # AI 코드 생성 로직
   .env                        # API 키 설정
 scripts/
+  create_cost_table.py        # ⭐ 테스트 DB 생성 (NEW)
   verify_key.py               # API 키 진단 도구
 docs/
   SESSION_SUMMARY_20251129.md # 작업 세션 요약
 ```
+
+### 🎉 주요 성과
+**"Specification is the Code" 실현:**
+- JSON 스키마 1개로 완전한 CRUD 화면 자동 생성
+- 복잡한 그리드도 코드 수정 없이 작동
+- 새 화면 추가 시 JSON만 작성하면 끝!
+
+**기술 혁신:**
+- Vue 3 Composition → Options API 전환 (RealGrid 호환)
+- Props 기반 그리드 초기화 (부모 의존성 제거)
+- 범용 데이터 변환으로 API 독립성 확보
 
 ### 🎯 다음 단계
 Phase 3: 실제 화면 생성 및 프로젝트 통합 진행 중
