@@ -31,6 +31,15 @@ const routes = [
         name: 'StandardPage',
         component: () => import('@/views/StandardPage.vue'),
         props: true
+      },
+      {
+        path: 'cost/cost001',
+        name: 'COST001',
+        component: () => import('@/views/cost/COST001.vue'),
+        meta: {
+          title: '부서별 월별 원가 조회',
+          icon: 'bi-currency-dollar'
+        }
       }
     ]
   }
