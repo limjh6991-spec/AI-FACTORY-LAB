@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bootstrap": "^5.3.8",
+    "bootstrap-vue": "^2.23.1",
+    "realgrid": "^2.9.5"
+  }
+}
