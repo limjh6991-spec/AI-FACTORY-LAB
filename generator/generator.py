@@ -101,53 +101,100 @@ class CodeGenerator:
             # JSON 파싱 (유효성 검증)
             schema_data = json.loads(schema_json)
             
+            # 화면 ID 추출
+            screen_id = schema_data.get('screenId', 'UNKNOWN')
+            
+            # output 폴더 생성 (engine/output/{screen_id}/)
+            output_dir = Path(__file__).parent.parent / 'engine' / 'output' / screen_id
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
             # 생성할 파일 리스트
             generated_files = []
             
             # 1. JSON 스키마 파일
-            screen_id = schema_data.get('screenId', 'UNKNOWN')
             json_filename = f"{screen_id}.json"
+            json_code = json.dumps(schema_data, ensure_ascii=False, indent=2)
+            json_path = output_dir / json_filename
+            
+            # 파일 저장
+            with open(json_path, 'w', encoding='utf-8') as f:
+                f.write(json_code)
+            
             generated_files.append({
                 "filename": json_filename,
-                "code": json.dumps(schema_data, ensure_ascii=False, indent=2),
-                "path": f"frontend/src/schemas/{json_filename}"
+                "code": json_code,
+                "path": f"output/{screen_id}/{json_filename}"
             })
             
-            # 2. Vue 컴포넌트 파일 (템플릿 기반)
-            # 추후 templates/ 폴더의 실제 템플릿 사용 예정
+            # 2. Vue 컴포넌트 파일
             vue_code = self._generate_vue_component(schema_data)
             vue_filename = f"{screen_id}.vue"
+            vue_path = output_dir / vue_filename
+            
+            # 파일 저장
+            with open(vue_path, 'w', encoding='utf-8') as f:
+                f.write(vue_code)
+            
             generated_files.append({
                 "filename": vue_filename,
                 "code": vue_code,
-                "path": f"frontend/src/views/generated/{vue_filename}"
+                "path": f"output/{screen_id}/{vue_filename}"
             })
             
             # 3. 라우터 설정 코드 (참고용)
             router_code = self._generate_router_config(schema_data)
+            router_filename = "router_config.js"
+            router_path = output_dir / router_filename
+            
+            # 파일 저장
+            with open(router_path, 'w', encoding='utf-8') as f:
+                f.write(router_code)
+            
             generated_files.append({
-                "filename": "router_config.js",
+                "filename": router_filename,
                 "code": router_code,
-                "path": "reference/router_config.js"
+                "path": f"output/{screen_id}/{router_filename}"
             })
             
             # 4. Java Controller 파일
             controller_code = self._generate_java_controller(schema_data)
             controller_filename = f"{screen_id}Controller.java"
+            
+            # java 하위 폴더 생성
+            java_dir = output_dir / 'java'
+            java_dir.mkdir(exist_ok=True)
+            controller_path = java_dir / controller_filename
+            
+            # 파일 저장
+            with open(controller_path, 'w', encoding='utf-8') as f:
+                f.write(controller_code)
+            
             generated_files.append({
                 "filename": controller_filename,
                 "code": controller_code,
-                "path": f"backend/controller/{controller_filename}"
+                "path": f"output/{screen_id}/java/{controller_filename}"
             })
             
             # 5. MyBatis Mapper XML 파일
             mapper_code = self._generate_mybatis_mapper(schema_data)
             mapper_filename = f"{screen_id}Mapper.xml"
+            
+            # mapper 하위 폴더 생성
+            mapper_dir = output_dir / 'mapper'
+            mapper_dir.mkdir(exist_ok=True)
+            mapper_path = mapper_dir / mapper_filename
+            
+            # 파일 저장
+            with open(mapper_path, 'w', encoding='utf-8') as f:
+                f.write(mapper_code)
+            
             generated_files.append({
                 "filename": mapper_filename,
                 "code": mapper_code,
-                "path": f"backend/mapper/{mapper_filename}"
+                "path": f"output/{screen_id}/mapper/{mapper_filename}"
             })
+            
+            print(f"✅ 파일 저장 완료: {output_dir}")
             
             return generated_files
             

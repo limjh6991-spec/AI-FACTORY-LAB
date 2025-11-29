@@ -379,8 +379,16 @@ mvn clean install -DskipTests
 
 #### .env 파일 (generator/.env)
 ```bash
-GEMINI_API_KEY=AIzaSyDaMbGNIy5KDgMn4xfir9kL9yryUQpmqjk
+GEMINI_API_KEY=your_actual_api_key_here
 ```
+
+⚠️ **보안 주의사항**:
+- `.env` 파일은 `.gitignore`에 포함되어 있어 Git에 커밋되지 않습니다
+- API 키가 GitHub에 노출되면 자동으로 차단되므로 절대 공개하지 마세요
+- **실제 API 키는 `.env` 파일에만 저장**하고 문서에는 절대 기록하지 마세요
+- API 키 발급: https://aistudio.google.com/apikey
+- 프로젝트: ai-factory (994836649724)
+- 마지막 업데이트: 2025년 11월 29일
 
 ---
 

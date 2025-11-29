@@ -1,0 +1,36 @@
+{
+  "screenId": "TEST001",
+  "screenName": "테스트 화면",
+  "description": "테스트 화면 정보를 조회합니다.",
+  "searchConditions": [
+    {
+      "id": "code",
+      "label": "코드",
+      "type": "input",
+      "required": true,
+      "defaultValue": ""
+    }
+  ],
+  "gridColumns": [
+    {
+      "field": "code",
+      "header": "코드",
+      "width": 120,
+      "align": "center",
+      "dataType": "text"
+    },
+    {
+      "field": "name",
+      "header": "명칭",
+      "width": 200,
+      "align": "left",
+      "dataType": "text"
+    }
+  ],
+  "api": {
+    "search": "/api/v1/test/TEST001/search",
+    "create": "/api/v1/test/TEST001/create",
+    "update": "/api/v1/test/TEST001/update",
+    "delete": "/api/v1/test/TEST001/delete"
+  }
+}
