@@ -12,7 +12,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/cost")
+@RequestMapping("/api/v1/cost")
 @RequiredArgsConstructor
 public class COST001Controller {
 
