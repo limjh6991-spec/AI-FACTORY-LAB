@@ -7,7 +7,6 @@
       class="menu-link"
       active-class="is-active"
     >
-      <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
       <span class="menu-title">{{ item.menuNm || item.label }}</span>
     </router-link>
 
@@ -16,16 +15,17 @@
       v-else-if="!item.children || item.children.length === 0"
       class="menu-link disabled"
     >
-      <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
       <span class="menu-title">{{ item.menuNm || item.label }}</span>
     </div>
 
     <!-- Menu with Children (Submenu) -->
     <div v-else class="submenu">
       <div class="submenu-title" @click="toggleSubmenu">
-        <i v-if="item.iconCls || item.icon" :class="item.iconCls || item.icon" class="menu-icon"></i>
         <span class="menu-title">{{ item.menuNm || item.label }}</span>
-        <i class="bi bi-chevron-down arrow" :class="{ 'is-opened': isOpened }"></i>
+        <i 
+          class="menu-arrow" 
+          :class="isOpened ? 'bi bi-caret-down-fill' : 'bi bi-caret-right-fill'"
+        ></i>
       </div>
       
       <transition name="el-zoom-in-top">
@@ -64,34 +64,33 @@ const toggleSubmenu = () => {
   .menu-link {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 12px 20px;
-    color: #bfcbd9;
+    color: var(--neutral-gray-20);
     text-decoration: none;
-    transition: all 0.3s;
+    transition: all var(--duration-fast) var(--easing-standard);
     cursor: pointer;
-
-    .menu-icon {
-      font-size: 18px;
-      margin-right: 10px;
-      min-width: 20px;
-    }
+    border-left: 3px solid transparent;
 
     .menu-title {
       flex: 1;
       font-size: 14px;
+      font-weight: var(--font-weight-medium);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: rgba(255, 255, 255, 0.05);
       color: #fff;
     }
 
     &.is-active {
-      background-color: #1890ff;
+      background-color: var(--primary-blue-light);
       color: #fff;
+      border-left-color: var(--primary-blue);
+      font-weight: var(--font-weight-semibold);
     }
   }
 
@@ -99,37 +98,36 @@ const toggleSubmenu = () => {
     .submenu-title {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: 12px 20px;
-      color: #bfcbd9;
+      color: var(--neutral-gray-20);
       cursor: pointer;
-      transition: all 0.3s;
-
-      .menu-icon {
-        font-size: 18px;
-        margin-right: 10px;
-        min-width: 20px;
-      }
+      transition: all var(--duration-fast) var(--easing-standard);
+      border-left: 3px solid transparent;
 
       .menu-title {
         flex: 1;
         font-size: 14px;
+        font-weight: var(--font-weight-medium);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      .arrow {
-        font-size: 12px;
-        transition: transform 0.3s;
-
-        &.is-opened {
-          transform: rotate(180deg);
-        }
+      .menu-arrow {
+        font-size: 10px;
+        margin-left: 8px;
+        transition: transform var(--duration-fast) var(--easing-standard);
+        color: rgba(255, 255, 255, 0.6);
       }
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.05);
         color: #fff;
+        
+        .menu-arrow {
+          color: rgba(255, 255, 255, 0.9);
+        }
       }
 
       &.disabled {
@@ -138,21 +136,21 @@ const toggleSubmenu = () => {
 
         &:hover {
           background-color: transparent;
-          color: #bfcbd9;
+          color: var(--neutral-gray-20);
         }
       }
     }
 
     .submenu-wrapper {
-      background-color: rgba(0, 0, 0, 0.1);
+      background-color: rgba(0, 0, 0, 0.2);
 
       .nested-menu {
         .menu-link {
-          padding-left: 50px;
+          padding-left: 40px;
         }
 
         .submenu-title {
-          padding-left: 50px;
+          padding-left: 40px;
         }
       }
     }

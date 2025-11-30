@@ -5,6 +5,10 @@ import router from './router'
 import RealGrid from 'realgrid'
 import RealGridComponent from './components/RealGrid.vue'
 
+// Element Plus
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
 // Bootstrap 5 CSS & JS
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
@@ -15,7 +19,13 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 // RealGrid CSS
 import 'realgrid/dist/realgrid-style.css'
 
+// AI Factory Design System
+import './assets/design-system.css'
+
 const app = createApp(App)
+
+// Element Plus 등록
+app.use(ElementPlus)
 
 // RealGrid 라이선스 설정
 RealGrid.setLicenseKey(process.env.VUE_APP_REAL_GRID_2LIC)

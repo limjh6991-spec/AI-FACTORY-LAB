@@ -89,28 +89,29 @@ const adminMenuItems = computed(() => {
 
 .sidebar-container {
   width: 260px;
-  background-color: #304156;
+  background-color: var(--neutral-gray-90);
   height: 100%;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1001;
   overflow-y: auto;
-  transition: width 0.28s;
+  transition: width var(--duration-normal);
   display: flex;
   flex-direction: column;
   
   .logo-area {
     height: 50px;
-    background-color: #2b2f3a;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-hover) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
+    box-shadow: var(--elevation-2);
     
     h5 {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: var(--font-weight-semibold);
       
       i {
         font-size: 24px;
@@ -142,28 +143,31 @@ const adminMenuItems = computed(() => {
 
 .main-container {
   min-height: 100%;
-  transition: margin-left 0.28s;
+  transition: margin-left var(--duration-normal);
   margin-left: 260px;
   width: calc(100% - 260px);
   position: relative;
-  background-color: #f0f2f5;
+  background-color: var(--neutral-gray-10);
 }
 
 .navbar-header {
   height: 50px;
-  background: #fff;
+  background: var(--neutral-white);
   position: sticky;
   top: 0;
   z-index: 9;
+  border-bottom: 1px solid var(--neutral-gray-30);
   
   .user-area {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--neutral-gray-90);
+    font-weight: var(--font-weight-medium);
     
     i {
       font-size: 24px;
-      color: #5a5e66;
+      color: var(--primary-blue);
     }
   }
 }
@@ -171,7 +175,27 @@ const adminMenuItems = computed(() => {
 .app-main {
   padding: 20px;
   min-height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
   overflow-y: auto;
+
+  /* 스크롤바 스타일링 */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 }
 
 .fade-transform-leave-active,

@@ -430,13 +430,127 @@ curl http://localhost:8080                  # Vue
 
 ---
 
-## 📊 포트 할당
+## �️ 데이터베이스 설정 및 실행
+
+### 데이터베이스 테이블 생성
+
+#### 방법 1: Python 스크립트 실행 (권장)
+```bash
+cd /home/roarm_m3/ai-factory-lab/scripts
+python3 setup_demo_db.py
+```
+
+#### 실행 결과
+```
+🔌 DB 연결 중...
+✅ DB 연결 성공!
+
+📄 create_demo_tables.sql 실행 중...
+  ✅ Batch 3/12 완료
+  ✅ Batch 6/12 완료
+  ✅ Batch 9/12 완료
+✅ 테이블 생성 완료!
+
+📄 insert_demo_data.sql 실행 중...
+✅ 데이터 삽입 완료!
+
+📊 데이터 확인:
+  • Grid1 - Orders: 8건
+  • Grid2 - Employee: 9건
+  • Grid3 - Sales: 12건
+🎉 모든 작업이 완료되었습니다!
+```
+
+#### 방법 2: 개별 Python 스크립트 실행
+```bash
+cd /home/roarm_m3/ai-factory-lab/scripts
+
+# 메뉴 테이블 생성
+python3 create_menu_table.py
+
+# 생산 실적 테이블 생성
+python3 create_production_table.py
+
+# 원가 테이블 생성
+python3 create_cost_table.py
+```
+
+#### 방법 3: SQL 파일 직접 실행
+SQL Server Management Studio나 Azure Data Studio를 사용하여 직접 실행:
+- `scripts/create_demo_tables.sql` - RealGrid 데모 테이블
+- `scripts/insert_demo_data.sql` - RealGrid 샘플 데이터
+- `scripts/create_menu_table.sql` - 메뉴 관리 테이블
+- `scripts/create_production_table.sql` - 생산 실적 테이블
+- `scripts/create_cost_table.sql` - 원가 관리 테이블
+
+### 주요 테이블 목록
+
+| 테이블명 | 용도 | 레코드 수 |
+|---------|------|----------|
+| **new_doi_demo_orders** | RealGrid Grid1 주문 샘플 | 8건 |
+| **new_doi_demo_employee** | RealGrid Grid2 직원 샘플 | 9건 |
+| **new_doi_demo_sales** | RealGrid Grid3 매출 샘플 | 12건 |
+| **new_doi_sys_menu** | 시스템 메뉴 관리 | 가변 |
+| **new_doi_prd_result** | 생산 실적 관리 | 가변 |
+| **new_doi_cost_material** | 자재 원가 관리 | 가변 |
+
+### 테이블 확인
+```bash
+# Python으로 테이블 확인
+python3 << EOF
+import pymssql
+conn = pymssql.connect(
+    server='172.16.200.204',
+    port=1433,
+    user='TEST_MES_USER',
+    password='Dowoo1!',
+    database='도우제조MES시스템TEST',
+    charset='utf8'
+)
+cursor = conn.cursor()
+cursor.execute("SELECT name FROM sys.tables WHERE name LIKE 'new_doi_%' ORDER BY name")
+for row in cursor.fetchall():
+    print(f"  ✓ {row[0]}")
+cursor.close()
+conn.close()
+EOF
+```
+
+### 트러블슈팅
+
+#### pymssql 설치되지 않은 경우
+```bash
+pip3 install pymssql
+```
+
+#### DB 연결 오류
+```bash
+# 1. 네트워크 연결 확인
+ping 172.16.200.204
+
+# 2. 포트 확인
+telnet 172.16.200.204 1433
+
+# 3. 방화벽 확인
+sudo ufw status
+```
+
+#### 테이블이 이미 존재하는 경우
+```bash
+# 스크립트가 자동으로 DROP IF EXISTS 처리하므로 그냥 다시 실행하면 됨
+python3 setup_demo_db.py
+```
+
+---
+
+## �📊 포트 할당
 
 | 서비스 | 포트 | URL | 용도 |
 |--------|------|-----|------|
 | **Vue Frontend** | 8080 | http://localhost:8080 | 사용자 인터페이스 |
 | **Spring Boot API** | 8080 | http://localhost:8080/api | REST API (context-path: /api) |
 | **FastAPI** | 8000 | http://localhost:8000 | AI 코드 생성 & 임시 메뉴 API |
+| **MS SQL Server** | 1433 | 172.16.200.204:1433 | 데이터베이스 |
 | **LiveReload** | 35729 | - | Spring DevTools |
 
 ⚠️ **주의**: Vue와 Spring Boot가 같은 8080 포트를 사용하므로, Vue에서 API 호출 시 프록시 설정 필요
