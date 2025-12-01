@@ -42,9 +42,10 @@
 
 ### 7. Gemini API 키 관리 ✅
 - **히스토리**:
-  1. 초기 키: `AIzaSyDaMbGNIy5KDgMn4xfir9kL9yryUQpmqjk` → GitHub 노출로 차단
-  2. 2차 키: `AIzaSyCY63Fue-Z4bXQzukKSspxIj_FBQf3dwD4` → 만료
-  3. **현재 키**: `AIzaSyArENY9j8r9pl8uVeo7BAG1qjZiFWuyoRE` (유효)
+  1. 초기 키: `[REDACTED]` → GitHub 노출로 차단
+  2. 2차 키: `[REDACTED]` → 만료
+  3. 3차 키: `[REDACTED]` → 차단됨
+  4. **현재 키**: 2025-12-01 발급 (이름: ai_factory)
 - **위치**: `generator/.env` (.gitignore 포함)
 - **프로젝트**: ai-factory (994836649724)
 
