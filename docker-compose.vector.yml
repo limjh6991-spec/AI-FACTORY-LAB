@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Chroma Vector DB
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: ai-factory-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenConfigServerAuthCredentialsProvider
+      - CHROMA_SERVER_AUTH_CREDENTIALS=ai-factory-token-2025
+      - CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER=X-Chroma-Token
+    restart: unless-stopped
+    networks:
+      - ai-factory-net
+
+  # Redis (캐싱)
+  redis:
+    image: redis:7-alpine
+    container_name: ai-factory-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ai-factory-redis-2025
+    restart: unless-stopped
+    networks:
+      - ai-factory-net
+
+volumes:
+  chroma-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  ai-factory-net:
+    driver: bridge

@@ -2141,11 +2141,880 @@ jobs:
 
 ---
 
+## 10. 🎨 Phase 1 GridStyle 구현 에러 (GridStyle Implementation Errors)
+**💀 치명도: MEDIUM** - Phase 1 자동화 구현 과정에서 발생한 에러들
+
+---
+
+### 🟡 Error 10.1: generate_full_screen.sh 상대 경로 문제
+
+**에러 메시지:**
+```bash
+❌ Excel 파일을 찾을 수 없습니다: engine/input/ProductionResult_ScreenDefinition.xlsx
+FileNotFoundError: 파일을 찾을 수 없습니다: engine/input/ProductionResult_ScreenDefinition.xlsx
+```
+
+**발생 원인 (Root Cause Analysis):**
+1. **스크립트 실행 위치 의존성**: `generate_full_screen.sh` 스크립트가 상대 경로로 Excel 파일을 찾으려고 시도
+2. **Working Directory 불일치**: 스크립트는 `/home/roarm_m3/ai-factory-lab`에서 실행되지만, `generator_excel.py`는 `engine/` 디렉토리에서 실행되어야 함
+3. **경로 변환 미흡**: Bash 스크립트에서 Python으로 인자를 전달할 때 경로가 제대로 변환되지 않음
+
+**재현 방법 (Reproduction Steps):**
+```bash
+# Step 1: 프로젝트 루트에서 스크립트 실행
+cd /home/roarm_m3/ai-factory-lab
+
+# Step 2: 상대 경로로 Excel 파일 전달
+bash scripts/generate_full_screen.sh engine/input/ProductionResult_ScreenDefinition.xlsx ProductionResult
+
+# 결과: ❌ 파일을 찾을 수 없음
+```
+
+**해결 방법 (Solution):**
+
+**방법 1: 절대 경로 사용 (즉시 해결)**
+```bash
+# engine 디렉토리로 이동 후 상대 경로 사용
+cd /home/roarm_m3/ai-factory-lab/engine
+python generator_excel.py input/ProductionResult_ScreenDefinition.xlsx output/ProductionResult/ProductionResult.json
+```
+
+**방법 2: 스크립트 수정 (근본 해결)**
+
+`scripts/generate_full_screen.sh` 수정:
+```bash
+#!/bin/bash
+# 전체 화면 자동 생성 스크립트 (경로 문제 해결)
+
+EXCEL_FILE="$1"
+SCREEN_ID="$2"
+
+# Excel 파일을 절대 경로로 변환
+if [[ ! "$EXCEL_FILE" = /* ]]; then
+    # 상대 경로인 경우 절대 경로로 변환
+    EXCEL_FILE="$(cd "$(dirname "$EXCEL_FILE")" && pwd)/$(basename "$EXCEL_FILE")"
+fi
+
+# Excel 파일 존재 확인
+if [ ! -f "$EXCEL_FILE" ]; then
+    echo "❌ Excel 파일을 찾을 수 없습니다: $EXCEL_FILE"
+    exit 1
+fi
+
+echo "🚀 화면 자동 생성 시작"
+echo "   Excel PI: $EXCEL_FILE"
+echo ""
+
+# Step 1: Excel → JSON 파싱 (engine 디렉토리에서 실행)
+echo "📝 Step 1: Excel PI 파싱..."
+cd "$(dirname "$0")/../engine"  # 스크립트 위치 기준으로 engine 디렉토리로 이동
+
+# 화면 ID 자동 추출
+if [ -z "$SCREEN_ID" ]; then
+    SCREEN_ID=$(basename "$EXCEL_FILE" | sed 's/_ScreenDefinition.xlsx$//')
+fi
+
+# 출력 디렉토리 생성
+mkdir -p "output/$SCREEN_ID"
+
+# Excel 파싱 (절대 경로 사용)
+python generator_excel.py "$EXCEL_FILE" "output/$SCREEN_ID/$SCREEN_ID.json"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Excel 파싱 실패"
+    exit 1
+fi
+
+echo "✅ JSON Schema 생성 완료: output/$SCREEN_ID/$SCREEN_ID.json"
+echo ""
+
+# Step 2: JSON → Vue 컴포넌트 생성
+echo "🎨 Step 2: Vue 컴포넌트 생성..."
+python generator_vue.py "output/$SCREEN_ID/$SCREEN_ID.json" "output/$SCREEN_ID/$SCREEN_ID.vue"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Vue 컴포넌트 생성 실패"
+    exit 1
+fi
+
+echo "✅ Vue 컴포넌트 생성 완료: output/$SCREEN_ID/$SCREEN_ID.vue"
+echo ""
+
+# Step 3: JSON → Java 코드 생성
+echo "☕ Step 3: Java 코드 생성..."
+python generator_java.py "output/$SCREEN_ID/$SCREEN_ID.json" "output/$SCREEN_ID"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Java 코드 생성 실패"
+    exit 1
+fi
+
+echo "✅ Java 코드 생성 완료"
+echo ""
+echo "🎉 전체 화면 생성 완료!"
+echo "   📁 출력 위치: engine/output/$SCREEN_ID/"
+```
+
+**방법 3: 간단한 Wrapper 스크립트**
+
+`scripts/generate_production.sh` 생성:
+```bash
+#!/bin/bash
+# ProductionResult 전용 생성 스크립트
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+cd "$PROJECT_ROOT/engine"
+
+python generator_excel.py \
+    input/ProductionResult_ScreenDefinition.xlsx \
+    output/ProductionResult/ProductionResult.json
+
+python generator_vue.py \
+    output/ProductionResult/ProductionResult.json \
+    output/ProductionResult/ProductionResult.vue
+
+python generator_java.py \
+    output/ProductionResult/ProductionResult.json \
+    output/ProductionResult
+
+echo "✅ ProductionResult 화면 생성 완료!"
+```
+
+**검증 방법 (Validation):**
+```bash
+# 테스트 1: 절대 경로
+cd /home/roarm_m3/ai-factory-lab/engine
+python generator_excel.py \
+    /home/roarm_m3/ai-factory-lab/engine/input/ProductionResult_ScreenDefinition.xlsx \
+    output/ProductionResult/ProductionResult.json
+# ✅ 성공
+
+# 테스트 2: 상대 경로 (engine에서)
+cd /home/roarm_m3/ai-factory-lab/engine
+python generator_excel.py \
+    input/ProductionResult_ScreenDefinition.xlsx \
+    output/ProductionResult/ProductionResult.json
+# ✅ 성공
+
+# 테스트 3: 수정된 스크립트
+cd /home/roarm_m3/ai-factory-lab
+bash scripts/generate_production.sh
+# ✅ 성공
+```
+
+**예방 조치 (Prevention):**
+1. **모든 스크립트에 절대 경로 변환 로직 추가**
+   ```bash
+   # 상대 경로를 절대 경로로 변환
+   EXCEL_FILE="$(realpath "$1")"
+   ```
+
+2. **Working Directory 명시**
+   ```bash
+   # 항상 스크립트 위치 기준으로 cd
+   SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+   cd "$SCRIPT_DIR/../engine"
+   ```
+
+3. **디버그 모드 추가**
+   ```bash
+   set -x  # 실행되는 모든 명령어 출력
+   echo "Working Directory: $(pwd)"
+   echo "Excel File: $EXCEL_FILE"
+   echo "Excel File Exists: $(test -f "$EXCEL_FILE" && echo YES || echo NO)"
+   ```
+
+**참고 자료:**
+- Bash Realpath: `man realpath`
+- Bash Path Manipulation: https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+
+**심각도:** 🟡 MEDIUM (개발 편의성 문제, 프로덕션 영향 없음)  
+**수정 우선순위:** P2 (다음 스프린트)  
+**담당자:** DevOps / Shell Script Expert
+
+---
+
+### 🔴 Error 10.2: Vue 컴포넌트 Return 문 콤마 누락
+
+**에러 메시지:**
+```
+ERROR in ./src/views/ProductionResult.vue
+Module Error (from ./node_modules/vue-loader/dist/index.js):
+[vue/compiler-sfc] Unexpected token, expected "," (619:6)
+
+732|        handleBtnexcelupload,
+733|        handleBtnexceldownload
+734|        handleRowClick,
+   |        ^
+735|        handleCellEdit,
+736|        handleSizeChange,
+
+[eslint] 
+/home/roarm_m3/ai-factory-lab/frontend/src/views/ProductionResult.vue
+  734:6  error  Parsing error: Unexpected token, expected "," (619:6)
+```
+
+**발생 원인 (Root Cause Analysis):**
+
+**🔍 근본 원인: Python의 `str.join()` 메서드 특성**
+
+1. **Generator 로직의 설계 결함**:
+   ```python
+   # engine/generator_vue.py - _generate_button_exports() 함수
+   def _generate_button_exports(self) -> str:
+       buttons = self.schema.get('buttons', [])
+       exports = [f"      handle{btn.get('id', '').capitalize()}" for btn in buttons]
+       return ',\n'.join(exports)  # ❌ 마지막에 콤마가 없음!
+   ```
+
+2. **Python join()의 동작 방식**:
+   ```python
+   # join()은 항목들 "사이"에만 구분자를 삽입
+   items = ['a', 'b', 'c']
+   result = ',\n'.join(items)
+   # 결과:
+   # a,
+   # b,
+   # c     ← 마지막에 콤마 없음!
+   ```
+
+3. **실제 생성된 코드**:
+   ```javascript
+   // buttons = ['btnSearch', 'btnReset', 'btnAdd', 'btnDelete', 
+   //            'btnSave', 'btnConfirm', 'btnExcelUpload', 'btnExcelDownload']
+   
+   // _generate_button_exports() 실행 결과:
+         handleBtnsearch,
+         handleBtnreset,
+         handleBtnadd,
+         handleBtndelete,
+         handleBtnsave,
+         handleBtnconfirm,
+         handleBtnexcelupload,
+         handleBtnexceldownload  // ❌ 여기서 끝! 콤마 없음
+   ```
+
+4. **템플릿 삽입 시 구조적 문제**:
+   ```javascript
+   // generator_vue.py 템플릿 (줄 167-181)
+   return {{
+     gridRef,
+     gridData,
+     searchForm,
+     gridColumns,
+     searchConditions,
+     pagination,
+     handleSearch,
+     handleReset,
+   {self._generate_button_exports()}  // ← 여기에 위 코드가 삽입됨
+     handleRowClick,                   // ❌ 앞에 콤마가 없어서 파싱 에러!
+     handleCellEdit,
+     handleSizeChange,
+     handleCurrentChange
+   }};
+   ```
+
+5. **왜 발견하기 어려웠는가?**
+   - 버튼이 **0개**인 경우: `_generate_button_exports()`가 빈 문자열 반환 → 에러 없음
+   - 버튼이 **있지만 마지막 export인 경우**: 뒤에 다른 항목이 없으면 에러 없음
+   - **ProductionResult처럼 버튼이 많고, 뒤에 다른 항목이 있을 때만** 에러 발생!
+
+6. **전체 코드 분석 결과 - 같은 패턴이 더 있는가?**
+   
+   **✅ 안전한 join() 사용 사례:**
+   ```python
+   # Line 336: 독립적인 배열 블록
+   return '[\n    ' + ',\n    '.join(column_items) + '\n  ]'
+   
+   # Line 307: 독립적인 객체 블록 (뒤에 다른 프로퍼티 없음)
+   const searchForm = reactive({
+     {self._generate_search_form_data()}  # ← return ',\n'.join(data_items)
+   });  # ← 객체가 여기서 끝남 (안전!)
+   
+   # Line 513: 독립적인 함수 정의들
+   return '\n\n'.join(handlers)  # 각 함수가 완전한 블록
+   ```
+   
+   **🚨 위험한 join() 사용 사례:**
+   ```python
+   # Line 519: 객체 프로퍼티 중간에 삽입 ← 🔥 문제!
+   return {
+     gridRef,
+     gridData,
+     ...
+     handleSearch,
+     handleReset,
+     {self._generate_button_exports()},  # ← return ',\n'.join(exports)
+     handleRowClick,  # ← 앞에 콤마가 없어서 에러!
+     ...
+   };
+   ```
+   
+   **근본 원인 요약:**
+   - Python의 `','.join(list)`는 **항목들 "사이"에만** 구분자 삽입
+   - 마지막 항목 뒤에는 구분자가 없음
+   - 템플릿에서 **다른 코드 중간에 삽입될 때** 문제 발생
+   - 독립적인 블록(배열, 함수 정의 등)에서는 문제 없음
+
+**시뮬레이션 검증:**
+```bash
+cd /home/roarm_m3/ai-factory-lab/engine
+python3 << 'EOF'
+import json
+with open('output/ProductionResult/ProductionResult.json', 'r') as f:
+    schema = json.load(f)
+
+buttons = schema.get('buttons', [])
+exports = [f"      handle{btn.get('id', '').capitalize()}" for btn in buttons]
+result = ',\n'.join(exports)
+
+print("버튼 개수:", len(buttons))
+print("마지막 라인:", exports[-1])
+print("마지막 문자:", repr(result[-1]))
+print("콤마 있음?", result.endswith(','))
+# 출력:
+# 버튼 개수: 8
+# 마지막 라인:       handleBtnexceldownload
+# 마지막 문자: 'd'
+# 콤마 있음? False  ← 🚨 문제 확인!
+EOF
+```
+
+**문제 코드:**
+```javascript
+return {
+  gridRef,
+  gridData,
+  searchForm,
+  gridColumns,
+  searchConditions,
+  pagination,
+  handleSearch,
+  handleReset,
+  handleBtnadd,
+  handleBtndelete,
+  handleBtnsave,
+  handleBtnconfirm,
+  handleBtnexcelupload,
+  handleBtnexceldownload    // ❌ 콤마 누락!
+  handleRowClick,           // 파싱 에러 발생
+  handleCellEdit,
+  handleSizeChange,
+  handleCurrentChange
+};
+```
+
+**재현 방법 (Reproduction Steps):**
+```bash
+# Step 1: ProductionResult 화면 생성
+cd /home/roarm_m3/ai-factory-lab/engine
+python generator_vue.py output/ProductionResult/ProductionResult.json output/ProductionResult/ProductionResult.vue
+
+# Step 2: 생성된 파일을 frontend로 복사
+cp output/ProductionResult/ProductionResult.vue ../frontend/src/views/
+
+# Step 3: Frontend 개발 서버 시작
+cd ../frontend
+npm run serve
+
+# 결과: ❌ Compile error - "Unexpected token, expected ,"
+```
+
+**해결 방법 (Solution):**
+
+**방법 1: 수동 수정 (즉시 해결)**
+```javascript
+// ✅ 올바른 코드
+return {
+  gridRef,
+  gridData,
+  searchForm,
+  gridColumns,
+  searchConditions,
+  pagination,
+  handleSearch,
+  handleReset,
+  handleBtnadd,
+  handleBtndelete,
+  handleBtnsave,
+  handleBtnconfirm,
+  handleBtnexcelupload,
+  handleBtnexceldownload,   // ✅ 콤마 추가!
+  handleRowClick,
+  handleCellEdit,
+  handleSizeChange,
+  handleCurrentChange
+};
+```
+
+**방법 2: generator_vue.py 수정 (근본 해결)**
+
+`engine/generator_vue.py` 파일의 `_generate_button_exports()` 함수 수정:
+
+**현재 코드:**
+```python
+def _generate_button_exports(self) -> str:
+    """버튼 핸들러 export 목록 생성"""
+    buttons = self.schema.get('buttons', [])
+    exports = [f"      handle{btn.get('id', '').capitalize()}" for btn in buttons]
+    return ',\n'.join(exports)  # ❌ 마지막에 콤마가 없음
+```
+
+**수정된 코드:**
+```python
+def _generate_button_exports(self) -> str:
+    """버튼 핸들러 export 목록 생성"""
+    buttons = self.schema.get('buttons', [])
+    exports = [f"      handle{btn.get('id', '').capitalize()}" for btn in buttons]
+    
+    # 버튼이 있으면 마지막에 콤마 추가 (뒤에 다른 항목이 올 수 있으므로)
+    if exports:
+        return ',\n'.join(exports) + ','
+    return ''
+```
+
+**또는 템플릿 수정:**
+
+현재 템플릿:
+```python
+return {{
+  gridRef,
+  gridData,
+  searchForm,
+  gridColumns,
+  searchConditions,
+  pagination,
+  handleSearch,
+  handleReset,
+{self._generate_button_exports()}    # ❌ 콤마 없이 바로 다음 항목
+  handleRowClick,
+  handleCellEdit,
+  handleSizeChange,
+  handleCurrentChange
+}};
+```
+
+수정된 템플릿:
+```python
+return {{
+  gridRef,
+  gridData,
+  searchForm,
+  gridColumns,
+  searchConditions,
+  pagination,
+  handleSearch,
+  handleReset,
+{self._generate_button_exports()},   # ✅ 콤마 추가
+  handleRowClick,
+  handleCellEdit,
+  handleSizeChange,
+  handleCurrentChange
+}};
+```
+
+**방법 3: ESLint Auto-fix (자동 수정)**
+```bash
+# ESLint로 자동 수정
+cd frontend
+npx eslint --fix src/views/ProductionResult.vue
+```
+
+**검증 방법 (Validation):**
+```bash
+# 테스트 1: 구문 검사
+cd /home/roarm_m3/ai-factory-lab/frontend
+npx eslint src/views/ProductionResult.vue
+# ✅ 성공: no errors
+
+# 테스트 2: 컴파일 확인
+npm run serve
+# ✅ 성공: Compiled successfully
+
+# 테스트 3: 브라우저 확인
+curl http://localhost:8081
+# ✅ 성공: 200 OK
+```
+
+**예방 조치 (Prevention):**
+
+1. **Generator에 자동 검증 추가**
+   ```python
+   # generator_vue.py 끝에 추가
+   def validate_generated_code(self, vue_file_path: str):
+       """생성된 Vue 파일의 구문 검증"""
+       import subprocess
+       
+       result = subprocess.run(
+           ['npx', 'eslint', '--format', 'json', vue_file_path],
+           capture_output=True,
+           text=True
+       )
+       
+       if result.returncode != 0:
+           print(f"⚠️  ESLint 경고 발견:")
+           print(result.stdout)
+       
+       return result.returncode == 0
+   ```
+
+2. **템플릿 문법 개선 (Trailing Comma 패턴)**
+   ```python
+   # JavaScript에서 권장하는 Trailing Comma 패턴 사용
+   return {{
+     gridRef,
+     gridData,
+     searchForm,
+     gridColumns,
+     searchConditions,
+     pagination,
+     handleSearch,
+     handleReset,
+   {self._generate_button_exports()},  # 버튼 핸들러들
+     handleRowClick,
+     handleCellEdit,
+     handleSizeChange,
+     handleCurrentChange,  # ✅ 마지막에도 콤마 (Trailing Comma)
+   }};
+   ```
+
+3. **Pre-commit Hook 설정**
+   ```bash
+   # .git/hooks/pre-commit
+   #!/bin/bash
+   
+   # 모든 Vue 파일 ESLint 검사
+   FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.vue$')
+   
+   if [ -n "$FILES" ]; then
+       echo "🔍 Vue 파일 ESLint 검사..."
+       npx eslint $FILES
+       
+       if [ $? -ne 0 ]; then
+           echo "❌ ESLint 에러 발견! 커밋 취소."
+           exit 1
+       fi
+   fi
+   
+   exit 0
+   ```
+
+4. **CI/CD 파이프라인에 Lint 단계 추가**
+   ```yaml
+   # .github/workflows/ci.yml
+   - name: Lint Frontend
+     run: |
+       cd frontend
+       npm run lint
+       
+       if [ $? -ne 0 ]; then
+         echo "❌ Lint 실패"
+         exit 1
+       fi
+   ```
+
+**관련 JavaScript 모범 사례:**
+
+**Trailing Comma 사용 권장:**
+```javascript
+// ✅ 권장: 마지막 항목에도 콤마
+const obj = {
+  name: 'John',
+  age: 30,
+  city: 'Seoul',  // Trailing Comma
+};
+
+// Git Diff가 깔끔함:
+// - age: 30
+// + age: 31,
+//   city: 'Seoul',
+// + country: 'Korea',
+```
+
+**참고 자료:**
+- ESLint Rules: https://eslint.org/docs/rules/comma-dangle
+- Vue.js Style Guide: https://vuejs.org/style-guide/
+- JavaScript Trailing Comma: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Trailing_commas
+- Prettier Configuration: https://prettier.io/docs/en/options.html#trailing-commas
+
+**심각도:** 🔴 HIGH (컴파일 실패, 애플리케이션 구동 불가)  
+**수정 우선순위:** P0 (즉시 수정 필요)  
+**담당자:** Frontend Generator / Code Quality
+
+---
+
+### 🟡 Error 10.3: 사용하지 않는 함수 및 변수 생성 (no-unused-vars)
+
+**에러 메시지:**
+```
+ERROR
+[eslint] 
+/home/roarm_m3/ai-factory-lab/frontend/src/views/ProductionResult.vue
+  587:11  error  'deleteData' is assigned a value but never used  no-unused-vars
+  678:31  error  'row' is defined but never used                  no-unused-vars
+
+✖ 2 problems (2 errors, 0 warnings)
+```
+
+**발생 원인 (Root Cause Analysis):**
+
+**🔍 Case 1: deleteData 함수가 생성되지만 사용되지 않음**
+
+1. **API 기반 함수 자동 생성 로직**:
+   ```python
+   # engine/generator_vue.py:422-435
+   # 삭제 API
+   if 'delete' in apis or 'remove' in apis:
+       endpoint = apis.get('delete', apis.get('remove', f'/api/{table_name}/delete'))
+       methods.append(f'''
+   const deleteData = async (ids) => {{
+     try {{
+       await axios.delete('{endpoint}', {{ data: {{ ids }} }});
+       ElMessage.success('삭제되었습니다.');
+       await fetchList();
+     }} catch (error) {{
+       console.error('삭제 실패:', error);
+       throw error;
+     }}
+   }};''')
+   ```
+   → **API 정의만 있으면 무조건 함수 생성**
+
+2. **버튼 핸들러에서 호출 여부는 action 값에 의존**:
+   ```python
+   # engine/generator_vue.py:453-472
+   elif action == 'delete':  # ← 'delete' 문자열과 정확히 일치해야 함
+       handlers.append(f'''
+       const {handler_name} = async () => {{
+         ...
+         await deleteData(selectedRows.map(r => r.id));  # ← 여기서 호출
+       }}
+       ''')
+   ```
+
+3. **ProductionResult의 실제 정의**:
+   ```json
+   // ProductionResult JSON Schema
+   {
+     "api": {
+       "delete": "/api/production/result"  // ✅ delete API 정의됨
+     },
+     "buttons": [
+       {
+         "id": "btnDelete",
+         "action": "deleteRow"  // ❌ 'deleteRow'로 정의 ('delete'가 아님!)
+       }
+     ]
+   }
+   ```
+
+4. **결과**:
+   - ✅ `deleteData()` 함수 생성됨 (delete API가 있으므로)
+   - ❌ 버튼 핸들러는 `else` 블록으로 처리 (`action != 'delete'`)
+   - ❌ `deleteData()` 호출 코드가 생성되지 않음
+   - 🚨 **사용되지 않는 함수 경고 발생!**
+
+**실제 검증**:
+```bash
+cd /home/roarm_m3/ai-factory-lab/engine
+python3 << 'EOF'
+import json
+data = json.load(open('output/ProductionResult/ProductionResult.json'))
+
+# API 확인
+has_delete_api = 'delete' in data.get('api', {})
+print(f"delete API 정의: {has_delete_api}")
+
+# 버튼 확인
+buttons = data.get('buttons', [])
+delete_buttons = [b for b in buttons if b.get('action') == 'delete']
+deleterow_buttons = [b for b in buttons if b.get('action') == 'deleteRow']
+
+print(f"action='delete' 버튼: {len(delete_buttons)}개")
+print(f"action='deleteRow' 버튼: {len(deleterow_buttons)}개")
+print(f"\n🚨 불일치: API는 'delete'인데 버튼 action은 'deleteRow'!")
+EOF
+
+# 출력:
+# delete API 정의: True
+# action='delete' 버튼: 0개
+# action='deleteRow' 버튼: 1개
+# 🚨 불일치: API는 'delete'인데 버튼 action은 'deleteRow'!
+```
+
+**🔍 Case 2: handleCellEdit의 row 파라미터 미사용**
+
+1. **템플릿에 고정된 파라미터 정의**:
+   ```python
+   # engine/generator_vue.py (템플릿 부분)
+   const handleCellEdit = ({ row, field, value }) => {{  # ← 고정된 파라미터
+     console.log('Cell edited:', field, value);  # ← row는 사용하지 않음
+   }};
+   ```
+
+2. **근본 원인**:
+   - RealGrid의 `cell-edit` 이벤트는 `{ row, field, value }` 객체 전달
+   - 하지만 기본 템플릿은 `field`, `value`만 로깅
+   - `row` 파라미터를 받지만 사용하지 않음
+
+3. **이것은 설계 의도일 수 있음**:
+   - 나중에 `row` 정보가 필요할 수 있어서 파라미터로 받음
+   - 하지만 ESLint는 선언만 하고 사용하지 않으면 경고
+
+**근본 원인 요약**:
+
+| 문제 | 원인 | 발생 조건 |
+|------|------|----------|
+| deleteData 미사용 | API 이름과 버튼 action 불일치 | `delete` API 있지만 버튼 action이 `deleteRow` |
+| row 파라미터 미사용 | 템플릿에 고정된 파라미터 | RealGrid 이벤트 구조 상 row를 받지만 기본 구현에서 미사용 |
+
+**패턴 분석**:
+```python
+# 문제 패턴 1: API 기반 함수 생성과 버튼 action 검사의 분리
+if 'delete' in apis:
+    # deleteData() 함수 생성
+    methods.append('const deleteData = ...')
+
+# 별도 위치에서
+if action == 'delete':  # ← 버튼 action 체크
+    # deleteData() 호출
+    handlers.append('await deleteData(...)')
+
+# 🚨 문제: API는 있는데 버튼 action이 다르면 함수만 생성되고 호출 안 됨!
+```
+
+**해결 방법 (Solution):**
+
+**방법 1: 버튼 action 명칭 통일 (Excel PI 수정)**
+```json
+// ProductionResult Excel PI
+{
+  "buttons": [
+    {
+      "id": "btnDelete",
+      "action": "delete"  // ✅ 'deleteRow' → 'delete'로 변경
+    }
+  ]
+}
+```
+
+**방법 2: generator_vue.py에서 action 별칭 지원**
+```python
+# engine/generator_vue.py:453
+elif action in ['delete', 'deleteRow', 'remove']:  # ✅ 여러 별칭 지원
+    handlers.append(f'''
+    const {handler_name} = async () => {{
+      ...
+      await deleteData(selectedRows.map(r => r.id));
+    }}
+    ''')
+```
+
+**방법 3: 사용하지 않는 함수 생성 방지 (스마트 생성)**
+```python
+# 버튼들의 action을 먼저 스캔
+button_actions = [btn.get('action', '') for btn in self.schema.get('buttons', [])]
+
+# 삭제 API
+if 'delete' in apis or 'remove' in apis:
+    # ✅ delete 관련 action이 있을 때만 함수 생성
+    if any(action in ['delete', 'deleteRow', 'remove'] for action in button_actions):
+        methods.append('const deleteData = ...')
+```
+
+**방법 4: row 파라미터 처리**
+```python
+# Option A: ESLint 무시
+const handleCellEdit = ({ row, field, value }) => {  // eslint-disable-line no-unused-vars
+  console.log('Cell edited:', field, value);
+};
+
+# Option B: 언더스코어 prefix (사용 안 함을 명시)
+const handleCellEdit = ({ row: _row, field, value }) => {
+  console.log('Cell edited:', field, value);
+};
+
+# Option C: 파라미터에서 제거
+const handleCellEdit = ({ field, value }) => {
+  console.log('Cell edited:', field, value);
+};
+```
+
+**검증 방법 (Validation):**
+```bash
+# 테스트 1: 버튼 action과 API 매핑 확인
+cd /home/roarm_m3/ai-factory-lab/engine
+python3 << 'EOF'
+import json
+data = json.load(open('output/ProductionResult/ProductionResult.json'))
+
+apis = set(data.get('api', {}).keys())
+actions = set(btn.get('action', '') for btn in data.get('buttons', []))
+
+print("APIs:", apis)
+print("Actions:", actions)
+print("Mismatch:", apis.symmetric_difference(actions))
+EOF
+
+# 테스트 2: ESLint 검사
+cd /home/roarm_m3/ai-factory-lab/frontend
+npx eslint src/views/ProductionResult.vue
+# ✅ no-unused-vars 경고 없어야 함
+```
+
+**예방 조치 (Prevention):**
+
+1. **Action 명칭 표준화 문서**:
+   ```markdown
+   # 버튼 Action 명칭 표준
+   - search: 조회
+   - reset: 초기화
+   - add: 행 추가
+   - delete: 행 삭제 (❌ deleteRow 사용 금지)
+   - save: 저장
+   - confirm: 확정
+   - excelUpload: Excel 업로드
+   - excelDownload: Excel 다운로드
+   ```
+
+2. **Generator 검증 로직**:
+   ```python
+   def validate_button_action_mapping(self):
+       """버튼 action과 API 매핑 검증"""
+       apis = set(self.schema.get('api', {}).keys())
+       actions = set(btn.get('action', '') for btn in self.schema.get('buttons', []))
+       
+       # delete/remove 특수 처리
+       if 'delete' in apis and not any(a in ['delete', 'deleteRow'] for a in actions):
+           print(f"⚠️  경고: delete API가 있지만 delete 관련 버튼이 없습니다!")
+   ```
+
+3. **Pre-generation 체크**:
+   ```bash
+   # 코드 생성 전 검증
+   python engine/validate_schema.py ProductionResult.json
+   # 출력:
+   # ⚠️  경고: delete API 있으나 action='delete' 버튼 없음
+   # ⚠️  제안: btnDelete의 action을 'deleteRow' → 'delete'로 변경
+   ```
+
+**참고 자료:**
+- ESLint no-unused-vars: https://eslint.org/docs/rules/no-unused-vars
+- JavaScript Parameter Naming: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters
+
+**심각도:** 🟡 MEDIUM (경고, 프로덕션 영향 없음. 하지만 코드 품질 저하)  
+**수정 우선순위:** P2 (다음 스프린트, Generator 개선)  
+**담당자:** Frontend Generator / Schema Validation
+
+---
+
 **✅ 문서 작성 완료 - 개발팀 승리! 🏆**
 
-**버전:** v2.1 (Expert Edition + 자동화 체크 시스템)  
+**버전:** v2.3 (Expert Edition + GridStyle Phase 1 + no-unused-vars 분석)  
 **작성일:** 2025-11-30  
-**최종 업데이트:** 2025-11-30 (자동화 체크 시스템 추가)
+**최종 업데이트:** 2025-11-30 (Phase 1 완료, 3개 에러 케이스 문서화)
 
 *이 문서는 실전 프로덕션 환경에서 발생한 실제 에러를 기반으로 작성되었습니다.*  
 *"에러는 반복되지만, 해결책은 문서화되고, 이제 자동화됩니다."* 🚀

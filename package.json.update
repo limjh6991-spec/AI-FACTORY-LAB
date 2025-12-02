@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "vector:setup": "tsx scripts/setup_vector_db.ts",
+    "vector:test": "tsx scripts/test_vector_search.ts",
+    "vector:start": "docker-compose -f docker-compose.vector.yml up -d",
+    "vector:stop": "docker-compose -f docker-compose.vector.yml down"
+  },
+  "dependencies": {
+    "chromadb": "^1.8.1",
+    "ioredis": "^5.3.2"
+  }
+}

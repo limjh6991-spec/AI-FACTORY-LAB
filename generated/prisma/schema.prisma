@@ -1,0 +1,1844 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          Int      @id(map: "Product_pkey1") @default(autoincrement())
+  productCode String   @unique(map: "Product_productCode_key1") @db.VarChar(50)
+  productName String   @db.VarChar(200)
+  category    String   @db.VarChar(100)
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  createdBy   String?  @db.VarChar(100)
+  updatedBy   String?  @db.VarChar(100)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_acct {
+  YYYYMM     String  @db.VarChar(20)
+  SEL_CODE   String  @db.VarChar(10)
+  SITE       String  @db.VarChar(4)
+  ACCT_CLASS String  @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정과목내부코드 Int? @map("계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 전표기표여부 Int? @map("전표기표여부")
+  ACCT       String  @db.VarChar(8)
+  ACCT_NAME  String? @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 차대 String? @map("차대") @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정대분류 String? @map("계정대분류") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 관리항목유형 String? @map("관리항목유형") @db.VarChar(28)
+  Lev        Int?    @map("계정과목Lev")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목 String? @map("상위계정과목") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 경영계획과목 String? @map("경영계획과목") @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목내부코드 Int? @map("상위계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소분류 String? @map("소분류") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 중분류 String? @map("중분류") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 대분류 String? @map("대분류") @db.VarChar(10)
+  expen_sel  String? @db.VarChar(4)
+  expen_sel_ String? @map("expen_sel명") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 특이사항 String? @map("특이사항") @db.VarChar(150)
+  disp_seq   Int?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_acct_1106 {
+  YYYY       String  @db.VarChar(10)
+  SEL_CODE   String  @db.VarChar(10)
+  SITE       String  @db.VarChar(4)
+  ACCT_CLASS String  @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정과목내부코드 Int? @map("계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 전표기표여부 Int? @map("전표기표여부")
+  ACCT       String  @db.VarChar(8)
+  ACCT_NAME  String? @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 차대 String? @map("차대") @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정대분류 String? @map("계정대분류") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 관리항목유형 String? @map("관리항목유형") @db.VarChar(18)
+  Lev        Int?    @map("계정과목Lev")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목 String? @map("상위계정과목") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목내부코드 Int? @map("상위계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소분류 String? @map("소분류") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 중분류 String? @map("중분류") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 대분류 String? @map("대분류") @db.VarChar(10)
+  expen_sel  String? @db.VarChar(4)
+  expen_sel_ String? @map("expen_sel명") @db.VarChar(10)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_acct_1109 {
+  YYYY       String  @db.VarChar(20)
+  SEL_CODE   String  @db.VarChar(10)
+  SITE       String  @db.VarChar(4)
+  ACCT_CLASS String  @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정과목내부코드 Int? @map("계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 전표기표여부 Int? @map("전표기표여부")
+  ACCT       String  @db.VarChar(8)
+  ACCT_NAME  String? @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 차대 String? @map("차대") @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정대분류 String? @map("계정대분류") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 관리항목유형 String? @map("관리항목유형") @db.VarChar(28)
+  Lev        Int?    @map("계정과목Lev")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목 String? @map("상위계정과목") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 상위계정과목내부코드 Int? @map("상위계정과목내부코드")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소분류 String? @map("소분류") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 중분류 String? @map("중분류") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 대분류 String? @map("대분류") @db.VarChar(10)
+  expen_sel  String? @db.VarChar(4)
+  expen_sel_ String? @map("expen_sel명") @db.VarChar(15)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 특이사항 String? @map("특이사항") @db.VarChar(150)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_acct_expen {
+  YYYYMM     String  @db.VarChar(6)
+  SEL_CODE   String  @db.VarChar(6)
+  SITE       String  @db.VarChar(4)
+  ACCT_CLASS String? @db.VarChar(8)
+  DEPT       String? @db.VarChar(10)
+  ACCT       String  @db.VarChar(10)
+  ACCT_NAME  String? @db.VarChar(30)
+  ITEM_NAME  String? @db.VarChar(18)
+  ACCT_AMT   BigInt?
+  EXPEN_SEL  String? @db.VarChar(4)
+  EXPEN_SEL_ String? @map("EXPEN_SEL명") @db.VarChar(30)
+  disp_seq   Int?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_acct_expen_old {
+  YYYYMM     String? @db.VarChar(10)
+  SEL_CODE   String? @db.VarChar(10)
+  SITE       String? @db.VarChar(4)
+  ACCT_CLASS String? @db.VarChar(4)
+  DEPT       String? @db.VarChar(10)
+  ACCT       String? @db.VarChar(50)
+  SUB_NAME   String? @db.VarChar(50)
+  ITEM_NAME  String? @db.VarChar(50)
+  ACCT_AMT   Float?  @db.Real
+  EXPEN_SEL  String? @db.VarChar(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_bom_mast {
+  YYYYMM           String?  @db.VarChar(6)
+  SITE             String?  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 제품명 String? @map("제품명") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 제품번호 String? @map("제품번호") @db.VarChar(26)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목자산분류 String? @map("품목자산분류") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목대분류 String? @map("품목대분류") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목중분류 String? @map("품목중분류") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목소분류 String? @map("품목소분류") @db.VarChar(26)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 공정차수 String? @map("공정차수") @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 공정 String? @map("공정") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 공정품명 String? @map("공정품명") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 공정품번호 String? @map("공정품번호") @db.VarChar(26)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재명 String? @map("자재명") @db.VarChar(37)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재번호 String? @map("자재번호") @db.VarChar(34)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재자산분류 String? @map("자재자산분류") @db.VarChar(14)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재대분류 String? @map("자재대분류") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재중분류 String? @map("자재중분류") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재소분류 String? @map("자재소분류") @db.VarChar(37)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 투입단위 String? @map("투입단위") @db.VarChar(7)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소요량 Decimal? @map("소요량") @db.Decimal
+  InternalLossRate Decimal? @map("내부Loss율") @db.Decimal
+  ExternalLossRate Decimal? @map("외부Loss율") @db.Decimal
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 조립위치 String? @map("조립위치") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 특이사항 String? @map("특이사항") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 최초작성일 DateTime? @map("최초작성일") @db.Date
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 최초작성자 String? @map("최초작성자") @db.VarChar(13)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 최종수정일 DateTime? @map("최종수정일") @db.Date
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 최종수정자 String? @map("최종수정자") @db.VarChar(13)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_caset {
+  YYYYMM         String  @db.VarChar(6)
+  SEL_CODE       String  @db.VarChar(6)
+  SITE           String  @db.VarChar(4)
+  FROM_DEPT_CODE String  @db.VarChar(10)
+  FROM_DEPT_NAME String? @db.VarChar(50)
+  FROM_ACCT_CODE String  @db.VarChar(10)
+  FROM_ACCT_NAME String? @db.VarChar(50)
+  EXPEN_SEL      String? @db.VarChar(4)
+  EXPEN_SEL_NAME String? @db.VarChar(30)
+  ACCT_AMT       BigInt?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cassette_resc {
+  YYYYMM        String    @db.VarChar(10)
+  SEL_CODE      String    @db.VarChar(10)
+  SITE          String    @db.VarChar(4)
+  CST_NO        String    @db.VarChar(30)
+  CST_NAME      String    @db.VarChar(30)
+  CST_CLASS     String    @db.VarChar(50)
+  SPEC          String?   @db.VarChar(30)
+  UNIT          String?   @db.VarChar(10)
+  IN_QTY        Int?
+  IN_DATE       DateTime? @db.Date
+  IN_DEPT       String?   @db.VarChar(10)
+  DEPT_CODE     Int?
+  IN_PERSON     String?   @db.VarChar(10)
+  LAST_DATETIME DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_role {
+  ROLE_ID     String    @db.VarChar(35)
+  ROLE_NAME   String?   @db.VarChar(500)
+  DESCRIPTION String?   @db.VarChar(2000)
+  INIT_DT     DateTime? @db.Timestamp(6)
+  INIT_USER   String?   @db.VarChar(35)
+  MODI_DT     DateTime? @db.Timestamp(6)
+  MODI_USER   String?   @db.VarChar(35)
+  DEL_YN      String?   @db.VarChar(1)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_role_sys_resource {
+  ROLE_ID                   String    @db.VarChar(35)
+  prod_category             String    @db.VarChar(5)
+  UPPER_SYS_RESOURCE_ID     String    @db.VarChar(35)
+  SYS_RESOURCE_ID           String    @db.VarChar(35)
+  SYS_RESOURCE_TYPE_CODE_ID String    @db.VarChar(35)
+  INIT_DT                   DateTime? @db.Timestamp(6)
+  INIT_USER                 String?   @db.VarChar(35)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_role_sys_resource_1106 {
+  ROLE_ID                   String    @db.VarChar(35)
+  prod_category             String    @db.VarChar(5)
+  UPPER_SYS_RESOURCE_ID     String    @db.VarChar(35)
+  SYS_RESOURCE_ID           String    @db.VarChar(35)
+  SYS_RESOURCE_TYPE_CODE_ID String    @db.VarChar(35)
+  INIT_DT                   DateTime? @db.Timestamp(6)
+  INIT_USER                 String?   @db.VarChar(35)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_sys_resource {
+  prod_category             String?   @db.VarChar(5)
+  SYS_RESOURCE_ID           String?   @db.VarChar(35)
+  SYS_RESOURCE_NAME         String?   @db.VarChar(500)
+  UPPER_SYS_RESOURCE_ID     String?   @db.VarChar(35)
+  SYS_RESOURCE_TYPE_CODE_ID String?   @db.VarChar(35)
+  DESCRIPTION               String?   @db.VarChar(2000)
+  SEQ                       Int?
+  URL                       String?   @db.VarChar(1000)
+  INIT_DT                   DateTime? @db.Timestamp(6)
+  INIT_USER                 String?   @db.VarChar(35)
+  MODI_DT                   DateTime? @db.Timestamp(6)
+  MODI_USER                 String?   @db.VarChar(35)
+  DEL_YN                    String?   @db.Char(1)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_user {
+  USER_ID       String    @db.VarChar(35)
+  user_name     String?   @db.VarChar(50)
+  password      String?   @db.VarChar(20)
+  dept_name     String?   @db.VarChar(100)
+  dept_code     String?   @db.VarChar(35)
+  position_name String?   @db.VarChar(14)
+  position_code String?   @db.VarChar(2)
+  UTG           String?   @db.VarChar(1)
+  ITG           String?   @db.VarChar(1)
+  INIT_DT       DateTime? @db.Timestamp(6)
+  INIT_USER     String?   @db.VarChar(35)
+  MODI_DT       DateTime? @db.Timestamp(6)
+  MODI_USER     String?   @db.VarChar(35)
+  DEL_YN        String?   @db.Char(1)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cm_user_role {
+  USER_ID     String    @db.VarChar(35)
+  ROLE_ID     String    @db.VarChar(35)
+  ROLE_NAME   String?   @db.VarChar(500)
+  DESCRIPTION String?   @db.VarChar(2000)
+  INIT_DT     DateTime? @db.Timestamp(6)
+  INIT_USER   String?   @db.VarChar(35)
+  MODI_DT     DateTime? @db.Timestamp(6)
+  MODI_USER   String?   @db.VarChar(35)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_common_code {
+  maj_code    String?   @db.VarChar(3)
+  code        String?   @db.VarChar(10)
+  code_name   String?   @db.VarChar(50)
+  tray_cell   String?   @db.VarChar(3)
+  create_date DateTime? @db.Date
+  use_yn      String?   @db.VarChar(1)
+  sort_order  Int?
+  etc1        String?   @db.VarChar(30)
+  etc2        String?   @db.VarChar(30)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cost {
+  YYYYMM       String   @db.VarChar(10)
+  SEL_CODE     String   @db.VarChar(10)
+  SITE         String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(2)
+  MODEL        String   @db.VarChar(10)
+  expen_sel_   String?  @map("expen_sel명") @db.VarChar(30)
+  ACCT_NAME    String   @db.VarChar(50)
+  ITEM_NAME    String?  @db.VarChar(50)
+  EXPEN_SEL    String   @db.VarChar(6)
+  BOH_QTY      Int?
+  IN_QTY       Int?
+  EOH_QTY      Int?
+  OUT_QTY      Int?
+  LOSS_QTY     Int?
+  BAD_QTY      Int?
+  TRANSFER_QTY Int?
+  UNIT_COST    Decimal? @db.Decimal
+  BOH          Decimal? @db.Decimal
+  IN           Decimal? @db.Decimal
+  EOH          Decimal? @db.Decimal
+  OUT___       Decimal? @map("OUT_단가") @db.Decimal
+  OUT          Decimal? @db.Decimal
+  LOSS         Decimal? @db.Decimal
+  BAD          Decimal? @db.Decimal
+  TRANSFER     Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cst_bom {
+  YYYYMM             String  @db.VarChar(20)
+  SEL_CODE           String  @db.VarChar(10)
+  SITE               String  @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 제품명 String? @map("제품명") @db.VarChar(24)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 제품번호 String @map("제품번호") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 제품규격 String? @map("제품규격") @db.VarChar(10)
+  ProductBomRevision String? @map("제품BOM차수") @db.VarChar(2)
+  BomLevel           String? @map("BOM레벨") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재명 String? @map("자재명") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재번호 String @map("자재번호") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재규격 String? @map("자재규격") @db.VarChar(37)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 투입단위 String? @map("투입단위") @db.VarChar(2)
+  ChildBomRevision   String? @map("하위BOM차수") @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 총소요량 Decimal? @map("총소요량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목자산분류 String? @map("품목자산분류") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목대분류 String? @map("품목대분류") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목중분류 String? @map("품목중분류") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목소분류 String? @map("품목소분류") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 외주배부 Boolean? @map("외주배부")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 비고 String? @map("비고") @db.VarChar(19)
+  Column21           Float?  @db.Real
+  Column22           Float?  @db.Real
+  Column23           String? @db.VarChar(50)
+  Column24           String? @db.VarChar(50)
+  Column25           String? @db.VarChar(50)
+  Column26           String? @db.VarChar(50)
+  Column27           String? @db.VarChar(50)
+  Column28           String? @db.VarChar(50)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cst_rate {
+  YYYYMM   String   @db.VarChar(10)
+  SEL_CODE String   @db.VarChar(10)
+  SITE     String   @db.VarChar(4)
+  UTG      Decimal? @db.Decimal
+  VINA_CST Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_cust_mast {
+  YYYY       String  @db.VarChar(8)
+  SEL_CODE   String  @db.VarChar(8)
+  SITE       String  @db.VarChar(4)
+  CUST_CODE  String  @db.VarChar(4)
+  CUST_DESC  String? @db.VarChar(50)
+  CUST_STATE String? @db.VarChar(10)
+  DOM_SALE   String? @db.VarChar(10)
+  EXP_SALE   String? @db.VarChar(10)
+  DOM_PURC   String? @db.VarChar(10)
+  OVER_PURC  String? @db.VarChar(10)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_dept {
+  YYYYMM         String   @db.VarChar(10)
+  SEL_CODE       String   @db.VarChar(10)
+  SITE           String   @db.VarChar(4)
+  DEPT           String   @db.VarChar(10)
+  DEPT_NAME      String?  @db.VarChar(50)
+  EXPEN_AREA     String?  @db.VarChar(10)
+  RND_YN         String?  @db.VarChar(1)
+  COST_DIST      String   @db.VarChar(50)
+  COST_DIST_RATE Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_dept_1127 {
+  YYYYMM         String   @db.VarChar(10)
+  SEL_CODE       String   @db.VarChar(10)
+  SITE           String   @db.VarChar(4)
+  DEPT           String   @db.VarChar(10)
+  DEPT_NAME      String?  @db.VarChar(50)
+  EXPEN_AREA     String?  @db.VarChar(10)
+  RND_YN         String?  @db.VarChar(1)
+  COST_DIST      String   @db.VarChar(50)
+  COST_DIST_RATE Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_dept_cost {
+  yyyymm   String @db.VarChar(6)
+  sel_code String @db.VarChar(6)
+  site     String @db.VarChar(4)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터 String @map("코스트센터") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터분류 String? @map("코스트센터분류") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터유형 String? @map("코스트센터유형") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정코드 String @map("계정코드") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정과목 String? @map("계정과목") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 비용구분 String? @map("비용구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 차변금액 BigInt? @map("차변금액")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 대변금액 BigInt? @map("대변금액")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_dept_cost_1124 {
+  yyyymm   String @db.VarChar(6)
+  sel_code String @db.VarChar(6)
+  site     String @db.VarChar(4)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터 String @map("코스트센터") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터분류 String? @map("코스트센터분류") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 코스트센터유형 String? @map("코스트센터유형") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정코드 String @map("계정코드") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계정과목 String? @map("계정과목") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 비용구분 String? @map("비용구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 차변금액 BigInt? @map("차변금액")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 대변금액 BigInt? @map("대변금액")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_dept_old {
+  YYYYMM         String   @db.VarChar(10)
+  SEL_CODE       String   @db.VarChar(10)
+  SITE           String   @db.VarChar(4)
+  DEPT           String   @db.VarChar(10)
+  DEPT_NAME      String?  @db.VarChar(50)
+  EXPEN_AREA     String?  @db.VarChar(10)
+  RND_YN         String?  @db.VarChar(1)
+  COST_DIST      String?  @db.VarChar(50)
+  COST_DIST_RATE Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_expen_matl {
+  YYYYMM       String   @db.VarChar(10)
+  sel_code     String   @db.VarChar(6)
+  SITE         String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  model        String   @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 면적 Decimal? @map("면적") @db.Decimal
+  dist_rate    Float?
+  dist_in      Float?
+  SUB_NAME     String?  @db.VarChar(30)
+  ITEM_NAME    String?  @db.VarChar(18)
+  EXPEN_SEL    String   @db.VarChar(4)
+  EXPEN_SEL_   String?  @map("EXPEN_SEL명") @db.VarChar(30)
+  adj_qty      Int?
+  boh_qty      Float?
+  in_qty       Int?
+  eoh_qty      Float?
+  out_qty      Int?
+  loss_qty     Int?
+  bad_qty      Int?
+  transfer_qty Int?
+  unit_cost    Float?
+  boh          Float?
+  in           Float?
+  disp_seq     Int?
+  in_ori       Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_expen_matl_old {
+  YYYYMM       String   @db.VarChar(10)
+  SEL_CODE     String   @db.VarChar(10)
+  SITE         String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(2)
+  MODEL        String   @db.VarChar(10)
+  DIST_RATE    Decimal? @db.Decimal
+  ACCT_NAME    String?  @db.VarChar(30)
+  SUB_NAME     String?  @db.VarChar(50)
+  ITEM_NAME    String?  @db.VarChar(50)
+  EXPEN_SEL    String   @db.VarChar(6)
+  BOH_QTY      Int?
+  IN_QTY       Int?
+  EOH_QTY      Int?
+  OUT_QTY      Int?
+  LOSS_QTY     Int?
+  BAD_QTY      Int?
+  TRANSFER_QTY Int?
+  UNIT_COST    Float?
+  BOH          Decimal? @db.Decimal
+  IN           Decimal? @db.Decimal
+  EOH          Decimal? @db.Decimal
+  OUT___       Float?   @map("OUT_단가")
+  OUT          Decimal? @db.Decimal
+  OUT1         Decimal? @db.Decimal
+  LOSS         Decimal? @db.Decimal
+  BAD          Decimal? @db.Decimal
+  TRANSFER     Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_expen_sel {
+  YYYY       String  @db.VarChar(6)
+  SEL_CODE   String  @db.VarChar(10)
+  SITE       String  @db.VarChar(5)
+  EXPEN_SEL  String  @db.VarChar(5)
+  EXPEN_SEL_ String? @map("EXPEN_SEL명") @db.VarChar(30)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_invoice_raw {
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 선택 Boolean? @map("선택")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고처리 Boolean? @map("출고처리")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사업단위 String? @map("사업단위") @db.VarChar(5)
+  Invoice_No   String? @db.VarChar(17)
+  Invoice____  String? @map("Invoice관리번호") @db.VarChar(15)
+  Invoice_Date String? @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수출구분 String? @map("수출구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고구분 String? @map("출고구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 가격조건 String? @map("가격조건") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부서 String? @map("부서") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 담당자 String? @map("담당자") @db.VarChar(13)
+  Buyer        String? @db.VarChar(29)
+  Agent        String? @db.VarChar(29)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 통화 String? @map("통화") @db.VarChar(3)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환율 Decimal? @map("환율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품명 String? @map("품명") @db.VarChar(24)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품번 String? @map("품번") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 규격 String? @map("규격") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단위 String? @map("단위") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매기준가 Decimal? @map("판매기준가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단가 Decimal? @map("판매단가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량 BigInt? @map("수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액 Decimal? @map("판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액 Decimal? @map("원화판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 창고 String? @map("창고") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납기일 String? @map("납기일") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 기타출고구분 String? @map("기타출고구분") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 진행상태 String? @map("진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출진행상태 String? @map("매출진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출대상 Boolean? @map("매출대상")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출금액계 Decimal? @map("매출금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 미매출금액 Decimal? @map("미매출금액") @db.Decimal
+  Remarks      String? @db.VarChar(100)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 특이사항 String? @map("특이사항") @db.VarChar(100)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_invoice_resc {
+  yyyymm       String? @db.VarChar(6)
+  actual       String? @db.VarChar(10)
+  site         String? @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 선택 Boolean? @map("선택")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고처리 Boolean? @map("출고처리")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사업단위 String? @map("사업단위") @db.VarChar(5)
+  Invoice_No   String? @db.VarChar(17)
+  Invoice____  String? @map("Invoice관리번호") @db.VarChar(15)
+  Invoice_Date String? @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수출구분 String? @map("수출구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고구분 String? @map("출고구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 가격조건 String? @map("가격조건") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부서 String? @map("부서") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 담당자 String? @map("담당자") @db.VarChar(13)
+  Buyer        String? @db.VarChar(29)
+  Agent        String? @db.VarChar(29)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 통화 String? @map("통화") @db.VarChar(3)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환율 Decimal? @map("환율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품명 String? @map("품명") @db.VarChar(24)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품번 String? @map("품번") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 규격 String? @map("규격") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단위 String? @map("단위") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매기준가 Decimal? @map("판매기준가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단가 Decimal? @map("판매단가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량 BigInt? @map("수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액 Decimal? @map("판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액 Decimal? @map("원화판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 창고 String? @map("창고") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납기일 String? @map("납기일") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 기타출고구분 String? @map("기타출고구분") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 진행상태 String? @map("진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출진행상태 String? @map("매출진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출대상 Boolean? @map("매출대상")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출금액계 Decimal? @map("매출금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 미매출금액 Decimal? @map("미매출금액") @db.Decimal
+  Remarks      String? @db.VarChar(100)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 특이사항 String? @map("특이사항") @db.VarChar(100)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_maj_code {
+  Maj_code_name String? @db.VarChar(20)
+  maj_code      String? @db.VarChar(3)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_mat_amt {
+  yyyymm        String? @db.VarChar(6)
+  sel_code      String? @db.VarChar(6)
+  site          String? @db.VarChar(4)
+  mat_code      String? @db.VarChar(24)
+  in_qty        Float?
+  mat_unit_cost Float?
+  in_amt        Float?
+  cost_gubun    String? @db.VarChar(15)
+  MAT_GUBUN     String? @db.VarChar(10)
+  mat_class     String? @db.VarChar(10)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재대분류 String? @map("자재대분류") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소요량 Decimal? @map("소요량") @db.Decimal
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_mat_amt_bak1118 {
+  yyyymm        String? @db.VarChar(6)
+  sel_code      String? @db.VarChar(6)
+  site          String? @db.VarChar(4)
+  mat_code      String? @db.VarChar(24)
+  in_qty        Float?
+  mat_unit_cost Float?
+  in_amt        Float?
+  cost_gubun    String? @db.VarChar(15)
+  mat_class     String? @db.VarChar(10)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재대분류 String? @map("자재대분류") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소요량 Decimal? @map("소요량") @db.Decimal
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_mat_cost {
+  yyyymm    String  @db.VarChar(6)
+  sel_code  String  @db.VarChar(10)
+  site      String  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재번호 String? @map("자재번호") @db.VarChar(34)
+  mat_class String? @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재대분류 String? @map("자재대분류") @db.VarChar(17)
+  in_amt    Float?
+  in_qty    Int?
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환산량 Decimal? @map("환산량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소요량 Decimal? @map("소요량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부율 Decimal? @map("배부율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부금액 Float? @map("배부금액")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사용량 Decimal? @map("사용량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부방식 String @map("배부방식") @db.VarChar(4)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_mat_cost_bak1201 {
+  yyyymm    String  @db.VarChar(6)
+  sel_code  String  @db.VarChar(10)
+  site      String  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재번호 String? @map("자재번호") @db.VarChar(34)
+  mat_class String? @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 자재대분류 String? @map("자재대분류") @db.VarChar(17)
+  in_amt    Float?
+  in_qty    Int?
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환산량 Int? @map("환산량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 소요량 Decimal? @map("소요량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부율 Decimal? @map("배부율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부금액 Decimal? @map("배부금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사용량 Decimal? @map("사용량") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배부방식 String? @map("배부방식") @db.VarChar(10)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_material_mast {
+  YYYY      String  @db.VarChar(10)
+  SEL_CODE  String  @db.VarChar(10)
+  SITE      String  @db.VarChar(4)
+  MAT_CODE  String  @db.VarChar(24)
+  MAT_DESC  String? @db.VarChar(50)
+  EXPEN_SEL String? @db.VarChar(10)
+  SIZE      String? @db.VarChar(40)
+  UNIT      String? @db.VarChar(10)
+  MAT_CLASS String? @db.VarChar(10)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_material_resc {
+  YYYYMM       String   @db.VarChar(6)
+  SEL_CODE     String   @db.VarChar(6)
+  SITE         String   @db.VarChar(4)
+  MAT_CODE     String   @db.VarChar(24)
+  MAT_DESC     String?  @db.VarChar(50)
+  SIZE         String?  @db.VarChar(40)
+  IN_QTY       Float?   @db.Real
+  UNIT_COST    Float?   @db.Real
+  IN_AMT       Decimal? @db.Decimal
+  COST_GUBUN   String?  @db.VarChar(15)
+  MAT_GUBUN    String?  @db.VarChar(10)
+  MAT_CLASS    String?  @db.VarChar(10)
+  MODEL        String   @db.VarChar(15)
+  MODEL_N_TYPE String   @db.VarChar(15)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_material_resc_bak1118 {
+  YYYYMM       String? @db.VarChar(6)
+  SEL_CODE     String? @db.VarChar(6)
+  SITE         String? @db.VarChar(4)
+  MAT_CODE     String? @db.VarChar(24)
+  MAT_DESC     String? @db.VarChar(50)
+  SIZE         String? @db.VarChar(40)
+  IN_QTY       Float?  @db.Real
+  UNIT_COST    Float?  @db.Real
+  IN_AMT       Float?  @db.Real
+  COST_GUBUN   String? @db.VarChar(15)
+  MAT_CLASS    String? @db.VarChar(10)
+  MODEL        String? @db.VarChar(15)
+  MODEL_N_TYPE String? @db.VarChar(15)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_mfg_exp {
+  YYYYMM         String  @db.VarChar(6)
+  SEL_CODE       String  @db.VarChar(6)
+  SITE           String  @db.VarChar(4)
+  FROM_DEPT_CODE String  @db.VarChar(10)
+  FROM_DEPT_NAME String? @db.VarChar(50)
+  FROM_ACCT_CODE String  @db.VarChar(10)
+  FROM_ACCT_NAME String? @db.VarChar(50)
+  EXPEN_SEL      String? @db.VarChar(4)
+  EXPEN_SEL_NAME String? @db.VarChar(30)
+  ACCT_AMT       BigInt?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_model_mast {
+  YYYYMM      String   @db.VarChar(10)
+  SEL_CODE    String   @db.VarChar(10)
+  SITE        String   @db.VarChar(4)
+  MODEL       String   @db.VarChar(10)
+  SPEC        String   @db.VarChar(76)
+  INCH        Float?   @db.Real
+  GLASS_THICK Float?   @db.Real
+  SHEET       Float?   @db.Real
+  BLOCK       Float?   @db.Real
+  CELL        Float?   @db.Real
+  RUN_SIZE    Float?   @db.Real
+  X           Float?   @db.Real
+  Y           Float?   @db.Real
+  XY          Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_okw_boh_test {
+  DOI_YYYYMM String   @db.VarChar(10)
+  DOI_SITE   String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(2)
+  model      String   @db.VarChar(50)
+  model_type String   @db.VarChar(50)
+  stock      String   @db.VarChar(10)
+  boh        Int?
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단가 Decimal? @map("단가") @db.Decimal
+  boh_amt    Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_okw_stco_amt_test_new {
+  DOI_YYYYMM String   @db.VarChar(10)
+  DOI_SITE   String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(2)
+  model      String   @db.VarChar(50)
+  model_type String   @db.VarChar(50)
+  BOH        Int?
+  INPUT      Int?
+  OUT        Int?
+  EOH        Int?
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단가 Decimal? @map("단가") @db.Decimal
+  BOH_AMT    Decimal? @db.Decimal
+  INPUT_AMT  Decimal? @db.Decimal
+  OUT_AMT    Decimal? @db.Decimal
+  EOH_AMT    Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_okw_test {
+  DOI_YYYYMM    String   @db.VarChar(10)
+  DOI_SITE      String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(2)
+  model         String   @db.VarChar(10)
+  dist_rate     Decimal? @db.Decimal
+  doi_acct_name String?  @db.VarChar(30)
+  DOI_SUB_NAME  String?  @db.VarChar(50)
+  DOI_ITEM_NAME String?  @db.VarChar(50)
+  DOI_EXPEN_SEL String   @db.VarChar(6)
+  boh_qty       Int?
+  in_qty        Int?
+  eoh_qty       Int?
+  out_qty       Int?
+  loss_qty      Int?
+  bad_qty       Int?
+  transfer_qty  Int?
+  unit_cost     Float?
+  boh           Decimal? @db.Decimal
+  in            Decimal? @db.Decimal
+  eoh           Decimal? @db.Decimal
+  out___        Float?   @map("out_단가")
+  out           Decimal? @db.Decimal
+  out1          Decimal? @db.Decimal
+  loss          Decimal? @db.Decimal
+  bad           Decimal? @db.Decimal
+  transfer      Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_prod_in_menu {
+  prod_category String    @db.VarChar(5)
+  process_id    String    @db.VarChar(5)
+  revision      Int
+  create_date   DateTime? @db.Date
+  create_user   String?   @db.VarChar(13)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_prod_lotrun {
+  YYYYMM                String  @db.VarChar(6)
+  SITE                  String  @db.VarChar(2)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  ord                   String  @map("구분_ord") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우코드 String @map("도우코드") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 작업구분 String? @map("작업구분") @db.VarChar(2)
+  org____               String? @map("org작업구분") @db.VarChar(10)
+  lotrun_no             String  @db.VarChar(30)
+  model                 String  @db.VarChar(30)
+  Inch                  String  @db.VarChar(30)
+  Site_N                String  @db.VarChar(50)
+  BOH_MONTH             Int?
+  IN_MONTH              Int?
+  BONUS_MONTH           Int
+  EOH_MONTH             Int?
+  OUT_MONTH             Int?
+  LOSS_MONTH            Int?
+  NG_MONTH              Int?
+  MONTH                 Int?    @map("수율제외_MONTH")
+  REWORK___MONTH        Int?    @map("REWORK진행_MONTH")
+  SHIPPING_PLAN_MONTH   Int
+  SHIPPING_ACTUAL_MONTH Int
+  material_loss         Int
+  recall_loss           Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_prod_subul {
+  YYYYMM                String  @db.VarChar(6)
+  SEL_CODE              String  @db.VarChar(10)
+  DW_SITE               String  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  ord                   String  @map("구분_ord") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우코드 String @map("도우코드") @db.VarChar(10)
+  MODEL_N_TYPE          String  @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 작업구분 String? @map("작업구분") @db.VarChar(2)
+  org____               String? @map("org작업구분") @db.VarChar(10)
+  model                 String  @db.VarChar(30)
+  Inch                  String  @db.VarChar(30)
+  Site                  String  @db.VarChar(50)
+  BOH_MONTH             Float?
+  IN_MONTH              Int?
+  BONUS_MONTH           Int
+  EOH_MONTH             Float?
+  OUT_MONTH             Int?
+  LOSS_MONTH            Int?
+  NG_MONTH              Int?
+  MONTH                 Int?    @map("수율제외_MONTH")
+  REWORK___MONTH        Int?    @map("REWORK진행_MONTH")
+  SHIPPING_PLAN_MONTH   Int
+  SHIPPING_ACTUAL_MONTH Int
+  material_loss         Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_prod_subul_202510 {
+  YYYYMM                String  @db.VarChar(6)
+  SEL_CODE              String  @db.VarChar(10)
+  DW_SITE               String  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  ord                   String  @map("구분_ord") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우코드 String @map("도우코드") @db.VarChar(10)
+  MODEL_N_TYPE          String  @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 작업구분 String? @map("작업구분") @db.VarChar(2)
+  org____               String? @map("org작업구분") @db.VarChar(10)
+  model                 String  @db.VarChar(30)
+  Inch                  String  @db.VarChar(30)
+  Site                  String  @db.VarChar(50)
+  BOH_MONTH             Float?
+  IN_MONTH              Int?
+  BONUS_MONTH           Int
+  EOH_MONTH             Float?
+  OUT_MONTH             Int?
+  LOSS_MONTH            Int?
+  NG_MONTH              Int?
+  MONTH                 Int?    @map("수율제외_MONTH")
+  REWORK___MONTH        Int?    @map("REWORK진행_MONTH")
+  SHIPPING_PLAN_MONTH   Int
+  SHIPPING_ACTUAL_MONTH Int
+  material_loss         Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_prod_subul_old {
+  YYYYMM                String  @db.VarChar(8)
+  SEL_CODE              String  @db.VarChar(8)
+  SITE                  String  @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String? @map("구분") @db.VarChar(2)
+  ORD                   String? @map("구분_ORD") @db.VarChar(2)
+  MODEL_N_TYPE          String  @db.VarChar(12)
+  MODEL                 String  @db.VarChar(10)
+  WORKTYPE              String  @db.VarChar(2)
+  MODEL_NAME            String? @db.VarChar(20)
+  INCH                  String? @db.VarChar(8)
+  SALE_SITE             String? @db.VarChar(18)
+  BOH_MONTH             Float?  @db.Real
+  IN_MONTH              Float?  @db.Real
+  BONUS_MONTH           Float?  @db.Real
+  EOH_MONTH             Float?  @db.Real
+  OUT_MONTH             Float?  @db.Real
+  LOSS_MONTH            Float?  @db.Real
+  NG_MONTH              Float?  @db.Real
+  MONTH                 Float?  @map("수율제외_MONTH") @db.Real
+  REWORK___MONTH        Float?  @map("REWORK진행_MONTH") @db.Real
+  SHIPPING_PLAN_MONTH   Float?  @db.Real
+  SHIPPING_ACTUAL_MONTH Float?  @db.Real
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_rma_inout {
+  YYYYMM   String? @db.VarChar(10)
+  SEL_CODE String  @db.VarChar(10)
+  SITE     String  @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 모델명 String @map("모델명") @db.VarChar(10)
+  RMA_IN   Int?
+  RMA_OUT  Int?
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 생성자 String? @map("생성자") @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 생성시각 DateTime? @map("생성시각") @db.Timestamp(6)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_rnd {
+  YYYYMM         String  @db.VarChar(6)
+  SEL_CODE       String  @db.VarChar(6)
+  SITE           String  @db.VarChar(4)
+  FROM_DEPT_CODE String  @db.VarChar(10)
+  FROM_DEPT_NAME String? @db.VarChar(50)
+  FROM_ACCT_CODE String  @db.VarChar(10)
+  FROM_ACCT_NAME String? @db.VarChar(50)
+  EXPEN_SEL      String? @db.VarChar(4)
+  EXPEN_SEL_NAME String? @db.VarChar(30)
+  ACCT_AMT       BigInt?
+  COST_TYPE      String? @db.VarChar(20)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_rnd_subul {
+  YYYYMM                String  @db.VarChar(6)
+  SEL_CODE              String  @db.VarChar(10)
+  DW_SITE               String  @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  ord                   String  @map("구분_ord") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우코드 String @map("도우코드") @db.VarChar(10)
+  MODEL_N_TYPE          String  @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 도우모델 String? @map("도우모델") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 작업구분 String? @map("작업구분") @db.VarChar(2)
+  org____               String? @map("org작업구분") @db.VarChar(10)
+  model                 String  @db.VarChar(30)
+  Inch                  String  @db.VarChar(30)
+  Site                  String  @db.VarChar(50)
+  BOH_MONTH             Float?
+  IN_MONTH              Int?
+  BONUS_MONTH           Int
+  EOH_MONTH             Float?
+  OUT_MONTH             Int?
+  LOSS_MONTH            Int?
+  NG_MONTH              Int?
+  MONTH                 Int?    @map("수율제외_MONTH")
+  REWORK___MONTH        Int?    @map("REWORK진행_MONTH")
+  SHIPPING_PLAN_MONTH   Int
+  SHIPPING_ACTUAL_MONTH Int
+  material_loss         Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_sale_raw {
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 선택 String? @map("선택") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고처리 String? @map("출고처리") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사업단위 String? @map("사업단위") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래명세서번호 String? @map("거래명세서번호") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래명세서일 String? @map("거래명세서일") @db.VarChar(10)
+  Local__ String? @map("Local구분") @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고구분 String? @map("출고구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부서 String? @map("부서") @db.VarChar(14)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 담당자 String? @map("담당자") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 청구처 String? @map("청구처") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래처 String? @map("거래처") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 유통구조 String? @map("유통구조") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래처번호 String? @map("거래처번호") @db.VarChar(11)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 중개인 String? @map("중개인") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납품장소 String? @map("납품장소") @db.VarChar(13)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 인도조건 String? @map("인도조건") @db.VarChar(14)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매후보관 String? @map("판매후보관") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 위탁 String? @map("위탁") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납품거래처 String? @map("납품거래처") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납기일 String? @map("납기일") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품명 String? @map("품명") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품번 String? @map("품번") @db.VarChar(6)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 규격 String? @map("규격") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단위 String? @map("판매단위") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매기준가 Decimal? @map("판매기준가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량 Int? @map("수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부가세포함 String? @map("부가세포함") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 통화 String? @map("통화") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환율 Decimal? @map("환율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단가 Decimal? @map("판매단가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액 Decimal? @map("판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부가세액 Decimal? @map("부가세액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액계 Decimal? @map("판매금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액 Decimal? @map("원화판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화부가세액 Decimal? @map("원화부가세액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액계 Decimal? @map("원화판매금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 창고 String? @map("창고") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 보관위치 String? @map("보관위치") @db.VarChar(15)
+  Lot_No  String? @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 세금계산서_진행상태 String? @map("세금계산서_진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배송상태 String? @map("배송상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목특이사항 String? @map("품목특이사항") @db.VarChar(145)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출시점 String? @map("매출시점") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 진행조회 String? @map("진행조회") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천조회 String? @map("원천조회") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천관리번호 String? @map("원천관리번호") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천번호 String? @map("원천번호") @db.VarChar(10)
+  PO_No   String? @db.VarChar(10)
+
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 반품 String? @map("반품") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출수량 Int? @map("매출수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출금액계 Decimal? @map("매출금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 미매출금액 Decimal? @map("미매출금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 세금계산서금액계 Decimal? @map("세금계산서금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계산서미발행액 Decimal? @map("계산서미발행액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계산서미발행수량 Int? @map("계산서미발행수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 기타출고구분 String? @map("기타출고구분") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목자산분류 String? @map("품목자산분류") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단가소급여부 String? @map("단가소급여부") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량(단가소급) Int? @map("수량(단가소급)")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 유상사급여부 String? @map("유상사급여부") @db.VarChar(1)
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_sale_resc {
+  YYYYMM   String  @db.VarChar(10)
+  SEL_CODE String  @db.VarChar(10)
+  SITE     String  @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 선택 String? @map("선택") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고처리 String? @map("출고처리") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 사업단위 String? @map("사업단위") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래명세서번호 String @map("거래명세서번호") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래명세서일 String? @map("거래명세서일") @db.VarChar(10)
+  Local__  String? @map("Local구분") @db.VarChar(20)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 출고구분 String? @map("출고구분") @db.VarChar(8)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부서 String? @map("부서") @db.VarChar(14)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 담당자 String? @map("담당자") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 청구처 String? @map("청구처") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래처 String? @map("거래처") @db.VarChar(18)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 유통구조 String? @map("유통구조") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래처번호 String? @map("거래처번호") @db.VarChar(11)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 중개인 String? @map("중개인") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납품장소 String? @map("납품장소") @db.VarChar(13)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 인도조건 String? @map("인도조건") @db.VarChar(14)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매후보관 String? @map("판매후보관") @db.VarChar(15)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 위탁 String? @map("위탁") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납품거래처 String? @map("납품거래처") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 납기일 String? @map("납기일") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품명 String? @map("품명") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품번 String? @map("품번") @db.VarChar(6)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 규격 String? @map("규격") @db.VarChar(25)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단위 String? @map("판매단위") @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매기준가 Decimal? @map("판매기준가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량 Int? @map("수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부가세포함 String? @map("부가세포함") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 통화 String? @map("통화") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 환율 Decimal? @map("환율") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매단가 Decimal? @map("판매단가") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액 Decimal? @map("판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 부가세액 Decimal? @map("부가세액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 판매금액계 Decimal? @map("판매금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액 Decimal? @map("원화판매금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화부가세액 Decimal? @map("원화부가세액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원화판매금액계 Decimal? @map("원화판매금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 창고 String? @map("창고") @db.VarChar(16)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 보관위치 String? @map("보관위치") @db.VarChar(15)
+  Lot_No   String? @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 세금계산서_진행상태 String? @map("세금계산서_진행상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 배송상태 String? @map("배송상태") @db.VarChar(5)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목특이사항 String? @map("품목특이사항") @db.VarChar(145)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출시점 String? @map("매출시점") @db.VarChar(17)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 진행조회 String? @map("진행조회") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천조회 String? @map("원천조회") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천관리번호 String? @map("원천관리번호") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 원천번호 String? @map("원천번호") @db.VarChar(10)
+  PO_No    String? @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 반품 String? @map("반품") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출수량 Int? @map("매출수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 매출금액계 Decimal? @map("매출금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 미매출금액 Decimal? @map("미매출금액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 세금계산서금액계 Decimal? @map("세금계산서금액계") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계산서미발행액 Decimal? @map("계산서미발행액") @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 계산서미발행수량 Int? @map("계산서미발행수량")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 기타출고구분 String? @map("기타출고구분") @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 품목자산분류 String? @map("품목자산분류") @db.VarChar(12)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 단가소급여부 String? @map("단가소급여부") @db.VarChar(1)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 수량(단가소급) Int? @map("수량(단가소급)")
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 유상사급여부 String? @map("유상사급여부") @db.VarChar(1)
+  SEQ_NO   BigInt
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_sga {
+  YYYYMM         String  @db.VarChar(6)
+  SEL_CODE       String  @db.VarChar(6)
+  SITE           String  @db.VarChar(4)
+  FROM_DEPT_CODE String  @db.VarChar(10)
+  FROM_DEPT_NAME String? @db.VarChar(50)
+  FROM_ACCT_CODE String  @db.VarChar(10)
+  FROM_ACCT_NAME String? @db.VarChar(50)
+  EXPEN_SEL      String? @db.VarChar(4)
+  EXPEN_SEL_NAME String? @db.VarChar(30)
+  ACCT_AMT       BigInt?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_slco {
+  YYYYMM     String   @db.VarChar(10)
+  SITE       String   @db.VarChar(4)
+  SEL_CODE   String   @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  MODEL      String   @db.VarChar(50)
+  expen_sel  String   @db.VarChar(6)
+  expen_sel_ String?  @map("expen_sel명") @db.VarChar(30)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 거래처 String @map("거래처") @db.VarChar(28)
+  OUT_qty    Decimal? @db.Decimal
+  OUT_AMT    Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_smce_cost {
+  YYYYMM       String   @db.VarChar(6)
+  sel_code     String   @db.VarChar(6)
+  SITE         String   @db.VarChar(4)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  model        String?  @db.VarChar(15)
+  EXPEN_SEL_   String?  @map("EXPEN_SEL명") @db.VarChar(30)
+  SUB_NAME     String?  @db.VarChar(30)
+  ITEM_NAME    String?  @db.VarChar(18)
+  EXPEN_SEL    String?  @db.VarChar(4)
+  TOT_ACCT     Int?
+  SALE_AMT     Decimal? @db.Decimal
+  TOT_AMT      Decimal? @db.Decimal
+  TOT_SMCE     Int?
+  DIST_RATE    Decimal? @db.Decimal
+  DIST_AMT     Decimal? @db.Decimal
+  DIST_AMT_ORI Float?   @db.Real
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_stco {
+  YYYYMM     String   @db.VarChar(10)
+  SITE       String   @db.VarChar(4)
+  SEL_CODE   String   @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  MODEL      String   @db.VarChar(50)
+  expen_sel  String   @db.VarChar(6)
+  expen_sel_ String?  @map("expen_sel명") @db.VarChar(30)
+  BOH        Int?
+  INPUT      Int?
+  OUT        Int?
+  EOH        Int?
+  BOH_AMT    Decimal? @db.Decimal
+  IN_AMT     Decimal? @db.Decimal
+  EOH_AMT    Decimal? @db.Decimal
+  OUT_AMT    Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_stock {
+  YYYYMM       String @db.VarChar(10)
+  SEL_CODE     String @db.VarChar(10)
+  SITE         String @db.VarChar(4)
+  MODEL        String @db.VarChar(50)
+  MODEL_TYPE   String @db.VarChar(50)
+  STOCK        String @db.VarChar(10)
+  BOH          Int?
+  INPUT        Int?
+  OUT          Int?
+  EOH          Int?
+  INPUT_ETC    Int?
+  INPUT_MOVING Int?
+  INPUT_PROD   Int?
+  OUT_SHEET    Int?
+  OUT_RETURN   Int?
+  OUT_INVOICE  Int?
+  OUT_ETC      Int?
+  OUT_MOVING   Int?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_stock_boh {
+  YYYYMM     String   @db.VarChar(10)
+  SITE       String   @db.VarChar(4)
+  sel_code   String   @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  model      String   @db.VarChar(50)
+  model_type String   @db.VarChar(50)
+  expen_sel  String?  @db.VarChar(6)
+  expen_sel_ String?  @map("expen_sel명") @db.VarChar(30)
+  stock      String   @db.VarChar(10)
+  boh_amt    Decimal? @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 조건 String @map("조건") @db.VarChar(7)
+  inch       Float?   @db.Real
+  boh        Int?
+  out___     Decimal? @map("out_단가") @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_stock_boh_old_1110 {
+  YYYYMM     String   @db.VarChar(10)
+  SITE       String   @db.VarChar(4)
+  sel_code   String   @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  model      String   @db.VarChar(50)
+  model_type String   @db.VarChar(50)
+  stock      String   @db.VarChar(10)
+  boh_amt    Decimal? @db.Decimal
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 조건 String @map("조건") @db.VarChar(7)
+  inch       Float?   @db.Real
+  boh        Int?
+  out___     Decimal? @map("out_단가") @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_stock_cost_old {
+  YYYYMM   String   @db.VarChar(10)
+  SITE     String   @db.VarChar(4)
+  SEL_CODE String   @db.VarChar(10)
+  /// This field was commented out because of an invalid name. Please provide a valid one that matches [a-zA-Z][a-zA-Z0-9_]*
+  // 구분 String @map("구분") @db.VarChar(4)
+  MODEL    String   @db.VarChar(50)
+  BOH      Int?
+  INPUT    Int?
+  OUT      Int?
+  EOH      Int?
+  BOH_AMT  Decimal? @db.Decimal
+  IN_AMT   Decimal? @db.Decimal
+  EOH_AMT  Decimal? @db.Decimal
+  OUT_AMT  Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model doi_vncst_rate {
+  YYYYMM   String   @db.VarChar(10)
+  SEL_CODE String   @db.VarChar(10)
+  SITE     String   @db.VarChar(4)
+  CST_NO   String   @db.VarChar(10)
+  RATE     Decimal? @db.Decimal
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_cost_monthly_dept_cost {
+  base_ym         String    @db.VarChar(6)
+  dept_code       String    @db.VarChar(20)
+  account_code    String    @db.VarChar(20)
+  current_amount  Decimal?  @db.Decimal
+  previous_amount Decimal?  @db.Decimal
+  variance_amount Decimal?  @db.Decimal
+  variance_rate   Decimal?  @db.Decimal
+  reg_dt          DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_demo_employee {
+  emp_id       Int
+  dept_name    String    @db.VarChar(50)
+  dept_name_en String?   @db.VarChar(50)
+  emp_name     String    @db.VarChar(50)
+  position     String?   @db.VarChar(20)
+  hire_date    DateTime? @db.Date
+  salary       Int?
+  created_at   DateTime? @db.Timestamp(6)
+  updated_at   DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_demo_orders {
+  order_id     Int
+  order_no     String    @db.VarChar(20)
+  customer_id  String    @db.VarChar(20)
+  country      String?   @db.VarChar(50)
+  company_name String?   @db.VarChar(100)
+  employee_id  String?   @db.VarChar(20)
+  order_date   DateTime? @db.Date
+  phone        String?   @db.VarChar(20)
+  created_at   DateTime? @db.Timestamp(6)
+  updated_at   DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_demo_sales {
+  sales_id         Int
+  year             String    @db.VarChar(10)
+  quarter          String    @db.VarChar(10)
+  month            String    @db.VarChar(10)
+  region           String    @db.VarChar(50)
+  category         String?   @db.VarChar(50)
+  target_amount    BigInt?
+  actual_amount    BigInt?
+  achievement_rate Decimal?  @db.Decimal
+  created_at       DateTime? @db.Timestamp(6)
+  updated_at       DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_prd_result {
+  result_id      String    @db.VarChar(20)
+  prd_date       DateTime  @db.Date
+  factory_cd     String    @db.VarChar(10)
+  line_cd        String    @db.VarChar(10)
+  shift_cd       String?   @db.VarChar(2)
+  item_cd        String    @db.VarChar(20)
+  item_nm        String?   @db.VarChar(100)
+  spec           String?   @db.VarChar(100)
+  unit           String?   @db.VarChar(10)
+  plan_qty       Decimal?  @db.Decimal
+  prod_qty       Decimal?  @db.Decimal
+  good_qty       Decimal?  @db.Decimal
+  defect_qty     Decimal?  @db.Decimal
+  defect_type    String?   @db.VarChar(50)
+  defect_reason  String?   @db.VarChar(200)
+  start_time     DateTime? @db.Timestamp(6)
+  end_time       DateTime? @db.Timestamp(6)
+  work_time      Int?
+  stop_time      Int?
+  worker_id      String?   @db.VarChar(20)
+  worker_nm      String?   @db.VarChar(50)
+  team_cd        String?   @db.VarChar(10)
+  inspect_yn     String?   @db.Char(1)
+  inspect_result String?   @db.VarChar(10)
+  inspector_id   String?   @db.VarChar(20)
+  remark         String?   @db.VarChar(500)
+  status         String?   @db.VarChar(10)
+  confirm_yn     String?   @db.Char(1)
+  reg_id         String?   @db.VarChar(20)
+  reg_dt         DateTime? @db.Timestamp(6)
+  upd_id         String?   @db.VarChar(20)
+  upd_dt         DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model new_doi_sys_menu {
+  menu_id    String    @db.VarChar(20)
+  up_menu_id String?   @db.VarChar(20)
+  menu_nm    String    @db.VarChar(100)
+  menu_url   String?   @db.VarChar(200)
+  sort_no    Int?
+  use_yn     String?   @db.Char(1)
+  icon_cls   String?   @db.VarChar(50)
+  reg_dt     DateTime? @db.Timestamp(6)
+
+  @@ignore
+}
+
+model post {
+  id        Int      @id(map: "Post_pkey") @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([name], map: "Post_name_idx")
+}
+
+model product {
+  id          Int      @id(map: "Product_pkey") @default(autoincrement())
+  productCode String   @unique(map: "Product_productCode_key") @db.VarChar(50)
+  productName String   @db.VarChar(200)
+  category    String   @db.VarChar(100)
+  price       Decimal  @db.Decimal(18, 2)
+  stock       Int      @default(0)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  createdBy   String?  @db.VarChar(50)
+  updatedBy   String?  @db.VarChar(50)
+
+  @@index([category], map: "Product_category_idx")
+  @@index([isActive], map: "Product_isActive_idx")
+  @@index([productCode], map: "Product_productCode_idx")
+}
