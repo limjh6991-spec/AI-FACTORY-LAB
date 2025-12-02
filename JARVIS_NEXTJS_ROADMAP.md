@@ -1,188 +1,283 @@
 # AI Factory Lab - 개발 로드맵
 
-> **프로젝트 목표**: AI(Gemini 2.5 Flash) 기반 자동 화면 생성 시스템 구축  
-> **타겟**: Grid/Chart 중심 100개 화면 자동 생성 (9시간 목표)
+> **최종 업데이트**: 2025년 12월 2일  
+> **프로젝트 목표**: Excel 기반 자동 화면 생성 시스템 (RAG + Gemini 2.5 Flash)  
+> **현재 진행률**: 32% (Phase 0-1 진행 중)
 
 ---
 
-## 🎯 핵심 전략
+## 🎯 프로젝트 비전 변경
 
-### Why Next.js + tRPC?
-1. **AI 정확도 95%** (vs Vue+Spring 60%)
-   - 단일 언어(TypeScript)
-   - 명확한 파일 구조
-   - tRPC의 명시적 타입
+### 기존 계획 (DEPRECATED)
+- ~~Grid/Chart 중심 100개 화면 수동 개발~~
+- ~~TanStack Table + Recharts~~
+- ~~개발 시간: 9시간~~
 
-2. **개발 속도 3배**
-   - 화면당 5분 (vs 40분)
-   - 100개 화면: 9시간 (vs 70시간)
+### 새로운 비전 (CURRENT) ⭐
+**Excel 업로드 → AI 분석 → 자동 화면 생성**
 
-3. **비용 절감 33%**
-   - RealGrid → TanStack Table (무료)
-   - 연간 $7,920 절감
+1. **Excel 파일 분석**
+   - 헤더 자동 감지
+   - 데이터 타입 추론
+   - DB 컬럼 매핑 (RAG 활용)
+
+2. **RAG 기반 매핑**
+   - DB 메타데이터 Vector DB 임베딩
+   - 한글명 → 영문 컬럼 자동 매핑
+   - 비즈니스 로직 학습
+
+3. **화면 자동 생성**
+   - Next.js + tRPC 코드 생성
+   - shadcn/ui 컴포넌트
+   - 정확도 목표: 85-95%
 
 ---
 
-## 📅 Phase 별 계획
+## � 현재 진행 상황 (2025.12.02)
 
-### ✅ Phase 0: Foundation (완료) - 2025.12.01
-**목표**: Next.js 환경 구축 및 첫 CRUD 완성
+### ✅ Phase 0: 기반 구축 (100% 완료)
+**완료일**: 2025년 12월 1일
 
 **완료 항목**:
-- [x] T3 Stack 프로젝트 초기화
-- [x] PostgreSQL 설정 (ai_factory_db)
-- [x] Prisma 스키마 설정 (Product 모델)
-- [x] 필수 라이브러리 설치
-  - TanStack Table, Recharts, lucide-react
-  - shadcn/ui (8개 컴포넌트)
-  - react-hook-form, zod
-- [x] Product tRPC 라우터 (CRUD)
-- [x] Product 관리 페이지 (검색, 테이블, 페이지네이션)
-- [x] 샘플 데이터 (12개 상품)
-- [x] 홈페이지 네비게이션
-- [x] ENVIRONMENT.md 작성
-
-**결과물**:
-- 완전히 작동하는 Product CRUD 화면
-- End-to-End Type Safety 검증
-- 개발 환경 완성
+- [x] Next.js 15.5.6 프로젝트 초기화
+- [x] Prisma + PostgreSQL 16 설정
+- [x] tRPC API 레이어 구축
+- [x] shadcn/ui 컴포넌트 (8개)
+- [x] 68개 테이블 마이그레이션 (34,594 rows)
+- [x] Product CRUD 프로토타입
+- [x] 동적 메뉴 시스템
 
 ---
 
-### 🚧 Phase 1: Core Features (진행 중) - 2025.12.02~04
-**목표**: 기본 기능 10개 화면 완성
+### ⏳ Phase 1: Gemini 프로토타입 (80% 진행 중)
+**기간**: 2025년 12월 2일 ~ 23일 (4주)  
+**현재**: Week 2 진행 중 (35%)
 
-**화면 목록** (우선순위 순):
-1. **Dashboard** (대시보드)
-   - 매출/재고 차트 (Recharts)
-   - 요약 카드 (매출, 주문, 재고)
-   - 최근 활동 타임라인
+#### ✅ Week 1: 환경 설정 (100% 완료)
+**완료일**: 2025년 12월 2일
 
-2. **Order Management** (주문 관리)
-   - 주문 목록 (TanStack Table)
-   - 주문 상세/수정
-   - 주문 상태 변경
+**Gemini API 설정**:
+- [x] API 키 발급 및 설정
+- [x] gemini-2.5-flash 모델 구성
+- [x] 환경 변수 관리 (.env)
+- [x] API 키 보안 가이드 (SECURITY_NOTICE.md)
 
-3. **Customer Management** (고객 관리)
-   - 고객 목록
-   - 고객 상세/이력
-   - 고객 분석 차트
+**Vector DB 인프라**:
+- [x] Docker Compose 설정
+- [x] Chroma Vector DB 설치 및 실행
+- [x] Redis 캐싱 서버 설정
+- [x] 네트워크 구성 완료
 
-4. **Inventory** (재고 관리)
-   - 재고 현황 테이블
-   - 입출고 이력
-   - 재고 알림 설정
+**Vector DB 시스템**:
+- [x] scripts/setup_vector_db.ts (260 lines)
+- [x] src/lib/vector-search.ts (215 lines)
+- [x] scripts/test_vector_search.ts
+- [x] **15개 문서 → 251개 청크 벡터화 완료** ✨
+- [x] **Vector 검색 테스트 성공** ✨
+- [x] NPM 스크립트 등록 (vector:setup, vector:test 등)
 
-5. **Sales Report** (매출 리포트)
-   - 기간별 매출 차트
-   - 상품별 매출 순위
-   - 카테고리별 분석
+**DB 메타데이터 수집**:
+- [x] scripts/collect_db_metadata.ts (330 lines)
+- [x] 70개 테이블 메타데이터 수집
+- [x] 1,100개 컬럼 정보 추출
+- [x] 한글 필드명 자동 번역 (200+ 패턴)
+- [x] data/db_metadata.json 생성 (190KB)
 
-6. **Settings** (설정)
-   - 사용자 프로필
-   - 시스템 설정
-   - 권한 관리
+**Excel 분석 시스템**:
+- [x] src/lib/gemini.ts (153 lines)
+- [x] analyzeExcel() - Gemini 분석
+- [x] detectHeaderRow() - 헤더 감지
+- [x] inferDataTypes() - 타입 추론
+- [x] mapColumnToDB() - DB 매핑
+- [x] 샘플 Excel 3개 생성
+- [x] 테스트 완료
 
-7. **Category Management** (카테고리 관리)
-   - 트리 구조 카테고리
-   - 드래그 앤 드롭 정렬
+**문서화**:
+- [x] docs/VECTOR_DB_GUIDE.md (500+ lines)
+- [x] JARVIS_RECONNECT_PROMPT.md
+- [x] PROJECT_STATUS.md (체크리스트)
+- [x] SECURITY_NOTICE.md
+- [x] 7개 가이드 문서
 
-8. **Supplier Management** (공급업체 관리)
-   - 업체 목록/등록
-   - 거래 이력
+#### 🚧 Week 2: RAG 파이프라인 (35% 진행 중)
+**기간**: 2025년 12월 2일 ~ 9일
 
-9. **Promotion Management** (프로모션 관리)
-   - 할인/쿠폰 관리
-   - 기간별 프로모션
+**Vector DB 설정** (100% ✅):
+- [x] 리소스 벡터화 실행
+- [x] 251개 청크 생성 확인
+- [x] Vector 검색 테스트 성공
+- [x] 검색 정확도 검증
 
-10. **Analytics** (분석)
-    - 실시간 통계
-    - 사용자 행동 분석
+**DB 메타데이터 활용** (50%):
+- [x] DB 메타데이터 수집 완료
+- [x] 한글명 → 영문 변환 사전 구축
+- [ ] 메타데이터를 Vector DB에 임베딩
+- [ ] 유사도 검색 테스트
 
-**작업 상세**:
-```typescript
-// 각 화면마다:
-1. Prisma 모델 설계
-2. tRPC 라우터 작성 (CRUD + 커스텀 쿼리)
-3. UI 컴포넌트 작성 (shadcn/ui 활용)
-4. 폼 validation (zod)
-5. 테이블/차트 구현
-6. 반응형 디자인
-7. 에러 핸들링
-```
+**Excel 분석 시스템** (70%):
+- [x] Excel 파일 읽기 (SheetJS)
+- [x] 헤더/데이터 타입 추론
+- [x] 샘플 Excel 테스트 완료
+- [ ] Excel 업로드 UI 구현
+- [ ] 기본 컬럼 매핑 85% 정확도 달성
 
-**예상 시간**: 
-- 화면당 평균 4시간 (수동)
-- 총 40시간 (1주일)
+**남은 작업**:
+- [ ] OpenAI Embeddings 설정 (선택)
+- [ ] 실제 Excel 파일로 E2E 테스트
+
+#### 📅 Week 3: 고급 RAG 기능
+**기간**: 2025년 12월 9일 ~ 16일
+
+**자유 형식 Excel 처리**:
+- [ ] 병합 셀 인식 로직
+- [ ] 다단 헤더 처리 알고리즘
+- [ ] 그룹핑 패턴 학습
+
+**차트 자동 생성**:
+- [ ] Excel 차트 메타데이터 추출
+- [ ] Recharts 컴포넌트 변환
+- [ ] 데이터 패턴 → 차트 타입 추천
+
+**수식 변환**:
+- [ ] Easy (SUM, AVG, IF): 95% 목표
+- [ ] Medium (SUMIF, VLOOKUP): 75% 목표
+- [ ] Hard (복잡한 수식): 교육 자료
+
+#### 📅 Week 4: 검증 및 최적화
+**기간**: 2025년 12월 16일 ~ 23일
+
+**데이터 검증**:
+- [ ] Answer Key Excel 업로드
+- [ ] AI 결과 자동 비교
+- [ ] 차이점 리포트 생성
+
+**성능 최적화**:
+- [ ] Redis 캐싱 (60-70% hit)
+- [ ] 응답 속도: 3초 → 1.5초
+- [ ] 메모리 사용량 모니터링
+
+**목표 지표**:
+- [ ] Excel → Screen 생성 성공률: 92%
+- [ ] Gemini 비용: $15/월 이하
+- [ ] 평균 응답 속도: 1.5초 이하
 
 ---
 
-### 🤖 Phase 2: AI Generator MVP - 2025.12.05~10
-**목표**: Excel 기반 화면 자동 생성 시스템 구축
+## 📅 Phase 2: 로컬 모델 조사 (0% 대기 중)
+**기간**: 2025년 12월 30일 ~ 2026년 1월 6일 (2주)
 
-**구성 요소**:
+### Week 5: 시장 조사
+**목표**: 최신 로컬 모델 벤치마크 및 요구사항 정의
 
-1. **Excel Parser** (엑셀 파서)
-   ```typescript
-   // Input: resources/excel/SCREEN_SPEC.xlsx
-   // Output: JSON Schema
-   {
-     screenId: "SC001",
-     screenName: "상품 관리",
-     fields: [
-       { name: "productCode", type: "string", label: "상품코드" },
-       { name: "price", type: "number", label: "가격" }
-     ],
-     layout: {
-       type: "grid",
-       features: ["search", "pagination", "export"]
-     }
-   }
-   ```
+**최신 모델 벤치마크**:
+- [ ] Llama 3.2 출시 여부 확인
+- [ ] Qwen 2.6 성능 테스트
+- [ ] Gemma 3.0 한국어 평가
+- [ ] 새로운 경량 모델 탐색
 
-2. **Prompt Generator** (프롬프트 생성기)
-   ```typescript
-   // generator/prompts/nextjs-screen.txt
-   const prompt = `
-   Create a Next.js page with:
-   - tRPC router for ${modelName}
-   - Prisma schema with fields: ${fields}
-   - UI with TanStack Table
-   - Search, filter, pagination
-   - shadcn/ui components
-   `;
-   ```
+**요구사항 정의**:
+- [ ] 최소 정확도: 85% 설정
+- [ ] 최대 응답 시간: 5초
+- [ ] 메모리 사용량: 16GB 이하
+- [ ] 한국어 지원 검증
 
-3. **Gemini Integration** (AI 연동)
-   ```typescript
-   import { GoogleGenerativeAI } from "@google/generative-ai";
-   
-   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-   
-   const result = await model.generateContent(prompt);
-   const code = result.response.text();
-   ```
+### Week 6: 모델 선택 및 테스트
+**목표**: Ollama 설치 및 LLMProvider 추상화
 
-4. **Code Generator** (코드 생성기)
-   ```typescript
-   // 생성 파일:
-   - prisma/schema.prisma (모델 추가)
-   - src/server/api/routers/[model].ts
-   - src/app/[route]/page.tsx
-   - src/app/[route]/components/[Model]Form.tsx
-   ```
+**최적 모델 선택**:
+- [ ] 벤치마크 결과 분석
+- [ ] 비용/성능 비율 평가
+- [ ] 커뮤니티 활성도 확인
+- [ ] 최종 모델 결정
 
-5. **Validator** (검증기)
-   - TypeScript 타입 체크
-   - ESLint 검사
-   - 빌드 테스트
-   - 자동 수정
+**Ollama 설치**:
+- [ ] Ollama 설치
+- [ ] 선택된 모델 다운로드
+- [ ] 서버 설정 및 테스트
 
-**작업 흐름**:
-```
-Excel Upload → Parse → Generate Prompt → AI → Code Files → Validate → Commit
-```
+**LLMProvider 추상화**:
+- [ ] `LLMProvider` 인터페이스 설계
+- [ ] `GeminiProvider` 구현
+- [ ] `OllamaProvider` 구현
+- [ ] 테스트 케이스 작성
+
+**성능 비교**:
+- [ ] Gemini vs Ollama 정확도
+- [ ] 응답 속도 측정
+- [ ] 비용 시뮬레이션
+
+**목표**: Ollama 정확도 85%+ 달성
+
+---
+
+## 🔄 Phase 3: Hybrid 구현 및 전환
+**기간**: 2026년 1월 13일 ~ 27일 (3주)
+
+### Week 7: Hybrid 시스템 (50/50)
+**HybridProvider 구현**:
+- [ ] `HybridProvider` 클래스
+- [ ] Confidence 평가 로직
+- [ ] Fallback 메커니즘
+- [ ] 에러 핸들링
+
+**A/B 테스트**:
+- [ ] `OLLAMA_RATIO=0.5` 설정
+- [ ] 50/50 트래픽 분할
+- [ ] 정확도/비용/속도 모니터링
+
+**목표**: 정확도 90%+, 비용 $7.5/월
+
+### Week 8: 비율 증가 (80/20)
+**Ollama 비율 증가**:
+- [ ] `OLLAMA_RATIO=0.8` 설정
+- [ ] 모니터링 대시보드
+- [ ] 프롬프트 최적화
+
+**목표**: 정확도 89%+, 비용 $3/월
+
+### Week 9: 최종 최적화 (92/8)
+**최종 비율 설정**:
+- [ ] `OLLAMA_RATIO=0.92` 설정
+- [ ] 복잡한 케이스만 Gemini
+- [ ] Fallback 로직 완성
+
+**프로덕션 배포**:
+- [ ] Docker Compose 설정
+- [ ] 모니터링 알림
+- [ ] 백업 및 복구 절차
+
+**최종 목표**:
+- 정확도: 90%
+- 비용: $1.2/월
+- ROI: 2주 회수, 월 $412 이익
+
+---
+
+## 📈 성과 지표 현황
+
+### 정확도
+- [x] Template 기반: 98% (단순 케이스) ✅
+- [ ] Basic RAG: 85% (목표)
+- [ ] Advanced RAG: 92% (목표)
+- [ ] Hybrid (Ollama 92%): 90% (최종)
+
+### 비용
+- [x] Phase 1 (Gemini 100%): $15/월 (현재)
+- [ ] Week 7 (Gemini 50%): $7.5/월
+- [ ] Week 8 (Gemini 20%): $3/월
+- [ ] Week 9 (Gemini 8%): $1.2/월 (최종)
+
+### 속도
+- [ ] Excel 분석: 1.5초 이하
+- [ ] Vector 검색: 0.15초 이하
+- [ ] 화면 생성: 3초 이하
+
+### 자동화율
+- [x] 초기 (1-10개 화면): 60-75% (학습 중)
+- [ ] 학습 후 (11개 이상): 85-95%
+- [ ] 개발 속도: 기존 대비 6배 빠름
+
+---
 
 **예상 시간**: 60시간 (1.5주)
 
@@ -305,14 +400,158 @@ git commit -m "feat: Auto-generated 100 screens"
 - [ ] 렌더링 성공률 95%+
 - [ ] 총 소요 시간 <30시간
 
+## 🛠️ 기술 스택
+
+### 핵심 기술
+- **Framework**: Next.js 15.5.6 (App Router, Turbopack)
+- **Language**: TypeScript 5.8
+- **Database**: PostgreSQL 16 (Prisma 6.19.0)
+- **API**: tRPC (Type-safe API)
+- **UI**: shadcn/ui + Tailwind CSS v4
+- **AI**: Google Gemini 2.5 Flash
+- **Vector DB**: Chroma (Docker)
+- **Caching**: Redis (Docker)
+- **Excel**: SheetJS (xlsx.js)
+
+### 개발 도구
+- **Package Manager**: npm
+- **Version Control**: Git + GitHub
+- **Documentation**: Markdown
+- **Testing**: (TBD)
+
 ---
 
-## 🛠️ 기술 스택별 학습 자료
+## 📁 프로젝트 구조
 
-### Next.js
-- [ ] App Router 심화
-- [ ] Server Components vs Client Components
-- [ ] Streaming SSR
+```
+ai-factory-lab/
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── components/       # UI 컴포넌트
+│   ├── lib/              # 유틸리티
+│   │   ├── gemini.ts    # Gemini API
+│   │   └── vector-search.ts  # Vector 검색
+│   ├── server/           # tRPC 서버
+│   └── styles/           # 글로벌 스타일
+├── prisma/
+│   └── schema.prisma     # DB 스키마
+├── scripts/
+│   ├── setup_vector_db.ts      # Vector DB 설정
+│   ├── test_vector_search.ts   # Vector 검색 테스트
+│   ├── collect_db_metadata.ts  # DB 메타데이터 수집
+│   └── create_sample_excel.ts  # 샘플 Excel 생성
+├── docs/                 # 프로젝트 문서
+├── data/
+│   ├── db_metadata.json  # DB 메타데이터
+│   └── sample_excel/     # 샘플 Excel 파일
+├── resources/            # 리소스 파일
+└── docker-compose.vector.yml  # Vector DB 인프라
+```
+
+---
+
+## 🚀 빠른 시작
+
+### 환경 설정
+```bash
+# 1. 패키지 설치
+npm install
+
+# 2. .env 파일 생성
+cp .env.example .env
+# GEMINI_API_KEY, DATABASE_URL 설정
+
+# 3. Vector DB 시작
+npm run vector:start
+
+# 4. 리소스 벡터화
+npm run vector:setup
+
+# 5. 개발 서버 실행
+npm run dev
+```
+
+### 주요 명령어
+```bash
+# Vector DB
+npm run vector:setup   # 리소스 벡터화
+npm run vector:test    # 검색 테스트
+npm run vector:start   # Docker 컨테이너 시작
+npm run vector:stop    # Docker 컨테이너 중지
+
+# 데이터베이스
+npm run db:push        # Prisma 스키마 동기화
+npx prisma studio      # DB GUI
+
+# 개발
+npm run dev            # 개발 서버
+npm run build          # 프로덕션 빌드
+npm run lint           # ESLint
+```
+
+---
+
+## 📚 주요 문서
+
+### 즉시 참조
+- `.jarvis-prompt.txt` - 자비스 재연결 프롬프트
+- `PROJECT_STATUS.md` - 진행 현황 체크리스트
+- `QUICK_START.md` - 빠른 참조 카드
+
+### 기술 가이드
+- `docs/VECTOR_DB_GUIDE.md` - Vector DB 완전 가이드
+- `docs/RAG_IMPLEMENTATION_GUIDE.md` - RAG 시스템 가이드
+- `docs/EXCEL_TO_SCREEN_TECHNICAL_ANALYSIS.md` - 기술 분석
+
+### 보안
+- `SECURITY_NOTICE.md` - API 키 보안 가이드
+- `API_KEY_RENEWAL.md` - API 키 갱신 절차
+
+### 환경
+- `ENVIRONMENT.md` - 환경 설정 상세
+- `JARVIS_RECONNECT_PROMPT.md` - 세션 복원 가이드
+
+---
+
+## 💡 다음 단계
+
+### 오늘 완료 (2025.12.02)
+- [x] Vector DB 시스템 구축
+- [x] 251개 문서 청크 벡터화
+- [x] Vector 검색 테스트 성공
+- [x] Git 커밋 및 문서화
+
+### 이번 주 (Week 2)
+- [ ] DB 메타데이터 Vector DB 임베딩
+- [ ] Excel 업로드 UI 구현
+- [ ] 기본 컬럼 매핑 85% 정확도 달성
+
+### 다음 주 (Week 3)
+- [ ] 병합 셀 인식 로직
+- [ ] 차트 자동 생성 구현
+- [ ] 수식 변환 로직
+
+---
+
+## 🎯 성공 기준
+
+### Phase 1 완료 조건
+- [ ] Excel → Screen 생성 성공률 92%
+- [ ] Gemini 비용 $15/월 이하
+- [ ] 평균 응답 속도 1.5초 이하
+- [ ] 자동화율 85-95%
+
+### 최종 목표 (Phase 3 완료)
+- [ ] 정확도: 90%
+- [ ] 비용: $1.2/월
+- [ ] ROI: 2주 회수
+- [ ] 월간 이익: $412
+
+---
+
+**최종 업데이트**: 2025년 12월 2일  
+**다음 업데이트**: Week 2 종료 시 (2025년 12월 9일)  
+**작성자**: JARVIS (AI Development Assistant)
 - [ ] Middleware
 
 ### tRPC
