@@ -13,7 +13,8 @@ import {
   X,
   FileText,
   Boxes,
-  Building2
+  Building2,
+  FileSpreadsheet
 } from "lucide-react";
 import { useState } from "react";
 
@@ -23,6 +24,12 @@ const menuItems = [
     icon: LayoutDashboard,
     href: "/dashboard",
     badge: null,
+  },
+  {
+    title: "Excel 매핑",
+    icon: FileSpreadsheet,
+    href: "/excel-mapping",
+    badge: "NEW",
   },
   {
     title: "상품 관리",
