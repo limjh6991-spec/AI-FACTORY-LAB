@@ -1,96 +1,5 @@
 [
   {
-    "name": "Product",
-    "korean_name": "제품",
-    "columns": [
-      {
-        "name": "id",
-        "korean_name": "id",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "productCode",
-        "korean_name": "제품Code",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": false
-      },
-      {
-        "name": "productName",
-        "korean_name": "제품Name",
-        "type": "character varying",
-        "max_length": 200,
-        "nullable": false
-      },
-      {
-        "name": "category",
-        "korean_name": "category",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": false
-      },
-      {
-        "name": "price",
-        "korean_name": "price",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "stock",
-        "korean_name": "재고",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "description",
-        "korean_name": "description",
-        "type": "text",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "isActive",
-        "korean_name": "isActive",
-        "type": "boolean",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "createdAt",
-        "korean_name": "createdAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "updatedAt",
-        "korean_name": "updatedAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "createdBy",
-        "korean_name": "createdBy",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": true
-      },
-      {
-        "name": "updatedBy",
-        "korean_name": "updatedBy",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": true
-      }
-    ],
-    "recordCount": 12
-  },
-  {
     "name": "doi_acct",
     "korean_name": "acct",
     "columns": [
@@ -708,7 +617,7 @@
   },
   {
     "name": "doi_bom_mast",
-    "korean_name": "bom mast",
+    "korean_name": "BOM마스터",
     "columns": [
       {
         "name": "YYYYMM",
@@ -1636,7 +1545,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 10,
         "nullable": false
@@ -1786,7 +1695,7 @@
   },
   {
     "name": "doi_cst_bom",
-    "korean_name": "cst bom",
+    "korean_name": "cst BOM",
     "columns": [
       {
         "name": "YYYYMM",
@@ -2031,7 +1940,7 @@
   },
   {
     "name": "doi_cust_mast",
-    "korean_name": "cust mast",
+    "korean_name": "고객마스터",
     "columns": [
       {
         "name": "YYYY",
@@ -2056,21 +1965,21 @@
       },
       {
         "name": "CUST_CODE",
-        "korean_name": "CUST코드",
+        "korean_name": "고객코드",
         "type": "character varying",
         "max_length": 4,
         "nullable": false
       },
       {
         "name": "CUST_DESC",
-        "korean_name": "CUST설명",
+        "korean_name": "고객설명",
         "type": "character varying",
         "max_length": 50,
         "nullable": true
       },
       {
         "name": "CUST_STATE",
-        "korean_name": "CUST상태",
+        "korean_name": "고객상태",
         "type": "character varying",
         "max_length": 10,
         "nullable": true
@@ -2154,7 +2063,7 @@
       },
       {
         "name": "RND_YN",
-        "korean_name": "RND여부",
+        "korean_name": "연구개발여부",
         "type": "character varying",
         "max_length": 1,
         "nullable": true
@@ -2224,7 +2133,7 @@
       },
       {
         "name": "RND_YN",
-        "korean_name": "RND여부",
+        "korean_name": "연구개발여부",
         "type": "character varying",
         "max_length": 1,
         "nullable": true
@@ -2462,7 +2371,7 @@
       },
       {
         "name": "RND_YN",
-        "korean_name": "RND여부",
+        "korean_name": "연구개발여부",
         "type": "character varying",
         "max_length": 1,
         "nullable": true
@@ -2518,7 +2427,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 8,
         "nullable": false
@@ -2700,7 +2609,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 10,
         "nullable": false
@@ -3844,7 +3753,7 @@
   },
   {
     "name": "doi_material_mast",
-    "korean_name": "자재 mast",
+    "korean_name": "자재마스터",
     "columns": [
       {
         "name": "YYYY",
@@ -4002,14 +3911,14 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 15,
         "nullable": false
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 15,
         "nullable": false
@@ -4100,14 +4009,14 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 15,
         "nullable": true
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 15,
         "nullable": true
@@ -4194,7 +4103,7 @@
   },
   {
     "name": "doi_model_mast",
-    "korean_name": "model mast",
+    "korean_name": "제품마스터",
     "columns": [
       {
         "name": "YYYYMM",
@@ -4219,7 +4128,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 10,
         "nullable": false
@@ -4324,14 +4233,14 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
       },
       {
         "name": "model_type",
-        "korean_name": "model유형",
+        "korean_name": "제품유형",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -4369,7 +4278,7 @@
   },
   {
     "name": "doi_okw_stco_amt_test_new",
-    "korean_name": "okw stco금액 test new",
+    "korean_name": "okw 표준원가금액 test new",
     "columns": [
       {
         "name": "DOI_YYYYMM",
@@ -4394,14 +4303,14 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
       },
       {
         "name": "model_type",
-        "korean_name": "model유형",
+        "korean_name": "제품유형",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -4499,7 +4408,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 10,
         "nullable": false
@@ -4705,7 +4614,7 @@
   },
   {
     "name": "doi_prod_lotrun",
-    "korean_name": "생산lotrun",
+    "korean_name": "생산로트런",
     "columns": [
       {
         "name": "YYYYMM",
@@ -4765,14 +4674,14 @@
       },
       {
         "name": "lotrun_no",
-        "korean_name": "lotrun번호",
+        "korean_name": "로트런번호",
         "type": "character varying",
         "max_length": 30,
         "nullable": false
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 30,
         "nullable": false
@@ -4887,7 +4796,7 @@
   },
   {
     "name": "doi_prod_subul",
-    "korean_name": "생산subul",
+    "korean_name": "생산수불",
     "columns": [
       {
         "name": "YYYYMM",
@@ -4933,7 +4842,7 @@
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 18,
         "nullable": false
@@ -4961,7 +4870,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 30,
         "nullable": false
@@ -5069,7 +4978,7 @@
   },
   {
     "name": "doi_prod_subul_202510",
-    "korean_name": "생산subul 202510",
+    "korean_name": "생산수불 202510",
     "columns": [
       {
         "name": "YYYYMM",
@@ -5115,7 +5024,7 @@
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 18,
         "nullable": false
@@ -5143,7 +5052,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 30,
         "nullable": false
@@ -5251,7 +5160,7 @@
   },
   {
     "name": "doi_prod_subul_old",
-    "korean_name": "생산subul old",
+    "korean_name": "생산수불 old",
     "columns": [
       {
         "name": "YYYYMM",
@@ -5290,14 +5199,14 @@
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 12,
         "nullable": false
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 10,
         "nullable": false
@@ -5311,7 +5220,7 @@
       },
       {
         "name": "MODEL_NAME",
-        "korean_name": "MODEL명칭",
+        "korean_name": "제품명칭",
         "type": "character varying",
         "max_length": 20,
         "nullable": true
@@ -5412,7 +5321,7 @@
   },
   {
     "name": "doi_rma_inout",
-    "korean_name": "rma inout",
+    "korean_name": "반품 inout",
     "columns": [
       {
         "name": "YYYYMM",
@@ -5444,14 +5353,14 @@
       },
       {
         "name": "RMA_IN",
-        "korean_name": "RMA IN",
+        "korean_name": "반품 IN",
         "type": "integer",
         "max_length": null,
         "nullable": true
       },
       {
         "name": "RMA_OUT",
-        "korean_name": "RMA OUT",
+        "korean_name": "반품 OUT",
         "type": "integer",
         "max_length": null,
         "nullable": true
@@ -5475,7 +5384,7 @@
   },
   {
     "name": "doi_rnd",
-    "korean_name": "rnd",
+    "korean_name": "연구개발",
     "columns": [
       {
         "name": "YYYYMM",
@@ -5559,7 +5468,7 @@
   },
   {
     "name": "doi_rnd_subul",
-    "korean_name": "rnd subul",
+    "korean_name": "연구개발 수불",
     "columns": [
       {
         "name": "YYYYMM",
@@ -5605,7 +5514,7 @@
       },
       {
         "name": "MODEL_N_TYPE",
-        "korean_name": "MODEL N유형",
+        "korean_name": "제품 N유형",
         "type": "character varying",
         "max_length": 18,
         "nullable": false
@@ -5633,7 +5542,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 30,
         "nullable": false
@@ -6623,7 +6532,7 @@
   },
   {
     "name": "doi_sga",
-    "korean_name": "sga",
+    "korean_name": "판관비",
     "columns": [
       {
         "name": "YYYYMM",
@@ -6700,7 +6609,7 @@
   },
   {
     "name": "doi_slco",
-    "korean_name": "slco",
+    "korean_name": "판매원가",
     "columns": [
       {
         "name": "YYYYMM",
@@ -6732,7 +6641,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -6777,7 +6686,7 @@
   },
   {
     "name": "doi_smce_cost",
-    "korean_name": "smce원가",
+    "korean_name": "제조원가원가",
     "columns": [
       {
         "name": "YYYYMM",
@@ -6809,7 +6718,7 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 15,
         "nullable": true
@@ -6865,7 +6774,7 @@
       },
       {
         "name": "TOT_SMCE",
-        "korean_name": "TOT SMCE",
+        "korean_name": "TOT 제조원가",
         "type": "integer",
         "max_length": null,
         "nullable": true
@@ -6896,7 +6805,7 @@
   },
   {
     "name": "doi_stco",
-    "korean_name": "stco",
+    "korean_name": "표준원가",
     "columns": [
       {
         "name": "YYYYMM",
@@ -6928,7 +6837,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -7033,14 +6942,14 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
       },
       {
         "name": "MODEL_TYPE",
-        "korean_name": "MODEL유형",
+        "korean_name": "제품유형",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -7173,14 +7082,14 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
       },
       {
         "name": "model_type",
-        "korean_name": "model유형",
+        "korean_name": "제품유형",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -7278,14 +7187,14 @@
       },
       {
         "name": "model",
-        "korean_name": "model",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
       },
       {
         "name": "model_type",
-        "korean_name": "model유형",
+        "korean_name": "제품유형",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -7369,7 +7278,7 @@
       },
       {
         "name": "MODEL",
-        "korean_name": "MODEL",
+        "korean_name": "제품",
         "type": "character varying",
         "max_length": 50,
         "nullable": false
@@ -7474,719 +7383,5 @@
       }
     ],
     "recordCount": 1
-  },
-  {
-    "name": "new_doi_cost_monthly_dept_cost",
-    "korean_name": "원가월별 부서원가",
-    "columns": [
-      {
-        "name": "base_ym",
-        "korean_name": "base ym",
-        "type": "character varying",
-        "max_length": 6,
-        "nullable": false
-      },
-      {
-        "name": "dept_code",
-        "korean_name": "부서코드",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "account_code",
-        "korean_name": "account코드",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "current_amount",
-        "korean_name": "current금액",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "previous_amount",
-        "korean_name": "previous금액",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "variance_amount",
-        "korean_name": "variance금액",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "variance_rate",
-        "korean_name": "variance율",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "reg_dt",
-        "korean_name": "reg일자",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 12
-  },
-  {
-    "name": "new_doi_demo_employee",
-    "korean_name": "demo직원loyee",
-    "columns": [
-      {
-        "name": "emp_id",
-        "korean_name": "empID",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "dept_name",
-        "korean_name": "부서명칭",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": false
-      },
-      {
-        "name": "dept_name_en",
-        "korean_name": "부서명칭 en",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "emp_name",
-        "korean_name": "emp명칭",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": false
-      },
-      {
-        "name": "position",
-        "korean_name": "position",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "hire_date",
-        "korean_name": "hire일자",
-        "type": "date",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "salary",
-        "korean_name": "salary",
-        "type": "integer",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "created_at",
-        "korean_name": "created at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "updated_at",
-        "korean_name": "updated at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 9
-  },
-  {
-    "name": "new_doi_demo_orders",
-    "korean_name": "demo 주문s",
-    "columns": [
-      {
-        "name": "order_id",
-        "korean_name": "주문ID",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "order_no",
-        "korean_name": "주문번호",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "customer_id",
-        "korean_name": "고객ID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "country",
-        "korean_name": "country",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "company_name",
-        "korean_name": "company명칭",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": true
-      },
-      {
-        "name": "employee_id",
-        "korean_name": "employeeID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "order_date",
-        "korean_name": "주문일자",
-        "type": "date",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "phone",
-        "korean_name": "phone",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "created_at",
-        "korean_name": "created at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "updated_at",
-        "korean_name": "updated at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 8
-  },
-  {
-    "name": "new_doi_demo_sales",
-    "korean_name": "demo sales",
-    "columns": [
-      {
-        "name": "sales_id",
-        "korean_name": "salesID",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "year",
-        "korean_name": "년",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": false
-      },
-      {
-        "name": "quarter",
-        "korean_name": "분기",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": false
-      },
-      {
-        "name": "month",
-        "korean_name": "월",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": false
-      },
-      {
-        "name": "region",
-        "korean_name": "region",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": false
-      },
-      {
-        "name": "category",
-        "korean_name": "category",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "target_amount",
-        "korean_name": "목표금액",
-        "type": "bigint",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "actual_amount",
-        "korean_name": "실적금액",
-        "type": "bigint",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "achievement_rate",
-        "korean_name": "achievement율",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "created_at",
-        "korean_name": "created at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "updated_at",
-        "korean_name": "updated at",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 12
-  },
-  {
-    "name": "new_doi_prd_result",
-    "korean_name": "생산result",
-    "columns": [
-      {
-        "name": "result_id",
-        "korean_name": "resultID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "prd_date",
-        "korean_name": "생산date",
-        "type": "date",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "factory_cd",
-        "korean_name": "factory코드",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": false
-      },
-      {
-        "name": "line_cd",
-        "korean_name": "라인코드",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": false
-      },
-      {
-        "name": "shift_cd",
-        "korean_name": "교대코드",
-        "type": "character varying",
-        "max_length": 2,
-        "nullable": true
-      },
-      {
-        "name": "item_cd",
-        "korean_name": "품목코드",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "item_nm",
-        "korean_name": "품목명",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": true
-      },
-      {
-        "name": "spec",
-        "korean_name": "사양",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": true
-      },
-      {
-        "name": "unit",
-        "korean_name": "unit",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": true
-      },
-      {
-        "name": "plan_qty",
-        "korean_name": "계획qty",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "prod_qty",
-        "korean_name": "생산qty",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "good_qty",
-        "korean_name": "good수량",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "defect_qty",
-        "korean_name": "불량수량",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "defect_type",
-        "korean_name": "불량유형",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "defect_reason",
-        "korean_name": "불량 reason",
-        "type": "character varying",
-        "max_length": 200,
-        "nullable": true
-      },
-      {
-        "name": "start_time",
-        "korean_name": "start시간",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "end_time",
-        "korean_name": "end시간",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "work_time",
-        "korean_name": "작업시간",
-        "type": "integer",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "stop_time",
-        "korean_name": "stop시간",
-        "type": "integer",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "worker_id",
-        "korean_name": "작업erID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "worker_nm",
-        "korean_name": "작업er명",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "team_cd",
-        "korean_name": "team코드",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": true
-      },
-      {
-        "name": "inspect_yn",
-        "korean_name": "in사양t여부",
-        "type": "character",
-        "max_length": 1,
-        "nullable": true
-      },
-      {
-        "name": "inspect_result",
-        "korean_name": "in사양t result",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": true
-      },
-      {
-        "name": "inspector_id",
-        "korean_name": "in사양torID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "remark",
-        "korean_name": "remark",
-        "type": "character varying",
-        "max_length": 500,
-        "nullable": true
-      },
-      {
-        "name": "status",
-        "korean_name": "status",
-        "type": "character varying",
-        "max_length": 10,
-        "nullable": true
-      },
-      {
-        "name": "confirm_yn",
-        "korean_name": "confirm여부",
-        "type": "character",
-        "max_length": 1,
-        "nullable": true
-      },
-      {
-        "name": "reg_id",
-        "korean_name": "regID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "reg_dt",
-        "korean_name": "reg일자",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "upd_id",
-        "korean_name": "updID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "upd_dt",
-        "korean_name": "upd일자",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 30
-  },
-  {
-    "name": "new_doi_sys_menu",
-    "korean_name": "시스템메뉴",
-    "columns": [
-      {
-        "name": "menu_id",
-        "korean_name": "메뉴ID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": false
-      },
-      {
-        "name": "up_menu_id",
-        "korean_name": "up 메뉴ID",
-        "type": "character varying",
-        "max_length": 20,
-        "nullable": true
-      },
-      {
-        "name": "menu_nm",
-        "korean_name": "메뉴명",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": false
-      },
-      {
-        "name": "menu_url",
-        "korean_name": "메뉴URL",
-        "type": "character varying",
-        "max_length": 200,
-        "nullable": true
-      },
-      {
-        "name": "sort_no",
-        "korean_name": "sort번호",
-        "type": "integer",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "use_yn",
-        "korean_name": "use여부",
-        "type": "character",
-        "max_length": 1,
-        "nullable": true
-      },
-      {
-        "name": "icon_cls",
-        "korean_name": "icon cls",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "reg_dt",
-        "korean_name": "reg일자",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": true
-      }
-    ],
-    "recordCount": 11
-  },
-  {
-    "name": "post",
-    "korean_name": "post",
-    "columns": [
-      {
-        "name": "id",
-        "korean_name": "id",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "name",
-        "korean_name": "name",
-        "type": "text",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "createdAt",
-        "korean_name": "createdAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "updatedAt",
-        "korean_name": "updatedAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      }
-    ],
-    "recordCount": 0
-  },
-  {
-    "name": "product",
-    "korean_name": "제품",
-    "columns": [
-      {
-        "name": "id",
-        "korean_name": "id",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "productCode",
-        "korean_name": "제품Code",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": false
-      },
-      {
-        "name": "productName",
-        "korean_name": "제품Name",
-        "type": "character varying",
-        "max_length": 200,
-        "nullable": false
-      },
-      {
-        "name": "category",
-        "korean_name": "category",
-        "type": "character varying",
-        "max_length": 100,
-        "nullable": false
-      },
-      {
-        "name": "price",
-        "korean_name": "price",
-        "type": "numeric",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "stock",
-        "korean_name": "재고",
-        "type": "integer",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "description",
-        "korean_name": "description",
-        "type": "text",
-        "max_length": null,
-        "nullable": true
-      },
-      {
-        "name": "isActive",
-        "korean_name": "isActive",
-        "type": "boolean",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "createdAt",
-        "korean_name": "createdAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "updatedAt",
-        "korean_name": "updatedAt",
-        "type": "timestamp without time zone",
-        "max_length": null,
-        "nullable": false
-      },
-      {
-        "name": "createdBy",
-        "korean_name": "createdBy",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      },
-      {
-        "name": "updatedBy",
-        "korean_name": "updatedBy",
-        "type": "character varying",
-        "max_length": 50,
-        "nullable": true
-      }
-    ],
-    "recordCount": 12
   }
 ]

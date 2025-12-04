@@ -1,0 +1,61 @@
+{
+  "reportName": "부서별 원가 분석 보고서",
+  "columns": [
+    {
+      "columnName": "년월",
+      "description": "원가 발생 년월",
+      "dataType": "string"
+    },
+    {
+      "columnName": "SEL코드",
+      "description": "SEL 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "SITE",
+      "description": "사업장 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "코스트센터",
+      "description": "코스트 센터",
+      "dataType": "string"
+    },
+    {
+      "columnName": "코스트센터분류",
+      "description": "코스트 센터 분류",
+      "dataType": "string"
+    },
+    {
+      "columnName": "계정과목",
+      "description": "계정 과목",
+      "dataType": "string"
+    },
+    {
+      "columnName": "차변금액",
+      "description": "차변 금액",
+      "dataType": "number"
+    },
+    {
+      "columnName": "대변금액",
+      "description": "대변 금액",
+      "dataType": "number"
+    },
+    {
+      "columnName": "단위원가",
+      "description": "계정과목별 단위원가",
+      "dataType": "number"
+    },
+    {
+      "columnName": "총원가",
+      "description": "계정과목별 총원가",
+      "dataType": "number"
+    }
+  ],
+  "tables": [
+    "doi_dept_cost"
+  ],
+  "sqlQuery": "SELECT \n    \"YYYYMM\" AS \"년월\",\n    \"SEL_CODE\" AS \"SEL코드\",\n    \"SITE\" AS \"SITE\",\n    \"코스트센터\" AS \"코스트센터\",\n    \"코스트센터분류\" AS \"코스트센터분류\",\n    \"계정과목\" AS \"계정과목\",\n    \"차변금액\" AS \"차변금액\",\n    \"대변금액\" AS \"대변금액\",\n    (\"차변금액\" - \"대변금액\") AS \"단위원가\",\n    SUM(\"차변금액\" - \"대변금액\") OVER () AS \"총원가\"\nFROM \"doi_dept_cost\"\nLIMIT 100;",
+  "reasoning": "부서별 원가 분석을 위해 'doi_dept_cost' 테이블을 사용합니다. 이 테이블에는 년월, SEL 코드, SITE, 코스트센터, 코스트센터분류, 계정과목, 차변금액, 대변금액 등의 필요한 정보가 포함되어 있습니다. '차변금액'과 '대변금액'의 차이를 계산하여 '단위원가'를 구하고, OVER()를 사용하여 총 원가를 계산합니다. 보고서의 가독성을 높이기 위해 컬럼에 별칭을 부여했습니다. LIMIT 100을 사용하여 샘플 데이터를 추출합니다.",
+  "agentThinking": "먼저 부서별 원가 정보를 담고 있는 테이블을 찾았습니다. 'doi_dept_cost' 테이블이 가장 적합하다고 판단되었습니다. 이 테이블에서 필요한 컬럼들을 선택하고, '차변금액'과 '대변금액'을 이용하여 '단위원가'와 '총원가'를 계산하는 쿼리를 작성했습니다. 또한 컬럼 별칭을 사용하여 보고서의 가독성을 높였습니다."
+}

@@ -1,0 +1,195 @@
+{
+  "screenId": "SC003",
+  "screenName": "판매 실적 집계",
+  "description": "매출 계획 대비 실적을 집계하고 달성률을 분석하는 화면",
+  "excelSheet": "3. 판매 실적 집계",
+  "columns": [
+    {
+      "id": "col1",
+      "excelHeader": "구분",
+      "displayName": "구분",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col2",
+      "excelHeader": "코드",
+      "displayName": "코드",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col3",
+      "excelHeader": "고객코드",
+      "displayName": "고객코드",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col4",
+      "excelHeader": "매출처",
+      "displayName": "매출처",
+      "dataType": "string",
+      "width": 120,
+      "align": "left"
+    },
+    {
+      "id": "col5",
+      "excelHeader": "Inch",
+      "displayName": "Inch",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col6",
+      "excelHeader": "수량",
+      "displayName": "계획 수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col7",
+      "excelHeader": "판가_$",
+      "displayName": "계획 판가($)",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "$#,##0.00"
+    },
+    {
+      "id": "col8",
+      "excelHeader": "판가_\\",
+      "displayName": "계획 판가(￦)",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "￦#,##0"
+    },
+    {
+      "id": "col9",
+      "excelHeader": "금액",
+      "displayName": "계획 금액",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "￦#,##0"
+    },
+    {
+      "id": "col10",
+      "excelHeader": "수량",
+      "displayName": "실적 수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col11",
+      "excelHeader": "판가_$",
+      "displayName": "실적 판가($)",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "$#,##0.00"
+    },
+    {
+      "id": "col12",
+      "excelHeader": "판가_\\",
+      "displayName": "실적 판가(￦)",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "￦#,##0"
+    },
+    {
+      "id": "col13",
+      "excelHeader": "금액",
+      "displayName": "실적 금액",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "￦#,##0"
+    },
+    {
+      "id": "col14",
+      "excelHeader": "수량",
+      "displayName": "차이 수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col15",
+      "excelHeader": "금액",
+      "displayName": "차이 금액",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "￦#,##0"
+    },
+    {
+      "id": "col16",
+      "excelHeader": "달성률",
+      "displayName": "달성률",
+      "dataType": "percentage",
+      "width": 100,
+      "align": "right",
+      "format": "0.0%"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter1",
+      "label": "구분",
+      "type": "select",
+      "required": false,
+      "options": []
+    },
+    {
+      "id": "filter2",
+      "label": "매출처",
+      "type": "select",
+      "required": false,
+      "options": []
+    },
+    {
+      "id": "filter3",
+      "label": "Inch",
+      "type": "select",
+      "required": false,
+      "options": []
+    },
+    {
+      "id": "filter4",
+      "label": "집계 기간",
+      "type": "month-picker",
+      "required": true
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "계획 vs 실적 비교",
+      "xAxis": "col4",
+      "yAxis": "col9"
+    },
+    {
+      "type": "bar",
+      "title": "달성률 현황",
+      "xAxis": "col4",
+      "yAxis": "col16"
+    }
+  ],
+  "layout": {
+    "filterPosition": "top",
+    "gridHeight": 400,
+    "chartPosition": "bottom"
+  }
+}

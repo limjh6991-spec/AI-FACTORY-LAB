@@ -1,0 +1,242 @@
+{
+  "screenId": "SC001",
+  "screenName": "생산실적 월별 집계 현황",
+  "description": "월별 생산실적을 집계하여 계획 대비 실적, 재고 현황, 불량률 등을 종합적으로 관리하는 화면",
+  "excelSheet": "1. 생산실적(1안)",
+  "columns": [
+    {
+      "id": "col1",
+      "excelHeader": "구분",
+      "displayName": "구분",
+      "dataType": "string",
+      "width": 150,
+      "align": "left"
+    },
+    {
+      "id": "col2",
+      "excelHeader": "코드",
+      "displayName": "코드",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col3",
+      "excelHeader": "Inch",
+      "displayName": "Inch",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col4",
+      "excelHeader": "SITE",
+      "displayName": "SITE",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col5",
+      "excelHeader": "계획",
+      "displayName": "계획",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col6",
+      "excelHeader": "실적",
+      "displayName": "실적",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col7",
+      "excelHeader": "달성률",
+      "displayName": "달성률",
+      "dataType": "percentage",
+      "width": 100,
+      "align": "right",
+      "format": "0.0%"
+    },
+    {
+      "id": "col8",
+      "excelHeader": "기초(BOH)",
+      "displayName": "기초재고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col9",
+      "excelHeader": "입고(IN)",
+      "displayName": "입고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col10",
+      "excelHeader": "출고(OUT)",
+      "displayName": "출고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col11",
+      "excelHeader": "불량(LOSS)",
+      "displayName": "불량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col12",
+      "excelHeader": "재고(EOH)",
+      "displayName": "기말재고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col13",
+      "excelHeader": "불량률",
+      "displayName": "불량률",
+      "dataType": "percentage",
+      "width": 100,
+      "align": "right",
+      "format": "0.00%"
+    },
+    {
+      "id": "col14",
+      "excelHeader": "수율",
+      "displayName": "수율",
+      "dataType": "percentage",
+      "width": 100,
+      "align": "right",
+      "format": "0.00%"
+    },
+    {
+      "id": "col15",
+      "excelHeader": "자재입고",
+      "displayName": "자재입고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col16",
+      "excelHeader": "타계정입고",
+      "displayName": "타계정입고",
+      "dataType": "number",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col17",
+      "excelHeader": "모델변경",
+      "displayName": "모델변경",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col18",
+      "excelHeader": "rework",
+      "displayName": "재작업",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col19",
+      "excelHeader": "RMA",
+      "displayName": "RMA",
+      "dataType": "number",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col20",
+      "excelHeader": "양품출고",
+      "displayName": "양품출고",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter1",
+      "label": "조회월",
+      "type": "month-picker",
+      "required": true
+    },
+    {
+      "id": "filter2",
+      "label": "SITE",
+      "type": "select",
+      "required": false,
+      "options": [
+        "전체",
+        "SITE1",
+        "SITE2",
+        "SITE3"
+      ]
+    },
+    {
+      "id": "filter3",
+      "label": "Inch",
+      "type": "select",
+      "required": false,
+      "options": [
+        "전체",
+        "10.1",
+        "11.6",
+        "13.3",
+        "15.6"
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "계획 대비 실적",
+      "xAxis": "col1",
+      "yAxis": "col5,col6"
+    },
+    {
+      "type": "line",
+      "title": "달성률 추이",
+      "xAxis": "col1",
+      "yAxis": "col7"
+    },
+    {
+      "type": "pie",
+      "title": "불량 유형별 분포",
+      "xAxis": "col1",
+      "yAxis": "col11"
+    }
+  ],
+  "layout": {
+    "filterPosition": "top",
+    "gridHeight": 400,
+    "chartPosition": "bottom"
+  }
+}

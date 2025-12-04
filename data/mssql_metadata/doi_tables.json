@@ -1,0 +1,7583 @@
+[
+  {
+    "name": "DOI_ACCT",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ACCT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "전표기표여부",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "차대",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정대분류",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "관리항목유형",
+        "type": "nvarchar",
+        "maxLength": 28,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정과목Lev",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "경영계획과목",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소분류",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "중분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "대분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "특이사항",
+        "type": "nvarchar",
+        "maxLength": 150,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "disp_seq",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_acct_1106",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYY",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "전표기표여부",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "차대",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정대분류",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "관리항목유형",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정과목Lev",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "중분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "대분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_ACCT_1109",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYY",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ACCT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "전표기표여부",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "차대",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정대분류",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "관리항목유형",
+        "type": "nvarchar",
+        "maxLength": 28,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정과목Lev",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "상위계정과목내부코드",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소분류",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "중분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "대분류",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "특이사항",
+        "type": "nvarchar",
+        "maxLength": 150,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_ACCT_EXPEN",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEPT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "disp_seq",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_ACCT_EXPEN_old",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_CLASS",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEPT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SUB_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_BOM_MAST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "제품명",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "제품번호",
+        "type": "nvarchar",
+        "maxLength": 26,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목자산분류",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목대분류",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목중분류",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목소분류",
+        "type": "nvarchar",
+        "maxLength": 26,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "공정차수",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "공정",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "공정품명",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "공정품번호",
+        "type": "nvarchar",
+        "maxLength": 26,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재명",
+        "type": "nvarchar",
+        "maxLength": 37,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재번호",
+        "type": "nvarchar",
+        "maxLength": 34,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재자산분류",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재중분류",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재소분류",
+        "type": "nvarchar",
+        "maxLength": 37,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "투입단위",
+        "type": "nvarchar",
+        "maxLength": 7,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "내부Loss율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "외부Loss율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "조립위치",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "특이사항",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "최초작성일",
+        "type": "date",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "최초작성자",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "최종수정일",
+        "type": "date",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "최종수정자",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CASET",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "FROM_ACCT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CASSETTE_RESC",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "CST_NO",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "CST_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "CST_CLASS",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SPEC",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_DATE",
+        "type": "date",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_DEPT",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEPT_CODE",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_PERSON",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LAST_DATETIME",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CM_ROLE",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "ROLE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ROLE_NAME",
+        "type": "nvarchar",
+        "maxLength": 500,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "nvarchar",
+        "maxLength": 2000,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEL_YN",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_cm_role_sys_resource",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "ROLE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "prod_category",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "UPPER_SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SYS_RESOURCE_TYPE_CODE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_cm_role_sys_resource_1106",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "ROLE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "prod_category",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UPPER_SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SYS_RESOURCE_TYPE_CODE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CM_SYS_RESOURCE",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "prod_category",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SYS_RESOURCE_NAME",
+        "type": "nvarchar",
+        "maxLength": 500,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UPPER_SYS_RESOURCE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SYS_RESOURCE_TYPE_CODE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "nvarchar",
+        "maxLength": 2000,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEQ",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "URL",
+        "type": "varchar",
+        "maxLength": 1000,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEL_YN",
+        "type": "char",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CM_USER",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "USER_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "user_name",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "password",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "dept_name",
+        "type": "nvarchar",
+        "maxLength": 100,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "dept_code",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "position_name",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "position_code",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UTG",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITG",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEL_YN",
+        "type": "char",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CM_USER_ROLE",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "USER_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ROLE_ID",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ROLE_NAME",
+        "type": "nvarchar",
+        "maxLength": 500,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "nvarchar",
+        "maxLength": 2000,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INIT_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_DT",
+        "type": "datetime",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODI_USER",
+        "type": "varchar",
+        "maxLength": 35,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_common_code",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "maj_code",
+        "type": "varchar",
+        "maxLength": 3,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "code_name",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "tray_cell",
+        "type": "varchar",
+        "maxLength": 3,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "create_date",
+        "type": "date",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "use_yn",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sort_order",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "etc1",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "etc2",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_COST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "BOH_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BAD_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TRANSFER_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ADJ_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT_COST",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BAD",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TRANSFER",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMAIN_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMAIN_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CST_BOM",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "제품명",
+        "type": "nvarchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "제품번호",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "제품규격",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "제품BOM차수",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOM레벨",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재명",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재번호",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "자재규격",
+        "type": "nvarchar",
+        "maxLength": 37,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "투입단위",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "하위BOM차수",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "총소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목자산분류",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목중분류",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목소분류",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "외주배부",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "비고",
+        "type": "nvarchar",
+        "maxLength": 19,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column21",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column22",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column23",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column24",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column25",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column26",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column27",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Column28",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CST_RATE",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "UTG",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "VINA_CST",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_CUST_MAST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYY",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "CUST_CODE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "CUST_DESC",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "CUST_STATE",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOM_SALE",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXP_SALE",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOM_PURC",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OVER_PURC",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_DEPT",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "DEPT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_AREA",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RND_YN",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_DIST",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "COST_DIST_RATE",
+        "type": "decimal",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_DEPT_1127",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEPT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_AREA",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RND_YN",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_DIST",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_DIST_RATE",
+        "type": "decimal",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_DEPT_COST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "코스트센터",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "코스트센터분류",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "코스트센터유형",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "계정과목",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "비용구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "차변금액",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "대변금액",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_dept_cost_1124",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "코스트센터",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "코스트센터분류",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "코스트센터유형",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계정과목",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "비용구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "차변금액",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "대변금액",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_DEPT_old",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "DEPT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_AREA",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RND_YN",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_DIST",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_DIST_RATE",
+        "type": "decimal",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_EXPEN_MATL",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "면적",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "dist_rate",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "dist_in",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SUB_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "adj_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_qty",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "eoh_qty",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "loss_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "bad_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "transfer_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "unit_cost",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "disp_seq",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_ori",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_EXPEN_MATL_OLD",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DIST_RATE",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SUB_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BAD_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TRANSFER_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT_COST",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_단가",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT1",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BAD",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TRANSFER",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_EXPEN_SEL",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYY",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "EXPEN_SEL명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_INVOICE_RAW",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "선택",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고처리",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사업단위",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice_No",
+        "type": "varchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice관리번호",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice_Date",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수출구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "가격조건",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부서",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "담당자",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Buyer",
+        "type": "varchar",
+        "maxLength": 29,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Agent",
+        "type": "nvarchar",
+        "maxLength": 29,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "통화",
+        "type": "varchar",
+        "maxLength": 3,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품명",
+        "type": "nvarchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품번",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "규격",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단위",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매기준가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "창고",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납기일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "기타출고구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출대상",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "미매출금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Remarks",
+        "type": "nvarchar",
+        "maxLength": 100,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "특이사항",
+        "type": "nvarchar",
+        "maxLength": 100,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_INVOICE_RESC",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "actual",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "선택",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고처리",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사업단위",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice_No",
+        "type": "varchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice관리번호",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Invoice_Date",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수출구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "가격조건",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부서",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "담당자",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Buyer",
+        "type": "varchar",
+        "maxLength": 29,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Agent",
+        "type": "nvarchar",
+        "maxLength": 29,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "통화",
+        "type": "varchar",
+        "maxLength": 3,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품명",
+        "type": "nvarchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품번",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "규격",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단위",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매기준가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "창고",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납기일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "기타출고구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출대상",
+        "type": "bit",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "미매출금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Remarks",
+        "type": "nvarchar",
+        "maxLength": 100,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "특이사항",
+        "type": "nvarchar",
+        "maxLength": 100,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_maj_code",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "Maj_code_name",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "maj_code",
+        "type": "varchar",
+        "maxLength": 3,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_mat_amt",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_code",
+        "type": "varchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_unit_cost",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_amt",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "cost_gubun",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_GUBUN",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_class",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MAT_AMT_BAK1118",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_code",
+        "type": "varchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_unit_cost",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_amt",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "cost_gubun",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_class",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MAT_COST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재번호",
+        "type": "nvarchar",
+        "maxLength": 34,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_class",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_amt",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "eoh_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "loss_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환산량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부금액",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사용량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부방식",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단가",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MAT_COST_BAK1201",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재번호",
+        "type": "nvarchar",
+        "maxLength": 34,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_class",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_amt",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환산량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사용량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부방식",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MAT_COST_BAK1202",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "yyyymm",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "site",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재번호",
+        "type": "nvarchar",
+        "maxLength": 34,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "mat_class",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "자재대분류",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_amt",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환산량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "소요량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부금액",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사용량",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배부방식",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MATERIAL_MAST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYY",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MAT_CODE",
+        "type": "varchar",
+        "maxLength": 24,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MAT_DESC",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SIZE",
+        "type": "nvarchar",
+        "maxLength": 40,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MATERIAL_RESC",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MAT_CODE",
+        "type": "varchar",
+        "maxLength": 24,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MAT_DESC",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SIZE",
+        "type": "varchar",
+        "maxLength": 40,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_QTY",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT_COST",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_GUBUN",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_GUBUN",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL_N_TYPE",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": false,
+        "isPrimaryKey": true
+      }
+    ]
+  },
+  {
+    "name": "DOI_MATERIAL_RESC_BAK1118",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_CODE",
+        "type": "varchar",
+        "maxLength": 24,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_DESC",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SIZE",
+        "type": "varchar",
+        "maxLength": 40,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_QTY",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "UNIT_COST",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_AMT",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_GUBUN",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MAT_CLASS",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL_N_TYPE",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MFG_EXP",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "FROM_ACCT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_MODEL_MAST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SPEC",
+        "type": "varchar",
+        "maxLength": 76,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INCH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "GLASS_THICK",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHEET",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BLOCK",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "CELL",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RUN_SIZE",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "X",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Y",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "XY",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_OKW_BOH_TEST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "DOI_YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model_type",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "stock",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_amt",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_OKW_STCO_AMT_TEST_NEW",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "DOI_YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model_type",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_OKW_TEST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "DOI_YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "dist_rate",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "doi_acct_name",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_SUB_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_ITEM_NAME",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DOI_EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "eoh_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "loss_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "bad_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "transfer_qty",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "unit_cost",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "in",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "eoh",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_단가",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out1",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "loss",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "bad",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "transfer",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "doi_prod_in_menu",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "prod_category",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "process_id",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "revision",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "create_date",
+        "type": "date",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "create_user",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_PROD_LOTRUN",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분_ord",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "작업구분",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "org작업구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "lotrun_no",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Inch",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Site_N",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BONUS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "NG_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수율제외_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "REWORK진행_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_PLAN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_ACTUAL_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "material_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "recall_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_PROD_SUBUL",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DW_SITE",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분_ord",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "작업구분",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "org작업구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Inch",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Site",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BONUS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "NG_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수율제외_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "REWORK진행_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_PLAN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_ACTUAL_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "material_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "recall_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_PROD_SUBUL_202510",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DW_SITE",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분_ord",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL_N_TYPE",
+        "type": "varchar",
+        "maxLength": 18,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "작업구분",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "org작업구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Inch",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Site",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BONUS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "NG_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수율제외_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "REWORK진행_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_PLAN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_ACTUAL_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "material_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_PROD_SUBUL_OLD",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "nvarchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분_ORD",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL_N_TYPE",
+        "type": "varchar",
+        "maxLength": 12,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "WORKTYPE",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL_NAME",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INCH",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SALE_SITE",
+        "type": "varchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BONUS_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "NG_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수율제외_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "REWORK진행_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_PLAN_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_ACTUAL_MONTH",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_RMA_INOUT",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "모델명",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMA_IN",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMA_OUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "생성자",
+        "type": "varchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "생성시각",
+        "type": "datetime2",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_RND",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "FROM_ACCT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "COST_TYPE",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_RND_SUBUL",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "DW_SITE",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분_ord",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "도우코드",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL_N_TYPE",
+        "type": "varchar",
+        "maxLength": 18,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "도우모델",
+        "type": "varchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "작업구분",
+        "type": "varchar",
+        "maxLength": 2,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "org작업구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Inch",
+        "type": "varchar",
+        "maxLength": 30,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Site",
+        "type": "varchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BONUS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_MONTH",
+        "type": "float",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "LOSS_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "NG_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수율제외_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "REWORK진행_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_PLAN_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SHIPPING_ACTUAL_MONTH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "material_loss",
+        "type": "int",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_SALE_RAW",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "선택",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고처리",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사업단위",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래명세서번호",
+        "type": "varchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래명세서일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Local구분",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부서",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "담당자",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "청구처",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래처",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "유통구조",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래처번호",
+        "type": "nvarchar",
+        "maxLength": 11,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "중개인",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납품장소",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "인도조건",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매후보관",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "위탁",
+        "type": "varchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납품거래처",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납기일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품명",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품번",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "규격",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단위",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매기준가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부가세포함",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "통화",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부가세액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화부가세액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "창고",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "보관위치",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Lot_No",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "세금계산서_진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배송상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목특이사항",
+        "type": "nvarchar",
+        "maxLength": 145,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출시점",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "진행조회",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천조회",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천관리번호",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천번호",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "PO_No",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "반품",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "미매출금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "세금계산서금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계산서미발행액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계산서미발행수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "기타출고구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목자산분류",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단가소급여부",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량(단가소급)",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "유상사급여부",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_SALE_RESC",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "선택",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고처리",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "사업단위",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래명세서번호",
+        "type": "varchar",
+        "maxLength": 12,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "거래명세서일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Local구분",
+        "type": "nvarchar",
+        "maxLength": 20,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "출고구분",
+        "type": "nvarchar",
+        "maxLength": 8,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부서",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "담당자",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "청구처",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래처",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "유통구조",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래처번호",
+        "type": "nvarchar",
+        "maxLength": 11,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "중개인",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납품장소",
+        "type": "nvarchar",
+        "maxLength": 13,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "인도조건",
+        "type": "nvarchar",
+        "maxLength": 14,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매후보관",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "위탁",
+        "type": "varchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납품거래처",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "납기일",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품명",
+        "type": "varchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품번",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "규격",
+        "type": "nvarchar",
+        "maxLength": 25,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단위",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매기준가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부가세포함",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "통화",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "환율",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "부가세액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "판매금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화부가세액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원화판매금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "창고",
+        "type": "nvarchar",
+        "maxLength": 16,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "보관위치",
+        "type": "nvarchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "Lot_No",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "세금계산서_진행상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "배송상태",
+        "type": "nvarchar",
+        "maxLength": 5,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목특이사항",
+        "type": "nvarchar",
+        "maxLength": 145,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출시점",
+        "type": "nvarchar",
+        "maxLength": 17,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "진행조회",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천조회",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천관리번호",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "원천번호",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "PO_No",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "반품",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "매출금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "미매출금액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "세금계산서금액계",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계산서미발행액",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "계산서미발행수량",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "기타출고구분",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "품목자산분류",
+        "type": "nvarchar",
+        "maxLength": 12,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "단가소급여부",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "수량(단가소급)",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "유상사급여부",
+        "type": "varchar",
+        "maxLength": 1,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEQ_NO",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": false,
+        "isPrimaryKey": true
+      }
+    ]
+  },
+  {
+    "name": "DOI_SGA",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_DEPT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "FROM_ACCT_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "FROM_ACCT_NAME",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ACCT_AMT",
+        "type": "bigint",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_SLCO",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "expen_sel",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "거래처",
+        "type": "nvarchar",
+        "maxLength": 28,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "OUT_qty",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_SMCE_COST",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "varchar",
+        "maxLength": 15,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SUB_NAME",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "ITEM_NAME",
+        "type": "nvarchar",
+        "maxLength": 18,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "nvarchar",
+        "maxLength": 4,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TOT_ACCT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SALE_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TOT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "TOT_SMCE",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DIST_RATE",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DIST_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "DIST_AMT_ORI",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STCO",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "expen_sel",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMAOUT_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "RMAOUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STOCK",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "MODEL_TYPE",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "STOCK",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "BOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT_ETC",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT_MOVING",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT_PROD",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_SHEET",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_RETURN",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_INVOICE",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_ETC",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_MOVING",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STOCK_BOH",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model_type",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "expen_sel명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "stock",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_amt",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "조건",
+        "type": "varchar",
+        "maxLength": 7,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "inch",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STOCK_BOH_OLD_1110",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "sel_code",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "model_type",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "stock",
+        "type": "nvarchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh_amt",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "조건",
+        "type": "varchar",
+        "maxLength": 7,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "inch",
+        "type": "real",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "boh",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "out_단가",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STOCK_COST_OLD",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "INPUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "BOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "IN_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EOH_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_STUC",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL",
+        "type": "varchar",
+        "maxLength": 6,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "EXPEN_SEL명",
+        "type": "nvarchar",
+        "maxLength": 30,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "구분",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "MODEL",
+        "type": "nvarchar",
+        "maxLength": 50,
+        "nullable": false,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_QTY",
+        "type": "int",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_AMT",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      },
+      {
+        "name": "OUT_UNITCOST",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  },
+  {
+    "name": "DOI_VNCST_RATE",
+    "schema": "dbo",
+    "columns": [
+      {
+        "name": "YYYYMM",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SEL_CODE",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "SITE",
+        "type": "varchar",
+        "maxLength": 4,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "CST_NO",
+        "type": "varchar",
+        "maxLength": 10,
+        "nullable": false,
+        "isPrimaryKey": true
+      },
+      {
+        "name": "RATE",
+        "type": "numeric",
+        "maxLength": null,
+        "nullable": true,
+        "isPrimaryKey": false
+      }
+    ]
+  }
+]

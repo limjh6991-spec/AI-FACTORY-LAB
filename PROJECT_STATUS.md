@@ -120,35 +120,77 @@ Phase 4: ░░░░░░░░   0% 📅
 
 ---
 
-### Week 2: 기본 RAG 파이프라인 (35% 진행 중)
+### Week 2: Agent 기반 추론 파이프라인 (60% 진행 중) ⭐ 방향 수정
 
-#### Vector DB 설정 (100% ✅)
+#### ✅ 완료된 작업 (인프라 구축 - 자비스 역할)
+
+**Vector DB 설정 (100% ✅)**
 - [x] 리소스 벡터화 실행 (`npm run vector:setup`) ✅
-- [x] 251개 청크 생성 확인 ✅
+- [x] 251개 청크 생성 확인 (프로젝트 문서) ✅
+- [x] DB 메타데이터 임베딩 (382 chunks, 70 테이블) ✅
 - [x] Vector 검색 테스트 (`npm run vector:test`) ✅
-- [x] 검색 정확도 검증 (95%+ 목표) ✅
 
-#### OpenAI Embeddings 설정 (선택)
-- [ ] OpenAI API 키 발급
-- [ ] `.env`에 OPENAI_API_KEY 추가
-- [ ] Embedding 성능 비교 (Gemini vs OpenAI)
-
-#### DB 메타데이터 활용 (완료 ✅)
-- [x] DB 메타데이터 수집 완료 (70 테이블, 1,100 컬럼)
-- [x] `data/db_metadata.json` 생성 및 저장
+**DB 메타데이터 수집 (100% ✅)**
+- [x] 70개 테이블 메타데이터 수집
+- [x] 1,100개 컬럼 정보 수집
 - [x] 한글명 → 영문 변환 사전 구축 (200+ 패턴)
-- [ ] 메타데이터를 Vector DB에 임베딩
-- [ ] 유사도 검색 테스트
+- [x] `data/db_metadata.json` 생성 및 저장
 
-#### Excel 분석 시스템 (완료 ✅)
-- [x] SheetJS 설치 완료
-- [x] 헤더 행 자동 감지 함수 (`detectHeaderRow`)
-- [x] 데이터 타입 추론 함수 (`inferDataTypes`)
-- [x] DB 컬럼 매핑 함수 (`mapColumnToDB`)
-- [x] 샘플 Excel 파일 3개 생성
-- [x] 실제 Excel 분석 테스트 완료
-- [ ] Excel 업로드 UI 구현
-- [ ] 기본 컬럼 매핑 85% 정확도 달성
+**Excel 업로드 UI (100% ✅)**
+- [x] `/excel-mapping` 페이지 생성
+- [x] 파일 업로드 컴포넌트
+- [x] 매핑 결과 테이블 UI
+- [x] 수동 수정 드롭다운 (테이블/컬럼 선택)
+
+#### 🚧 진행 중 작업 (Agent 추론 로직 - 방향 전환 필요)
+
+**❌ 제거할 항목 (하드코딩 로직)**
+- [x] ~~키워드 매칭 알고리즘~~ (자비스가 직접 구현 X)
+- [x] ~~하이브리드 검색 로직~~ (Agent가 판단해야 함)
+- [x] ~~`quickMapColumns()` 함수~~ (삭제 예정)
+
+**✅ 구현할 항목 (Agent 기반 추론)**
+- [ ] **Agent 매핑 API:**
+  ```typescript
+  // src/lib/agent-mapper.ts
+  async function mapColumnsWithAgent(excelColumns, context) {
+    // 1. Vector DB에서 유사 사례 검색
+    const examples = await vectorSearch(excelColumns);
+    
+    // 2. DB 스키마 정보 가져오기
+    const schema = await getDBSchema();
+    
+    // 3. Gemini에게 추론 요청
+    const prompt = buildMappingPrompt(excelColumns, examples, schema);
+    const result = await gemini.generateContent(prompt);
+    
+    // 4. 구조화된 응답 파싱
+    return parseAgentResponse(result);
+  }
+  ```
+
+- [ ] **Few-Shot Learning Prompt:**
+  - Vector DB에서 성공 사례 3-5개 검색
+  - Prompt에 예제로 포함
+  - Agent가 패턴 학습
+
+- [ ] **피드백 학습 시스템:**
+  - 사용자가 매핑 수정 시 → Vector DB에 저장
+  - 다음 추론 시 해당 사례 참조
+  - 점진적 정확도 향상
+
+#### 📋 Week 2 목표 (수정)
+
+**기술 목표:**
+- [ ] Agent 기반 매핑 정확도: 70% → 85%
+- [ ] 하드코딩 로직 완전 제거
+- [ ] Few-Shot Learning 적용
+- [ ] 사용자 피드백 저장 시스템
+
+**비즈니스 목표:**
+- [ ] Excel → DB 자동 매핑 데모 완성
+- [ ] Agent 학습 사이클 증명
+- [ ] 강화학습 가능성 검증
 
 **예상 완료**: 2025년 12월 9일 (Week 2 종료)
 

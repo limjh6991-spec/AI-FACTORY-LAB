@@ -1,0 +1,185 @@
+{
+  "screenId": "SC005",
+  "screenName": "제조경비 집계표",
+  "description": "제품별 제조경비를 계획(예산) 대비 실적으로 비교 분석하는 화면으로, 원재료, 부재료, 노무비, 제조경비 항목별 집계 현황을 제공합니다.",
+  "excelSheet": "4. 제조경비 집계표",
+  "columns": [
+    {
+      "id": "col1",
+      "excelHeader": "구분",
+      "displayName": "구분",
+      "dataType": "string",
+      "width": 120,
+      "align": "left"
+    },
+    {
+      "id": "col2",
+      "excelHeader": "코드",
+      "displayName": "코드",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col3",
+      "excelHeader": "Inch",
+      "displayName": "규격(Inch)",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col4",
+      "excelHeader": "원재료",
+      "displayName": "계획 원재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col5",
+      "excelHeader": "부재료",
+      "displayName": "계획 부재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col6",
+      "excelHeader": "노무비",
+      "displayName": "계획 노무비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col7",
+      "excelHeader": "제조경비",
+      "displayName": "계획 제조경비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col8",
+      "excelHeader": "원재료",
+      "displayName": "실적 원재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col9",
+      "excelHeader": "부재료",
+      "displayName": "실적 부재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col10",
+      "excelHeader": "노무비",
+      "displayName": "실적 노무비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col11",
+      "excelHeader": "제조경비",
+      "displayName": "실적 제조경비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col12",
+      "excelHeader": "원재료",
+      "displayName": "차이 원재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col13",
+      "excelHeader": "부재료",
+      "displayName": "차이 부재료",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col14",
+      "excelHeader": "노무비",
+      "displayName": "차이 노무비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col15",
+      "excelHeader": "제조경비",
+      "displayName": "차이 제조경비",
+      "dataType": "currency",
+      "width": 120,
+      "align": "right",
+      "format": "#,##0"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter1",
+      "label": "기준년월",
+      "type": "month-picker",
+      "required": true
+    },
+    {
+      "id": "filter2",
+      "label": "제품구분",
+      "type": "select",
+      "required": false,
+      "options": [
+        "전체",
+        "완제품",
+        "반제품",
+        "부품"
+      ]
+    },
+    {
+      "id": "filter3",
+      "label": "제품코드",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "계획 대비 실적 비교",
+      "xAxis": "col1",
+      "yAxis": "col4"
+    },
+    {
+      "type": "line",
+      "title": "제조경비 항목별 추이",
+      "xAxis": "col1",
+      "yAxis": "col7"
+    }
+  ],
+  "layout": {
+    "filterPosition": "top",
+    "gridHeight": 400,
+    "chartPosition": "bottom"
+  }
+}

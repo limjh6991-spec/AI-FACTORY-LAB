@@ -1,0 +1,156 @@
+{
+  "screenId": "SC002",
+  "screenName": "제품 수불 관리",
+  "description": "제품의 입고, 출고, 재고 현황을 관리하고 계획 대비 실적 달성률을 모니터링하는 화면",
+  "excelSheet": "2. 제품 수불부",
+  "columns": [
+    {
+      "id": "col1",
+      "excelHeader": "구분",
+      "displayName": "구분",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col2",
+      "excelHeader": "코드",
+      "displayName": "제품코드",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col3",
+      "excelHeader": "Inch",
+      "displayName": "규격(Inch)",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col4",
+      "excelHeader": "SITE",
+      "displayName": "사이트",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col5",
+      "excelHeader": "계획",
+      "displayName": "계획수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col6",
+      "excelHeader": "실적",
+      "displayName": "실적수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col7",
+      "excelHeader": "달성률",
+      "displayName": "달성률",
+      "dataType": "percentage",
+      "width": 80,
+      "align": "right",
+      "format": "0.0%"
+    },
+    {
+      "id": "col8",
+      "excelHeader": "기초",
+      "displayName": "기초수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col9",
+      "excelHeader": "입고",
+      "displayName": "입고수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col10",
+      "excelHeader": "출고수량",
+      "displayName": "출고수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col11",
+      "excelHeader": "재고",
+      "displayName": "재고수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter1",
+      "label": "조회기간",
+      "type": "month-picker",
+      "required": true
+    },
+    {
+      "id": "filter2",
+      "label": "구분",
+      "type": "select",
+      "required": false,
+      "options": [
+        "전체",
+        "합계",
+        "양산"
+      ]
+    },
+    {
+      "id": "filter3",
+      "label": "사이트",
+      "type": "select",
+      "required": false,
+      "options": [
+        "전체"
+      ]
+    },
+    {
+      "id": "filter4",
+      "label": "제품코드",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "계획 vs 실적 비교",
+      "xAxis": "col1",
+      "yAxis": "col5"
+    },
+    {
+      "type": "line",
+      "title": "재고 현황 추이",
+      "xAxis": "col1",
+      "yAxis": "col11"
+    }
+  ],
+  "layout": {
+    "filterPosition": "top",
+    "gridHeight": 400,
+    "chartPosition": "bottom"
+  }
+}

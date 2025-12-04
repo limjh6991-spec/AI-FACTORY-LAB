@@ -26,14 +26,32 @@ const COLLECTION_NAME = 'ai_factory_resources';
 
 // 벡터화할 리소스 경로
 const RESOURCE_PATHS = [
-  // 문서
-  'docs/EXCEL_TO_SCREEN_TECHNICAL_ANALYSIS.md',
-  'docs/RAG_IMPLEMENTATION_GUIDE.md',
-  'docs/SESSION_SUMMARY_20251202.md',
-  'docs/SESSION_SUMMARY_20251201.md',
+  // 핵심 문서 (루트)
+  'JARVIS_NEXTJS_ROADMAP.md',
+  'JARVIS_RECONNECT_PROMPT.md',
   'PROJECT_ROADMAP.md',
+  'PROJECT_STATUS.md',
   'ENVIRONMENT.md',
   'NEXT_ACTIONS.md',
+  'VECTOR_DB_QUICKSTART.md',
+  'SECURITY_NOTICE.md',
+  
+  // docs 문서 (최신순)
+  'docs/PHASE_SEPARATION_STRATEGY.md',          // ⭐ 최신
+  'docs/SESSION_SUMMARY_20251203.md',
+  'docs/SESSION_SUMMARY_20251202.md',
+  'docs/SESSION_SUMMARY_20251201.md',
+  'docs/EXCEL_TO_SCREEN_TECHNICAL_ANALYSIS.md',
+  'docs/RAG_IMPLEMENTATION_GUIDE.md',
+  'docs/VECTOR_DB_GUIDE.md',
+  'docs/VECTOR_DB_SETUP_SUMMARY.md',
+  'docs/VECTOR_DB_COMPLETION_REPORT.md',
+  'docs/POSTGRESQL_CASE_SENSITIVITY_FIX.md',
+  'docs/AI_MODEL_RECOMMENDATION_2025_DEC.md',
+  'docs/PROJECT_TROUBLESHOOTING_GUIDE_V2.md',
+  'docs/QUICK_START.md',
+  'docs/API_KEY_RENEWAL.md',
+  'docs/TEST_GENERATOR_IMPROVEMENTS.md',
   
   // 리소스
   'resources/excel/EXCEL_LIBRARIES_COMPARISON.md',

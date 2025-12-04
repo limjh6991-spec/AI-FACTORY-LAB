@@ -1,0 +1,61 @@
+{
+  "reportName": "부서별 원가 분석",
+  "columns": [
+    {
+      "columnName": "년월",
+      "description": "분석 기준 년월",
+      "dataType": "string"
+    },
+    {
+      "columnName": "SITE",
+      "description": "사업장 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "코스트센터",
+      "description": "부서 코스트센터 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "코스트센터분류",
+      "description": "코스트센터의 분류 구분",
+      "dataType": "string"
+    },
+    {
+      "columnName": "코스트센터유형",
+      "description": "코스트센터의 유형 구분",
+      "dataType": "string"
+    },
+    {
+      "columnName": "계정과목",
+      "description": "원가 계정과목명",
+      "dataType": "string"
+    },
+    {
+      "columnName": "비용구분",
+      "description": "비용의 구분 (직접비/간접비 등)",
+      "dataType": "string"
+    },
+    {
+      "columnName": "차변금액",
+      "description": "차변 발생 금액",
+      "dataType": "number"
+    },
+    {
+      "columnName": "대변금액",
+      "description": "대변 발생 금액",
+      "dataType": "number"
+    },
+    {
+      "columnName": "순원가",
+      "description": "차변금액 - 대변금액 (실제 원가)",
+      "dataType": "number"
+    }
+  ],
+  "tables": [
+    "doi_dept_cost"
+  ],
+  "sqlQuery": "SELECT \"yyyymm\" AS \"년월\", \"site\" AS \"SITE\", \"코스트센터\" AS \"코스트센터\", \"코스트센터분류\" AS \"코스트센터분류\", \"코스트센터유형\" AS \"코스트센터유형\", \"계정과목\" AS \"계정과목\", \"비용구분\" AS \"비용구분\", \"차변금액\" AS \"차변금액\", \"대변금액\" AS \"대변금액\", (\"차변금액\" - \"대변금액\") AS \"순원가\" FROM \"doi_dept_cost\" ORDER BY \"yyyymm\" DESC, \"코스트센터\", \"계정과목\" LIMIT 100",
+  "reasoning": "RAG Context에서 '부서원가' 테이블(doi_dept_cost)이 부서별 원가 분석에 가장 적합한 테이블입니다. 이 테이블에는 코스트센터(부서), 계정과목, 비용구분, 차변금액, 대변금액 등 원가 분석에 필요한 핵심 컬럼들이 모두 포함되어 있습니다. 차변금액에서 대변금액을 차감하여 순원가를 계산하고, 코스트센터별로 원가를 분석할 수 있도록 구성했습니다. 년월과 코스트센터, 계정과목 순으로 정렬하여 시계열 및 부서별 원가 추이를 파악할 수 있습니다.",
+  "agentThinking": "```json\n{\n  \"reportName\": \"부서별 원가 분석\",\n  \"columns\": [\n    {\n      \"columnName\": \"년월\",\n      \"description\": \"분석 기준 년월\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"SITE\",\n      \"description\": \"사업장 코드\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"코스트센터\",\n      \"description\": \"부서 코스트센터 코드\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"코스트센터분류\",\n      \"description\": \"코스트센터의 분류 구분\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"코스트센터유형\",\n      \"description\": \"코스트센터의 유형 구분\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"계정과목\",\n      \"description\": \"원가 계정과목명\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"비용구분\",\n      \"description\": \"비용의 구분 (직접비/간접비 등)\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"차변금액\",\n      \"description\": \"차변 발생 금액\",\n      \"dataType\": \"number\"\n    },\n    {\n      \"columnName\": \"대변금액\",\n      \"description\": \"대변 발생 금액\",\n      \"dataType\": \"number\"\n    },\n    {\n      \"columnName\": \"순원가\",\n      \"description\": \"차변금액 - 대변금액 (실제 원가)\",\n      \"dataType\": \"number\"\n    }\n  ],\n  \"tables\": [\"doi_dept_cost\"],\n  \"sqlQuery\": \"SELECT \\\"yyyymm\\\" AS \\\"년월\\\", \\\"site\\\" AS \\\"SITE\\\", \\\"코스트센터\\\" AS \\\"코스트센터\\\", \\\"코스트센터분류\\\" AS \\\"코스트센터분류\\\", \\\"코스트센터유형\\\" AS \\\"코스트센터유형\\\", \\\"계정과목\\\" AS \\\"계정과목\\\", \\\"비용구분\\\" AS \\\"비용구분\\\", \\\"차변금액\\\" AS \\\"차변금액\\\", \\\"대변금액\\\" AS \\\"대변금액\\\", (\\\"차변금액\\\" - \\\"대변금액\\\") AS \\\"순원가\\\" FROM \\\"doi_dept_cost\\\" ORDER BY \\\"yyyymm\\\" DESC, \\\"코스트센터\\\", \\\"계정과목\\\" LIMIT 100\",\n  \"reasoning\": \"RAG Context에서 '부서원가' 테이블(doi_dept_cost)이 부서별 원가 분석에 가장 적합한 테이블입니다. 이 테이블에는 코스트센터(부서), 계정과목, 비용구분, 차변금액, 대변금액 등 원가 분석에 필요한 핵심 컬럼들이 모두 포함되어 있습니다. 차변금액에서 대변금액을 차감하여 순원가를 계산하고, 코스트센터별로 원가를 분석할 수 있도록 구성했습니다. 년월과 코스트센터, 계정과목 순으로 정렬하여 시계열 및 부서별 원가 추이를 파악할 수 있습니다.\"\n}\n```"
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Loader2, Edit2, Save, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { api } from '~/trpc/react';
@@ -14,11 +14,26 @@ interface ColumnMapping {
   reasoning: string;
 }
 
+interface DBTable {
+  tableName: string;
+  columns: Array<{
+    columnName: string;
+    dataType: string;
+    comment: string | null;
+  }>;
+}
+
 export default function ExcelMappingPage() {
   const [file, setFile] = useState<File | null>(null);
   const [excelColumns, setExcelColumns] = useState<string[]>([]);
   const [mappings, setMappings] = useState<ColumnMapping[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editTable, setEditTable] = useState('');
+  const [editColumn, setEditColumn] = useState('');
+
+  // DB 테이블/컬럼 정보 가져오기
+  const { data: dbMetadata } = api.excel.getAllTablesAndColumns.useQuery();
 
   const analyzeExcel = api.excel.analyzeColumns.useMutation({
     onSuccess: (data) => {
@@ -78,6 +93,42 @@ export default function ExcelMappingPage() {
     if (confidence >= 80) return <CheckCircle2 className="h-5 w-5 text-green-600" />;
     if (confidence >= 50) return <AlertCircle className="h-5 w-5 text-yellow-600" />;
     return <AlertCircle className="h-5 w-5 text-red-600" />;
+  };
+
+  const handleStartEdit = (index: number) => {
+    const mapping = mappings[index];
+    if (!mapping) return;
+    
+    setEditingIndex(index);
+    setEditTable(mapping.suggestedTable);
+    setEditColumn(mapping.suggestedColumn);
+  };
+
+  const handleSaveEdit = (index: number) => {
+    if (!editTable || !editColumn) return;
+
+    const updatedMappings = [...mappings];
+    const mapping = updatedMappings[index];
+    if (!mapping) return;
+
+    mapping.suggestedTable = editTable;
+    mapping.suggestedColumn = editColumn;
+    mapping.confidence = 100; // 수동 수정은 100% 신뢰도
+    mapping.reasoning = '사용자가 수동으로 수정함';
+
+    setMappings(updatedMappings);
+    setEditingIndex(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditTable('');
+    setEditColumn('');
+  };
+
+  const getColumnsForTable = (tableName: string) => {
+    const table = dbMetadata?.tables.find(t => t.tableName === tableName);
+    return table?.columns || [];
   };
 
   return (
@@ -178,30 +229,114 @@ export default function ExcelMappingPage() {
                   key={idx}
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                  {editingIndex === idx ? (
+                    // 수정 모드
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
                         <span className="font-semibold text-lg">
                           {mapping.excelColumn}
                         </span>
                         <span className="text-gray-400">→</span>
-                        <span className="text-blue-600 font-mono">
-                          {mapping.suggestedTable}.{mapping.suggestedColumn}
-                        </span>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {mapping.reasoning}
-                      </p>
+
+                      {/* 테이블 선택 */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">테이블</label>
+                        <select
+                          value={editTable}
+                          onChange={(e) => {
+                            setEditTable(e.target.value);
+                            setEditColumn(''); // 테이블 변경 시 컬럼 초기화
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">테이블 선택...</option>
+                          {dbMetadata?.tables.map((table) => (
+                            <option key={table.tableName} value={table.tableName}>
+                              {table.tableName} ({table.columns.length} 컬럼)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* 컬럼 선택 */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">컬럼</label>
+                        <select
+                          value={editColumn}
+                          onChange={(e) => setEditColumn(e.target.value)}
+                          disabled={!editTable}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                        >
+                          <option value="">컬럼 선택...</option>
+                          {getColumnsForTable(editTable).map((col) => (
+                            <option key={col.columnName} value={col.columnName}>
+                              {col.columnName} ({col.dataType})
+                              {col.comment && ` - ${col.comment}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* 저장/취소 버튼 */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleSaveEdit(idx)}
+                          disabled={!editTable || !editColumn}
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Save className="h-4 w-4 mr-1" />
+                          저장
+                        </Button>
+                        <Button
+                          onClick={handleCancelEdit}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          취소
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      {getConfidenceIcon(mapping.confidence)}
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${getConfidenceColor(mapping.confidence)}`}
-                      >
-                        {mapping.confidence}%
-                      </span>
-                    </div>
-                  </div>
+                  ) : (
+                    // 보기 모드
+                    <>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-lg">
+                              {mapping.excelColumn}
+                            </span>
+                            <span className="text-gray-400">→</span>
+                            <span className="text-blue-600 font-mono">
+                              {mapping.suggestedTable}.{mapping.suggestedColumn}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {mapping.reasoning}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          {getConfidenceIcon(mapping.confidence)}
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${getConfidenceColor(mapping.confidence)}`}
+                          >
+                            {mapping.confidence}%
+                          </span>
+                          <Button
+                            onClick={() => handleStartEdit(idx)}
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

@@ -1,0 +1,61 @@
+{
+  "reportName": "모델별 생산 수불 레포트",
+  "columns": [
+    {
+      "columnName": "년월",
+      "description": "생산 수불 기준 년월",
+      "dataType": "string"
+    },
+    {
+      "columnName": "사이트",
+      "description": "생산 사이트 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "구분",
+      "description": "입고/출고 구분",
+      "dataType": "string"
+    },
+    {
+      "columnName": "구분순서",
+      "description": "구분 정렬 순서",
+      "dataType": "string"
+    },
+    {
+      "columnName": "도우코드",
+      "description": "제품 도우 코드",
+      "dataType": "string"
+    },
+    {
+      "columnName": "모델유형",
+      "description": "모델 N 유형 분류",
+      "dataType": "string"
+    },
+    {
+      "columnName": "도우모델",
+      "description": "도우 모델명",
+      "dataType": "string"
+    },
+    {
+      "columnName": "작업구분",
+      "description": "작업 유형 구분",
+      "dataType": "string"
+    },
+    {
+      "columnName": "원작업구분",
+      "description": "원본 작업 구분",
+      "dataType": "string"
+    },
+    {
+      "columnName": "SEL코드",
+      "description": "SEL 분류 코드",
+      "dataType": "string"
+    }
+  ],
+  "tables": [
+    "doi_prod_subul_202510"
+  ],
+  "sqlQuery": "SELECT \"YYYYMM\" AS \"년월\", \"DW_SITE\" AS \"사이트\", \"구분\" AS \"구분\", \"구분_ord\" AS \"구분순서\", \"도우코드\" AS \"도우코드\", \"MODEL_N_TYPE\" AS \"모델유형\", \"도우모델\" AS \"도우모델\", \"작업구분\" AS \"작업구분\", \"org작업구분\" AS \"원작업구분\", \"SEL_CODE\" AS \"SEL코드\" FROM \"doi_prod_subul_202510\" ORDER BY \"YYYYMM\" DESC, \"도우모델\", \"구분_ord\" LIMIT 100",
+  "reasoning": "모델별 생산 수불(입고/출고) 레포트를 위해 '생산subul 202510' 테이블(doi_prod_subul_202510)을 선택했습니다. 이 테이블에는 생산 수불 관련 핵심 정보가 포함되어 있습니다: 1) YYYYMM - 년월 정보, 2) 구분/구분_ord - 입고/출고 구분, 3) 도우모델/MODEL_N_TYPE - 모델별 분류 정보, 4) 도우코드 - 제품 코드, 5) 작업구분 - 작업 유형. RAG Context에서 제공된 컬럼명을 정확히 사용하였으며, 모델별 생산 입고/출고 현황을 파악할 수 있도록 도우모델과 구분 기준으로 정렬하였습니다.",
+  "agentThinking": "```json\n{\n  \"reportName\": \"모델별 생산 수불 레포트\",\n  \"columns\": [\n    {\n      \"columnName\": \"년월\",\n      \"description\": \"생산 수불 기준 년월\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"사이트\",\n      \"description\": \"생산 사이트 코드\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"구분\",\n      \"description\": \"입고/출고 구분\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"구분순서\",\n      \"description\": \"구분 정렬 순서\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"도우코드\",\n      \"description\": \"제품 도우 코드\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"모델유형\",\n      \"description\": \"모델 N 유형 분류\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"도우모델\",\n      \"description\": \"도우 모델명\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"작업구분\",\n      \"description\": \"작업 유형 구분\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"원작업구분\",\n      \"description\": \"원본 작업 구분\",\n      \"dataType\": \"string\"\n    },\n    {\n      \"columnName\": \"SEL코드\",\n      \"description\": \"SEL 분류 코드\",\n      \"dataType\": \"string\"\n    }\n  ],\n  \"tables\": [\"doi_prod_subul_202510\"],\n  \"sqlQuery\": \"SELECT \\\"YYYYMM\\\" AS \\\"년월\\\", \\\"DW_SITE\\\" AS \\\"사이트\\\", \\\"구분\\\" AS \\\"구분\\\", \\\"구분_ord\\\" AS \\\"구분순서\\\", \\\"도우코드\\\" AS \\\"도우코드\\\", \\\"MODEL_N_TYPE\\\" AS \\\"모델유형\\\", \\\"도우모델\\\" AS \\\"도우모델\\\", \\\"작업구분\\\" AS \\\"작업구분\\\", \\\"org작업구분\\\" AS \\\"원작업구분\\\", \\\"SEL_CODE\\\" AS \\\"SEL코드\\\" FROM \\\"doi_prod_subul_202510\\\" ORDER BY \\\"YYYYMM\\\" DESC, \\\"도우모델\\\", \\\"구분_ord\\\" LIMIT 100\",\n  \"reasoning\": \"모델별 생산 수불(입고/출고) 레포트를 위해 '생산subul 202510' 테이블(doi_prod_subul_202510)을 선택했습니다. 이 테이블에는 생산 수불 관련 핵심 정보가 포함되어 있습니다: 1) YYYYMM - 년월 정보, 2) 구분/구분_ord - 입고/출고 구분, 3) 도우모델/MODEL_N_TYPE - 모델별 분류 정보, 4) 도우코드 - 제품 코드, 5) 작업구분 - 작업 유형. RAG Context에서 제공된 컬럼명을 정확히 사용하였으며, 모델별 생산 입고/출고 현황을 파악할 수 있도록 도우모델과 구분 기준으로 정렬하였습니다.\"\n}\n```"
+}

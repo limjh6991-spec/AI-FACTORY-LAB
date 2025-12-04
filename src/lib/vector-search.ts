@@ -190,6 +190,52 @@ export class VectorSearch {
       collections: collections.map((c) => c.name),
     };
   }
+
+  /**
+   * DB 메타데이터 검색 (db_metadata 컬렉션 전용)
+   * 
+   * @param query 검색 쿼리
+   * @param topK 반환할 결과 수
+   * @returns DB 테이블/컬럼 관련 정보
+   */
+  async searchDBMetadata(
+    query: string,
+    topK: number = 10
+  ): Promise<Array<{
+    document: string;
+    metadata: any;
+    score: number;
+  }>> {
+    try {
+      // db_metadata 컬렉션 가져오기
+      const dbCollection = await this.client.getCollection({
+        name: 'db_metadata',
+      });
+
+      // 쿼리 임베딩
+      const queryEmbedding = await this.embedText(query);
+
+      // Vector 검색
+      const results = await dbCollection.query({
+        queryEmbeddings: [queryEmbedding],
+        nResults: topK,
+      });
+
+      // 결과 포맷팅
+      const formattedResults = (results.documents[0] || [])
+        .map((doc, idx) => ({
+          document: doc || '',
+          metadata: (results.metadatas?.[0]?.[idx]) || {},
+          score: (results.distances?.[0]?.[idx]) || 0,
+        }))
+        .filter(r => r.document !== '');
+
+      return formattedResults;
+    } catch (error) {
+      console.error('DB 메타데이터 검색 실패:', error);
+      throw new Error('db_metadata 컬렉션을 찾을 수 없습니다. embed_db_metadata.ts를 먼저 실행하세요.');
+    }
+  }
 }
 
 // ============================================================================

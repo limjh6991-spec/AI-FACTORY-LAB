@@ -1,0 +1,104 @@
+{
+  "screenId": "SC008",
+  "screenName": "판매관리비 집계표(부서별)",
+  "description": "부서별 판매관리비 집계 현황을 조회하는 화면",
+  "sourceSheet": "8-1. 판매관리비 집계표(부서별)",
+  "sourceFile": "원가시스템 폼.ver7.xlsx",
+  "gridType": "AG Grid",
+  "layout": {
+    "type": "single-grid",
+    "hasChart": false,
+    "hasSearchArea": true
+  },
+  "searchArea": {
+    "fields": [
+      {
+        "id": "yearMonth",
+        "label": "기준년월",
+        "type": "month-picker",
+        "required": true
+      },
+      {
+        "id": "deptCode",
+        "label": "부서",
+        "type": "select",
+        "options": "부서목록"
+      },
+      {
+        "id": "expenseType",
+        "label": "비용항목",
+        "type": "select",
+        "options": "비용항목목록"
+      }
+    ]
+  },
+  "columns": [
+    { "field": "category", "headerName": "구분", "width": 200, "pinned": "left", "rowGroup": false },
+    { "field": "plan", "headerName": "계획", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "total", "headerName": "합계", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "company", "headerName": "전사", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept01", "headerName": "장애인운동선수", "width": 120, "type": "number", "cellStyle": "currency" },
+    { "field": "dept02", "headerName": "판매공통", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept03", "headerName": "경영지원실", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept04", "headerName": "지원팀", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept05", "headerName": "자금그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept06", "headerName": "회계그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept07", "headerName": "인사총무그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept08", "headerName": "시스템지원그룹", "width": 120, "type": "number", "cellStyle": "currency" },
+    { "field": "dept09", "headerName": "구매그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept10", "headerName": "전략팀", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept11", "headerName": "도우VINA", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept12", "headerName": "개발실", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept13", "headerName": "연구팀", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept14", "headerName": "HTG개발그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept15", "headerName": "선행연구그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept16", "headerName": "개발팀", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept17", "headerName": "공정개발그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept18", "headerName": "제품개발그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept19", "headerName": "설비개발팀", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept20", "headerName": "설계그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept21", "headerName": "제어그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept22", "headerName": "사업기획그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept23", "headerName": "마케팅그룹", "width": 100, "type": "number", "cellStyle": "currency" },
+    { "field": "dept24", "headerName": "기술기획그룹", "width": 110, "type": "number", "cellStyle": "currency" },
+    { "field": "dept25", "headerName": "지원그룹", "width": 100, "type": "number", "cellStyle": "currency" }
+  ],
+  "dataRows": [
+    { "category": "합계", "isTotal": true },
+    { "category": "(1) 판)임원급여", "indent": 1 },
+    { "category": "(2) 판)직원급여", "indent": 1 },
+    { "category": "(3) 판)상여금", "indent": 1 },
+    { "category": "(4) 판)제수당", "indent": 1 },
+    { "category": "(5) 판)퇴직급여", "indent": 1 },
+    { "category": "(6) 판)복리후생비", "indent": 1 },
+    { "category": "(7) 판)여비교통비", "indent": 1 },
+    { "category": "(8) 판)접대비", "indent": 1 },
+    { "category": "(9) 판)통신비", "indent": 1 },
+    { "category": "(10) 판)수도광열비", "indent": 1 },
+    { "category": "(11) 판)세금과공과", "indent": 1 },
+    { "category": "(12) 판)감가상각비", "indent": 1 },
+    { "category": "(13) 판)지급임차료", "indent": 1 },
+    { "category": "(14) 판)수선비", "indent": 1 },
+    { "category": "(15) 판)보험료", "indent": 1 },
+    { "category": "(16) 판)차량유지비", "indent": 1 },
+    { "category": "(17) 판)경상연구개발비", "indent": 1 },
+    { "category": "(18) 판)운반비", "indent": 1 },
+    { "category": "(19) 판)교육훈련비", "indent": 1 },
+    { "category": "(20) 판)도서인쇄비", "indent": 1 },
+    { "category": "(21) 판)소모품비", "indent": 1 },
+    { "category": "(22) 판)지급수수료", "indent": 1 },
+    { "category": "(23) 판)광고선전비", "indent": 1 },
+    { "category": "(24) 판)무형자산상각비", "indent": 1 },
+    { "category": "(25) 판)견본비", "indent": 1 },
+    { "category": "(26) 판)사용권자산감가상각비", "indent": 1 },
+    { "category": "(27) 판)주식보상비용", "indent": 1 },
+    { "category": "(28) 판)해외시장개척비", "indent": 1 }
+  ],
+  "features": {
+    "pinnedColumn": "category",
+    "totalRow": true,
+    "currencyFormat": true,
+    "horizontalScroll": true,
+    "exportExcel": true
+  }
+}

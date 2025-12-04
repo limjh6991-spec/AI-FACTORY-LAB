@@ -1,0 +1,281 @@
+{
+  "screenId": "SC004",
+  "screenName": "자재수불부 관리",
+  "description": "자재의 입고, 출고, 재고 현황을 관리하고 모니터링하는 화면입니다. 자재별 수량 및 금액 정보를 제공합니다.",
+  "excelSheet": "4. 자재수불부",
+  "columns": [
+    {
+      "id": "col1",
+      "excelHeader": "자재구분",
+      "displayName": "자재구분",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col2",
+      "excelHeader": "품번",
+      "displayName": "품번",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col3",
+      "excelHeader": "품명",
+      "displayName": "품명",
+      "dataType": "string",
+      "width": 150,
+      "align": "left"
+    },
+    {
+      "id": "col4",
+      "excelHeader": "대분류",
+      "displayName": "대분류",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col5",
+      "excelHeader": "중분류",
+      "displayName": "중분류",
+      "dataType": "string",
+      "width": 80,
+      "align": "center"
+    },
+    {
+      "id": "col6",
+      "excelHeader": "규격",
+      "displayName": "규격",
+      "dataType": "string",
+      "width": 100,
+      "align": "center"
+    },
+    {
+      "id": "col7",
+      "excelHeader": "기초수량",
+      "displayName": "기초수량",
+      "dataType": "number",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col8",
+      "excelHeader": "기초금액",
+      "displayName": "기초금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col9",
+      "excelHeader": "기초단가",
+      "displayName": "기초단가",
+      "dataType": "currency",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col10",
+      "excelHeader": "입고수량",
+      "displayName": "입고수량",
+      "dataType": "number",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col11",
+      "excelHeader": "입고금액",
+      "displayName": "입고금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col12",
+      "excelHeader": "입고단가",
+      "displayName": "입고단가",
+      "dataType": "currency",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col13",
+      "excelHeader": "기타입고수량",
+      "displayName": "기타입고수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col14",
+      "excelHeader": "기타입고금액",
+      "displayName": "기타입고금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col15",
+      "excelHeader": "기타입고단가",
+      "displayName": "기타입고단가",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col16",
+      "excelHeader": "출고수량",
+      "displayName": "출고수량",
+      "dataType": "number",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col17",
+      "excelHeader": "출고금액",
+      "displayName": "출고금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col18",
+      "excelHeader": "출고단가",
+      "displayName": "출고단가",
+      "dataType": "currency",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col19",
+      "excelHeader": "기타출고수량",
+      "displayName": "기타출고수량",
+      "dataType": "number",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col20",
+      "excelHeader": "기타출고금액",
+      "displayName": "기타출고금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col21",
+      "excelHeader": "기타출고단가",
+      "displayName": "기타출고단가",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col22",
+      "excelHeader": "재고수량",
+      "displayName": "재고수량",
+      "dataType": "number",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col23",
+      "excelHeader": "재고금액",
+      "displayName": "재고금액",
+      "dataType": "currency",
+      "width": 100,
+      "align": "right",
+      "format": "#,##0"
+    },
+    {
+      "id": "col24",
+      "excelHeader": "재고단가",
+      "displayName": "재고단가",
+      "dataType": "currency",
+      "width": 80,
+      "align": "right",
+      "format": "#,##0"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter1",
+      "label": "자재구분",
+      "type": "select",
+      "required": false,
+      "options": [
+        "원재료",
+        "부재료",
+        "포장재",
+        "기타"
+      ]
+    },
+    {
+      "id": "filter2",
+      "label": "대분류",
+      "type": "select",
+      "required": false
+    },
+    {
+      "id": "filter3",
+      "label": "중분류",
+      "type": "select",
+      "required": false
+    },
+    {
+      "id": "filter4",
+      "label": "품명",
+      "type": "text",
+      "required": false
+    },
+    {
+      "id": "filter5",
+      "label": "조회기간",
+      "type": "date-range",
+      "required": true
+    }
+  ],
+  "charts": [
+    {
+      "type": "bar",
+      "title": "자재구분별 재고현황",
+      "xAxis": "col1",
+      "yAxis": "col22"
+    },
+    {
+      "type": "pie",
+      "title": "자재구분별 재고금액 비율",
+      "xAxis": "col1",
+      "yAxis": "col23"
+    },
+    {
+      "type": "bar",
+      "title": "입고 vs 출고 수량 비교",
+      "xAxis": "col3",
+      "yAxis": "col10"
+    }
+  ],
+  "layout": {
+    "filterPosition": "top",
+    "gridHeight": 500,
+    "chartPosition": "bottom"
+  }
+}

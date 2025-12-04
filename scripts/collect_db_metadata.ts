@@ -6,16 +6,18 @@ const prisma = new PrismaClient();
 
 /**
  * PostgreSQL information_schema에서 직접 메타데이터 수집
+ * doi_ 접두어 테이블만 수집
  */
 async function collectDBMetadata() {
-  console.log('🔍 DB 메타데이터 수집 중...\n');
+  console.log('🔍 DB 메타데이터 수집 중 (doi_ 접두어 테이블만)...\n');
   
-  // 1. 모든 테이블 목록 가져오기
+  // 1. doi_ 접두어 테이블만 가져오기
   const tablesResult = await prisma.$queryRaw<Array<{table_name: string}>>`
     SELECT table_name 
     FROM information_schema.tables 
     WHERE table_schema = 'public' 
       AND table_type = 'BASE TABLE'
+      AND table_name LIKE 'doi_%'
     ORDER BY table_name
   `;
   
@@ -101,6 +103,9 @@ function inferKoreanName(name: string): string {
     'his_': '이력',
     'tmp_': '임시',
     
+    // 테이블 접미어 (기준정보 마스터 테이블)
+    '_mast': '마스터',
+    
     // 업무 영역
     'sys_': '시스템',
     'cost_': '원가',
@@ -121,6 +126,11 @@ function inferKoreanName(name: string): string {
     'acct_': '회계',
     
     // 공통 테이블/엔티티 명
+    'model': '제품',          // ⭐ 제품 = model
+    'model_mast': '제품마스터', // ⭐ 제품 기준정보
+    'bom_mast': 'BOM마스터',   // ⭐ BOM 기준정보
+    'cust_mast': '고객마스터',  // ⭐ 고객 기준정보
+    'material_mast': '자재마스터', // ⭐ 자재 기준정보
     'menu': '메뉴',
     'user': '사용자',
     'dept': '부서',
@@ -128,6 +138,7 @@ function inferKoreanName(name: string): string {
     'process': '공정',
     'material': '자재',
     'customer': '고객',
+    'cust': '고객',
     'vendor': '거래처',
     'supplier': '공급업체',
     'warehouse': '창고',
@@ -164,6 +175,15 @@ function inferKoreanName(name: string): string {
     'rework': '재작업',
     'scrap': '스크랩',
     'waste': '폐기',
+    'bom': 'BOM',
+    'lotrun': '로트런',
+    'subul': '수불',
+    'rma': '반품',
+    'sga': '판관비',
+    'slco': '판매원가',
+    'stco': '표준원가',
+    'smce': '제조원가',
+    'rnd': '연구개발',
     
     // 시간 관련
     'monthly': '월별',
