@@ -1842,3 +1842,77 @@ model product {
   @@index([isActive], map: "Product_isActive_idx")
   @@index([productCode], map: "Product_productCode_idx")
 }
+
+// ============================================================
+// 시스템 메뉴 테이블
+// ============================================================
+model sys_menu {
+  menu_id       String    @id @db.VarChar(20)
+  parent_id     String?   @db.VarChar(20)
+  menu_level    Int       @default(1) @db.SmallInt
+  sort_order    Int       @default(0)
+  menu_name     String    @db.VarChar(100)
+  menu_name_en  String?   @db.VarChar(100)
+  menu_path     String?   @db.VarChar(200)
+  menu_icon     String?   @db.VarChar(50)
+  screen_id     String?   @db.VarChar(20)
+  screen_type   String    @default("list") @db.VarChar(20)
+  is_active     Boolean   @default(true)
+  is_visible    Boolean   @default(true)
+  badge_text    String?   @db.VarChar(20)
+  badge_type    String?   @db.VarChar(20)
+  created_by    String?   @db.VarChar(50)
+  created_at    DateTime  @default(now())
+  updated_by    String?   @db.VarChar(50)
+  updated_at    DateTime  @default(now()) @updatedAt
+
+  // Self-relation for parent-child
+  parent        sys_menu?       @relation("MenuHierarchy", fields: [parent_id], references: [menu_id])
+  children      sys_menu[]      @relation("MenuHierarchy")
+  
+  // Relation to menu_role
+  menu_roles    sys_menu_role[]
+
+  @@index([parent_id], map: "idx_menu_parent")
+  @@index([menu_level], map: "idx_menu_level")
+  @@index([menu_path], map: "idx_menu_path")
+  @@index([sort_order], map: "idx_menu_sort")
+}
+
+// ============================================================
+// 역할(권한 그룹) 테이블
+// ============================================================
+model sys_role {
+  role_id       String    @id @db.VarChar(20)
+  role_name     String    @db.VarChar(50)
+  role_desc     String?   @db.VarChar(200)
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  
+  // Relation to menu_role
+  menu_roles    sys_menu_role[]
+}
+
+// ============================================================
+// 메뉴-역할 매핑 테이블 (권한 관리)
+// ============================================================
+model sys_menu_role {
+  id            Int       @id @default(autoincrement())
+  menu_id       String    @db.VarChar(20)
+  role_id       String    @db.VarChar(20)
+  can_read      Boolean   @default(true)
+  can_create    Boolean   @default(false)
+  can_update    Boolean   @default(false)
+  can_delete    Boolean   @default(false)
+  can_export    Boolean   @default(false)
+  can_print     Boolean   @default(false)
+  created_at    DateTime  @default(now())
+
+  // Relations
+  menu          sys_menu  @relation(fields: [menu_id], references: [menu_id])
+  role          sys_role  @relation(fields: [role_id], references: [role_id])
+
+  @@unique([menu_id, role_id], map: "uk_menu_role")
+  @@index([menu_id], map: "idx_menu_role_menu")
+  @@index([role_id], map: "idx_menu_role_role")
+}

@@ -2,6 +2,7 @@ import { postRouter } from "~/server/api/routers/post";
 import { productRouter } from "~/server/api/routers/product";
 import { excelRouter } from "~/server/api/routers/excel";
 import { screen982157Router } from "~/server/api/routers/screen982157";
+import { menuRouter } from "~/server/api/routers/menu";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   product: productRouter,
   excel: excelRouter,
   screen982157: screen982157Router,
+  menu: menuRouter,
 });
 
 // export type definition of API
