@@ -17,6 +17,12 @@
 - **UI Framework**: 
   - Tailwind CSS v4
   - shadcn/ui (Radix UI 기반)
+- **🎨 디자인 시스템**: IBM Carbon Design System
+  - **적용일**: 2025년 12월 5일
+  - **테마**: Light Blue (연한 파란색 계열)
+  - **폰트**: IBM Plex Sans
+  - **색상 팔레트**: Carbon Gray 100 + Blue 60
+  - **참고**: `/resources/design-system/IBM_CARBON_DESIGN_SYSTEM.md`
 - **상태 관리**: TanStack Query (React Query)
 - **테이블**: TanStack Table (무료, RealGrid 대체)
 - **차트**: Recharts + Nivo
@@ -643,6 +649,73 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_factory_db"
 
 ---
 
+## 🎨 IBM Carbon Design System 적용 가이드
+
+### ⚠️ 중요: 화면 생성 시 반드시 적용
+
+**모든 새로운 화면/컴포넌트 생성 시 IBM Carbon Design System 스타일을 반드시 적용해야 합니다.**
+
+### 디자인 시스템 리소스 위치
+
+```
+/resources/design-system/
+├── IBM_CARBON_DESIGN_SYSTEM.md     # 메인 가이드 (필독)
+├── CARBON_COLOR_TOKENS.md          # 색상 토큰 레퍼런스
+└── CARBON_COMPONENT_SNIPPETS.md    # 복사-붙여넣기용 코드 스니펫
+```
+
+### 화면 생성 체크리스트
+
+- [ ] **폰트**: IBM Plex Sans (`font-family: 'IBM Plex Sans'`)
+- [ ] **색상**: Carbon 색상 팔레트 사용 (`#0f62fe`, `#161616`, `#f4f4f4` 등)
+- [ ] **간격**: 8px 단위 (2x Grid) 사용
+- [ ] **버튼**: 48px 높이, 직각 모서리, hover/active 상태
+- [ ] **입력 필드**: 하단 테두리 스타일 (`border-b border-[#8d8d8d]`)
+- [ ] **테이블**: 48px 행 높이, 호버 효과 (`hover:bg-[#f4f4f4]`)
+- [ ] **카드**: 상단 3px 컬러 바 (`border-t-[3px] border-t-[#0f62fe]`)
+- [ ] **아이콘**: 20px 기본 사이즈 (lucide-react)
+- [ ] **포커스**: 2px 파란색 아웃라인 (`focus:ring-2 focus:ring-[#0f62fe]`)
+
+### 주요 색상 코드
+
+| 용도 | 색상 코드 |
+|------|-----------|
+| Primary Interactive | `#0f62fe` |
+| Background (Light) | `#f4f4f4` |
+| Background (Dark) | `#161616` |
+| Text Primary | `#161616` |
+| Text Secondary | `#525252` |
+| Border | `#e0e0e0` |
+| Success | `#24a148` |
+| Error | `#da1e28` |
+| Warning | `#f1c21b` |
+
+### 코드 예시
+
+```tsx
+// ✅ 올바른 예시 - Carbon 스타일
+<button className="bg-[#0f62fe] text-white px-4 py-3 text-sm hover:bg-[#0353e9]">
+  저장
+</button>
+
+<div className="bg-white shadow-sm border-t-[3px] border-t-[#0f62fe] p-5">
+  <h3 className="text-sm font-semibold text-[#161616]">카드 제목</h3>
+</div>
+
+// ❌ 잘못된 예시 - 일반 Tailwind 스타일
+<button className="bg-blue-500 rounded-md px-4 py-2">
+  저장
+</button>
+```
+
+### 참고 사이트
+
+- [IBM Carbon Design System](https://carbondesignsystem.com/)
+- [Carbon React Components](https://react.carbondesignsystem.com/)
+- [Carbon Color Tokens](https://carbondesignsystem.com/guidelines/color/tokens/)
+
+---
+
 ## 📝 참고 자료
 
 - [Next.js 문서](https://nextjs.org/docs)
@@ -650,6 +723,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_factory_db"
 - [Prisma 문서](https://www.prisma.io/docs)
 - [shadcn/ui](https://ui.shadcn.com)
 - [TanStack Table](https://tanstack.com/table)
+- [IBM Carbon Design System](https://carbondesignsystem.com/)
 - [Recharts](https://recharts.org)
 
 ---
