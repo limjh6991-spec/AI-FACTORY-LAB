@@ -1,0 +1,200 @@
+{
+  "screenId": "SC982157",
+  "screenName": "판매관리비 집계표(부서별)",
+  "sheetName": "8-1. 판매관리비 집계표(부서별)",
+  "sourceTables": [
+    "DOI_DEPT, DOI_ACCT_EXPEN"
+  ],
+  "description": "판매관리비 집계_부서별 구분, 계획, 합계까지 3열은 고정으로 가되 가로 조회되는 부서는 출력 양식에 맞게 바뀌어서 출력 되게끔",
+  "columns": [
+    {
+      "field": "col_0",
+      "headerName": "구분_부서별",
+      "width": 150,
+      "pinned": "left",
+      "type": "string"
+    },
+    {
+      "field": "col_1",
+      "headerName": "계획",
+      "width": 150,
+      "type": "number"
+    },
+    {
+      "field": "col_2",
+      "headerName": "합계",
+      "width": 150,
+      "type": "number"
+    },
+    {
+      "field": "col_3",
+      "headerName": "전사",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_4",
+      "headerName": "장애인운동선수",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_5",
+      "headerName": "판매공통",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_6",
+      "headerName": "경영지원실",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_7",
+      "headerName": "지원팀",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_8",
+      "headerName": "자금그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_9",
+      "headerName": "회계그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_10",
+      "headerName": "인사총무그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_11",
+      "headerName": "시스템지원그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_12",
+      "headerName": "구매그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_13",
+      "headerName": "전략팀",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_14",
+      "headerName": "도우VINA",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_15",
+      "headerName": "개발실",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_16",
+      "headerName": "연구팀",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_17",
+      "headerName": "HTG개발그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_18",
+      "headerName": "선행연구그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_19",
+      "headerName": "개발팀",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_20",
+      "headerName": "공정개발그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_21",
+      "headerName": "제품개발그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_22",
+      "headerName": "설비개발팀",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_23",
+      "headerName": "설계그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_24",
+      "headerName": "제어그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_25",
+      "headerName": "사업기획그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_26",
+      "headerName": "마케팅그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_27",
+      "headerName": "기술기획그룹",
+      "width": 100,
+      "type": "number"
+    },
+    {
+      "field": "col_28",
+      "headerName": "지원그룹",
+      "width": 100,
+      "type": "number"
+    }
+  ],
+  "searchFields": [
+    {
+      "id": "yearMonth",
+      "label": "기준년월",
+      "type": "month-picker",
+      "required": true
+    },
+    {
+      "id": "site",
+      "label": "사업장",
+      "type": "select"
+    }
+  ],
+  "generatedAt": "2025-12-05T08:56:22.157Z"
+}

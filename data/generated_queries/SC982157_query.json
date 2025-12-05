@@ -1,0 +1,171 @@
+{
+  "screenId": "SC982157",
+  "screenName": "판매관리비 집계표(부서별)",
+  "sourceTables": [
+    "DOI_DEPT, DOI_ACCT_EXPEN"
+  ],
+  "query": "WITH dept_sales_data AS (\n    SELECT \n        CASE \n            WHEN ae.acct LIKE '60%' THEN '판매비'\n            WHEN ae.acct LIKE '61%' THEN '관리비'\n            ELSE '기타'\n        END as category,\n        d.dept_name,\n        SUM(ae.acct_amt) as amount,\n        SUM(ae.plan_amt) as plan_amount\n    FROM doi_acct_expen ae\n    LEFT JOIN doi_dept d ON ae.dept = d.dept\n    WHERE ae.acct_ym = :yearMonth\n        AND ae.acct BETWEEN '6000' AND '6199'\n        AND (:site IS NULL OR ae.site = :site)\n    GROUP BY \n        CASE \n            WHEN ae.acct LIKE '60%' THEN '판매비'\n            WHEN ae.acct LIKE '61%' THEN '관리비'\n            ELSE '기타'\n        END,\n        d.dept_name\n),\ncategory_totals AS (\n    SELECT \n        category,\n        SUM(plan_amount) as total_plan,\n        SUM(amount) as total_amount\n    FROM dept_sales_data\n    GROUP BY category\n)\nSELECT \n    ct.category as \"구분_부서별\",\n    ct.total_plan as \"계획\",\n    ct.total_amount as \"합계\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '전사' THEN dsd.amount END), 0) as \"전사\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '장애인운동선수' THEN dsd.amount END), 0) as \"장애인운동선수\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '판매공통' THEN dsd.amount END), 0) as \"판매공통\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '경영지원실' THEN dsd.amount END), 0) as \"경영지원실\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '지원팀' THEN dsd.amount END), 0) as \"지원팀\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '자금그룹' THEN dsd.amount END), 0) as \"자금그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '회계그룹' THEN dsd.amount END), 0) as \"회계그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '인사총무그룹' THEN dsd.amount END), 0) as \"인사총무그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '시스템지원그룹' THEN dsd.amount END), 0) as \"시스템지원그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '구매그룹' THEN dsd.amount END), 0) as \"구매그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '전략팀' THEN dsd.amount END), 0) as \"전략팀\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '도우VINA' THEN dsd.amount END), 0) as \"도우VINA\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '개발실' THEN dsd.amount END), 0) as \"개발실\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '연구팀' THEN dsd.amount END), 0) as \"연구팀\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = 'HTG개발그룹' THEN dsd.amount END), 0) as \"HTG개발그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '선행연구그룹' THEN dsd.amount END), 0) as \"선행연구그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '개발팀' THEN dsd.amount END), 0) as \"개발팀\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '공정개발그룹' THEN dsd.amount END), 0) as \"공정개발그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '제품개발그룹' THEN dsd.amount END), 0) as \"제품개발그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '설비개발팀' THEN dsd.amount END), 0) as \"설비개발팀\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '설계그룹' THEN dsd.amount END), 0) as \"설계그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '제어그룹' THEN dsd.amount END), 0) as \"제어그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '사업기획그룹' THEN dsd.amount END), 0) as \"사업기획그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '마케팅그룹' THEN dsd.amount END), 0) as \"마케팅그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '기술기획그룹' THEN dsd.amount END), 0) as \"기술기획그룹\",\n    COALESCE(SUM(CASE WHEN dsd.dept_name = '지원그룹' THEN dsd.amount END), 0) as \"지원그룹\"\nFROM category_totals ct\nLEFT JOIN dept_sales_data dsd ON ct.category = dsd.category\nGROUP BY ct.category, ct.total_plan, ct.total_amount\nORDER BY ct.category",
+  "queryType": "pivot",
+  "parameters": [
+    {
+      "name": "yearMonth",
+      "type": "string",
+      "required": true,
+      "description": "기준년월 (YYYYMM)"
+    },
+    {
+      "name": "site",
+      "type": "string",
+      "required": false,
+      "description": "사업장 코드"
+    }
+  ],
+  "resultColumns": [
+    {
+      "field": "구분_부서별",
+      "alias": "구분_부서별",
+      "type": "string"
+    },
+    {
+      "field": "계획",
+      "alias": "계획",
+      "type": "number"
+    },
+    {
+      "field": "합계",
+      "alias": "합계",
+      "type": "number"
+    },
+    {
+      "field": "전사",
+      "alias": "전사",
+      "type": "number"
+    },
+    {
+      "field": "장애인운동선수",
+      "alias": "장애인운동선수",
+      "type": "number"
+    },
+    {
+      "field": "판매공통",
+      "alias": "판매공통",
+      "type": "number"
+    },
+    {
+      "field": "경영지원실",
+      "alias": "경영지원실",
+      "type": "number"
+    },
+    {
+      "field": "지원팀",
+      "alias": "지원팀",
+      "type": "number"
+    },
+    {
+      "field": "자금그룹",
+      "alias": "자금그룹",
+      "type": "number"
+    },
+    {
+      "field": "회계그룹",
+      "alias": "회계그룹",
+      "type": "number"
+    },
+    {
+      "field": "인사총무그룹",
+      "alias": "인사총무그룹",
+      "type": "number"
+    },
+    {
+      "field": "시스템지원그룹",
+      "alias": "시스템지원그룹",
+      "type": "number"
+    },
+    {
+      "field": "구매그룹",
+      "alias": "구매그룹",
+      "type": "number"
+    },
+    {
+      "field": "전략팀",
+      "alias": "전략팀",
+      "type": "number"
+    },
+    {
+      "field": "도우VINA",
+      "alias": "도우VINA",
+      "type": "number"
+    },
+    {
+      "field": "개발실",
+      "alias": "개발실",
+      "type": "number"
+    },
+    {
+      "field": "연구팀",
+      "alias": "연구팀",
+      "type": "number"
+    },
+    {
+      "field": "HTG개발그룹",
+      "alias": "HTG개발그룹",
+      "type": "number"
+    },
+    {
+      "field": "선행연구그룹",
+      "alias": "선행연구그룹",
+      "type": "number"
+    },
+    {
+      "field": "개발팀",
+      "alias": "개발팀",
+      "type": "number"
+    },
+    {
+      "field": "공정개발그룹",
+      "alias": "공정개발그룹",
+      "type": "number"
+    },
+    {
+      "field": "제품개발그룹",
+      "alias": "제품개발그룹",
+      "type": "number"
+    },
+    {
+      "field": "설비개발팀",
+      "alias": "설비개발팀",
+      "type": "number"
+    },
+    {
+      "field": "설계그룹",
+      "alias": "설계그룹",
+      "type": "number"
+    },
+    {
+      "field": "제어그룹",
+      "alias": "제어그룹",
+      "type": "number"
+    },
+    {
+      "field": "사업기획그룹",
+      "alias": "사업기획그룹",
+      "type": "number"
+    },
+    {
+      "field": "마케팅그룹",
+      "alias": "마케팅그룹",
+      "type": "number"
+    },
+    {
+      "field": "기술기획그룹",
+      "alias": "기술기획그룹",
+      "type": "number"
+    },
+    {
+      "field": "지원그룹",
+      "alias": "지원그룹",
+      "type": "number"
+    }
+  ],
+  "generatedAt": "2025-12-05T08:57:25.958Z"
+}

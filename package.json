@@ -20,7 +20,11 @@
     "vector:stop": "docker compose -f docker-compose.vector.yml down",
     "vector:logs": "docker compose -f docker-compose.vector.yml logs -f",
     "generate:screen": "tsx scripts/phase3_generate_ui_component_aggrid.ts",
-    "generate:screen:realgrid": "tsx scripts/phase3_generate_ui_component_realgrid.ts"
+    "generate:screen:realgrid": "tsx scripts/phase3_generate_ui_component_realgrid.ts",
+    "gen:phase1": "tsx scripts/generator/phase1-template/generate_template.ts",
+    "gen:phase2": "tsx scripts/generator/phase2-query/generate_query.ts",
+    "gen:phase3": "tsx scripts/generator/phase3-integration/integrate_screen.ts",
+    "gen:all": "echo '전체 생성은 각 Phase를 순서대로 실행하세요'"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
