@@ -7,7 +7,8 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.6-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
 [![tRPC](https://img.shields.io/badge/tRPC-11.0-blue)](https://trpc.io)
-[![Progress](https://img.shields.io/badge/Progress-25%25-yellow)](PROJECT_STATUS.md)
+[![Design](https://img.shields.io/badge/Design-IBM%20Carbon-blue)](https://carbondesignsystem.com)
+[![Progress](https://img.shields.io/badge/Progress-40%25-green)](docs/archive/PROJECT_STATUS.md)
 
 ---
 
@@ -21,9 +22,9 @@ Excel 업로드 → AI 분석 (RAG) → Grid/Chart 자동 생성
 → 임시 메뉴 생성 → 사용자 확인 → 프로덕션 배포
 ```
 
-**현재 단계**: Week 2 - RAG 파이프라인 구축
+**현재 단계**: Week 2 완료 - IBM Carbon Design 적용
 
-**전체 진행률**: 25% (Phase 0-1 진행 중)
+**전체 진행률**: 40% (Phase 0-2 진행 중)
 
 ---
 
@@ -73,6 +74,7 @@ npm run dev
 - **Language**: TypeScript 5.8
 - **Styling**: Tailwind CSS v4
 - **UI**: shadcn/ui (Radix UI)
+- **🎨 Design System**: IBM Carbon Design System
 - **Grid**: TanStack Table v8
 - **Charts**: Recharts
 
@@ -102,16 +104,19 @@ ai-factory-lab/
 │   └── trpc/             # tRPC 클라이언트
 ├── scripts/
 │   ├── setup_vector_db.ts    # 리소스 벡터화
-│   ├── test_vector_search.ts # Vector 검색 테스트
+│   ├── embed_db_metadata.ts  # DB 메타데이터 임베딩
 │   └── collect_db_metadata.ts # DB 메타데이터 수집
 ├── docs/
 │   ├── VECTOR_DB_GUIDE.md         # Vector DB 가이드
-│   ├── SESSION_SUMMARY_20251202.md # 작업 세션 요약
+│   ├── archive/                    # 아카이브 문서
+│   │   ├── SESSION_SUMMARY_*.md   # 작업 세션 요약
+│   │   └── PROJECT_STATUS.md      # 진행 현황 체크리스트
 │   └── ...
 ├── prisma/
 │   └── schema.prisma     # DB 스키마 (68 테이블)
+├── resources/
+│   └── design-system/    # IBM Carbon Design 리소스
 ├── docker-compose.vector.yml # Chroma + Redis
-├── PROJECT_STATUS.md     # 진행 현황 체크리스트
 └── PROJECT_ROADMAP.md    # 전체 로드맵
 ```
 
@@ -146,46 +151,54 @@ npx prisma generate   # Prisma Client 생성
 
 ## 🎯 현재 진행 현황
 
-### ✅ 완료 (25%)
+### ✅ 완료 (40%)
 - [x] Phase 0: Next.js 15 마이그레이션 (100%)
 - [x] Week 1: Gemini API + Vector DB 설정 (100%)
   - Chroma Vector DB 시스템 구축
   - 자비스 재연결 시스템
   - API 키 보안 조치
+- [x] Week 2: IBM Carbon Design System 적용 (100%)
+  - 사이드바/헤더 Light Blue 테마
+  - Carbon 스타일 카드/테이블 컴포넌트
+  - 메뉴 시스템 (tRPC + Prisma)
 
-### ⏳ 진행 중 (Week 2)
-- [ ] Vector DB 리소스 벡터화 실행
+### ⏳ 진행 중 (Week 3)
 - [ ] Excel 업로드 UI 구현
 - [ ] 기본 RAG 파이프라인 구축
+- [ ] 화면 자동 생성 시스템 연동
 
 ### 📅 예정
 - Week 3-4: 고급 RAG + 검증 (12/16-12/23)
 - Week 5-6: 로컬 모델 조사 (12/30-01/06)
 - Week 7-9: Hybrid 전환 (01/13-01/27)
 
-**상세 체크리스트**: [PROJECT_STATUS.md](PROJECT_STATUS.md)
+**상세 체크리스트**: [PROJECT_STATUS.md](docs/archive/PROJECT_STATUS.md)
 
 ---
 
 ## 📚 문서
 
 ### 시작하기
-- [빠른 진행 현황](STATUS_QUICK.md) - 한눈에 보는 현황
-- [프로젝트 상태](PROJECT_STATUS.md) - 상세 체크리스트
+- [프로젝트 상태](docs/archive/PROJECT_STATUS.md) - 상세 체크리스트
 - [환경 설정](ENVIRONMENT.md) - 개발 환경 가이드
+- [빠른 시작](docs/QUICK_START.md) - 5분 빠른 시작
 
 ### Vector DB
 - [Vector DB 가이드](docs/VECTOR_DB_GUIDE.md) - 완전한 가이드
-- [빠른 시작](VECTOR_DB_QUICKSTART.md) - 5분 시작
+- [빠른 시작](docs/archive/VECTOR_DB_QUICKSTART.md) - 5분 시작
 - [완료 보고서](docs/VECTOR_DB_COMPLETION_REPORT.md)
 
+### 디자인 시스템
+- [IBM Carbon 가이드](resources/design-system/IBM_CARBON_DESIGN_SYSTEM.md) - 메인 가이드
+- [색상 토큰](resources/design-system/CARBON_COLOR_TOKENS.md) - 색상 레퍼런스
+- [컴포넌트 스니펫](resources/design-system/CARBON_COMPONENT_SNIPPETS.md) - 코드 예시
+
 ### 자비스 시스템
-- [재연결 프롬프트](JARVIS_RECONNECT_PROMPT.md) - 세션 재개
-- [빠른 참조](.jarvis-prompt.txt) - 즉시 복사
+- [재연결 프롬프트](docs/archive/JARVIS_RECONNECT_PROMPT.md) - 세션 재개
 
 ### 프로젝트
 - [전체 로드맵](PROJECT_ROADMAP.md) - 9주 계획
-- [세션 요약](docs/SESSION_SUMMARY_20251202.md) - 작업 기록
+- [세션 요약](docs/archive/) - 작업 기록 (archive 폴더)
 - [보안 가이드](SECURITY_NOTICE.md) - API 키 관리
 
 ---
@@ -196,10 +209,7 @@ npx prisma generate   # Prisma Client 생성
 
 ```bash
 # 프롬프트 확인
-cat .jarvis-prompt.txt
-
-# 또는
-cat JARVIS_RECONNECT_PROMPT.md
+cat docs/archive/JARVIS_RECONNECT_PROMPT.md
 ```
 
 프롬프트를 복사해서 자비스에게 전송하면 자동으로 프로젝트 현황을 파악합니다.
@@ -242,6 +252,7 @@ cat JARVIS_RECONNECT_PROMPT.md
 - [Prisma 문서](https://www.prisma.io/docs)
 - [Chroma 문서](https://docs.trychroma.com/)
 - [Gemini API](https://ai.google.dev/gemini-api/docs)
+- [IBM Carbon Design](https://carbondesignsystem.com/)
 
 ---
 
@@ -270,7 +281,7 @@ cat JARVIS_RECONNECT_PROMPT.md
 
 ---
 
-**Last Updated**: 2025년 12월 2일  
-**Version**: 1.0  
-**Status**: 🚀 Week 2 진행 중
+**Last Updated**: 2025년 12월 6일  
+**Version**: 1.1  
+**Status**: 🚀 Week 3 진행 중 (IBM Carbon Design 적용 완료)
 
