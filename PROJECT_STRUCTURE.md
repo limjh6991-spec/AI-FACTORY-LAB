@@ -35,9 +35,14 @@ ai-factory-lab/
 │   │   ├── page.tsx          # 메인 페이지
 │   │   ├── layout.tsx        # 레이아웃
 │   │   ├── screens/          # 생성된 화면들
+│   │   │   ├── [screenId]/   # 🆕 동적 화면 라우트
+│   │   │   ├── temp/         # 🆕 임시화면 관리 페이지
 │   │   │   ├── ag-grid-examples/  # AG Grid 샘플
 │   │   │   └── sc982157/     # 생성된 화면 예시
+│   │   ├── settings/         # 🆕 설정 페이지
+│   │   │   └── screen-generator/  # 🆕 화면 생성기 UI
 │   │   └── api/              # API 라우트
+│   │       └── screens/      # 🆕 화면 API
 │   ├── components/           # 공통 컴포넌트
 │   │   ├── Header.tsx
 │   │   ├── Sidebar.tsx
@@ -47,8 +52,10 @@ ai-factory-lab/
 │   │   │   ├── root.ts       # tRPC 라우터 루트
 │   │   │   ├── trpc.ts       # tRPC 설정
 │   │   │   └── routers/      # API 라우터들
+│   │   │       └── screenGenerator.ts  # 🆕 화면 생성기 API
 │   │   └── db.ts             # Prisma 클라이언트
 │   ├── lib/                  # 유틸리티
+│   │   └── excel-template-parser.ts  # 🆕 Excel 템플릿 파서
 │   ├── styles/               # 스타일시트
 │   └── trpc/                 # tRPC 클라이언트
 │
@@ -84,6 +91,15 @@ ai-factory-lab/
 │   ├── report_designs/       # 리포트 디자인
 │   └── sample_excel/         # 샘플 엑셀
 │
+├── 📁 generated/             # 🆕 생성된 화면 파일
+│   └── screens/              # 화면별 폴더
+│       ├── temp/             # 임시화면 (TEMP_xxx)
+│       └── SC000001/         # 발행된 화면
+│           ├── metadata.json
+│           ├── preview.html
+│           ├── query.sql
+│           └── component.tsx
+│
 ├── 📁 resources/             # 정적 리소스
 │   ├── design-system/        # 디자인 시스템
 │   ├── excel/                # 엑셀 템플릿
@@ -92,6 +108,11 @@ ai-factory-lab/
 ├── 📁 docs/                  # 문서
 │   ├── QUICK_START.md        # 빠른 시작
 │   ├── SCREEN_GENERATOR_GUIDE.md  # 화면 생성 가이드
+│   ├── SCREEN_GENERATOR_IMPLEMENTATION.md  # 🆕 화면 생성기 구현 문서
+│   ├── TEMP_SCREEN_MANAGEMENT.md  # 🆕 임시화면 관리 시스템
+│   ├── REACT_COMPONENT_GENERATION.md  # 🆕 React 컴포넌트 생성
+│   ├── EXCEL_TEMPLATE_GUIDE.md  # 🆕 Excel 템플릿 가이드
+│   ├── LAYOUT_FIX_LOG.md     # 🆕 레이아웃 수정 이력
 │   ├── RAG_IMPLEMENTATION_GUIDE.md # RAG 구현 가이드
 │   ├── VECTOR_DB_GUIDE.md    # Vector DB 가이드
 │   ├── AG_GRID_DECISION.md   # AG Grid 결정 문서
