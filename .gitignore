@@ -42,6 +42,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
+# prisma generated
+/generated/
+
 # idea files
 .idea.env.backup
 .keys_backup
