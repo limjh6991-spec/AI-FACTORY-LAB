@@ -30,6 +30,7 @@
     "@anthropic-ai/sdk": "^0.71.0",
     "@carbon/colors": "^11.43.0",
     "@carbon/type": "^11.50.0",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.6.0",

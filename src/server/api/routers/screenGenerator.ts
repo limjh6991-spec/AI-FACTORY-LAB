@@ -84,6 +84,139 @@ async function generateScreenId(ctx: any): Promise<string> {
   }
 }
 
+/**
+ * 생성된 컴포넌트 코드를 실제 Next.js 페이지로 변환
+ * - TypeScript 타입 추가
+ * - AG Grid 모듈 등록 추가
+ * - 실제 동작하는 UI 컴포넌트 import 추가
+ */
+function convertToNextPage(componentCode: string, screenId: string, screenName: string): string {
+  // 기본 import 구문 (API 호출을 위해 useEffect, useCallback 추가)
+  const imports = `'use client';
+
+import { useMemo, useState, useCallback, useEffect } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
+import { Search, RotateCcw, Download, Loader2 } from 'lucide-react';
+
+// AG Grid 모듈 등록 (필수!)
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+`;
+
+  // 기존 코드에서 import 부분 제거
+  let cleanedCode = componentCode
+    // 기존 import 제거
+    .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '')
+    // "use client" 제거
+    .replace(/['"]use client['"];?\s*/g, '')
+    // export default function 찾아서 컴포넌트명 추출
+    .trim();
+  
+  // 컴포넌트명을 영문으로 변환 (한글 함수명 방지)
+  const safeComponentName = `Screen${screenId.replace('SC', '')}`;
+  cleanedCode = cleanedCode.replace(
+    /export\s+default\s+function\s+[\w가-힣]+\s*\(/,
+    `export default function ${safeComponentName}(`
+  );
+
+  // 샘플 데이터 기반 코드를 API 호출 코드로 변환
+  // 1. sampleData 선언 제거하고 빈 배열로 초기화
+  cleanedCode = cleanedCode.replace(
+    /const\s+sampleData\s*=\s*\[[\s\S]*?\];/,
+    '// 샘플 데이터는 제거됨 - API에서 조회'
+  );
+  
+  // 2. useState(sampleData) → useState([])
+  cleanedCode = cleanedCode.replace(
+    /const\s*\[\s*rowData\s*,\s*setRowData\s*\]\s*=\s*useState\s*\(\s*sampleData\s*\)/,
+    `const [rowData, setRowData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 실제 DB 데이터 조회
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/screens/${screenId.toLowerCase()}/data');
+      if (!response.ok) throw new Error('데이터 조회 실패');
+      const result = await response.json();
+      setRowData(result.data || []);
+    } catch (error) {
+      console.error('데이터 조회 오류:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // 초기 로드
+  useEffect(() => {
+    fetchData();
+  }, [fetchData])`
+  );
+  
+  // 3. handleSearch 수정 - 실제 API 호출
+  cleanedCode = cleanedCode.replace(
+    /const\s+handleSearch\s*=\s*\(\)\s*=>\s*\{[\s\S]*?console\.log\(['"]검색 실행['"]\);?\s*\};?/,
+    `const handleSearch = () => {
+    fetchData();
+  };`
+  );
+  
+  // 4. handleReset 수정
+  cleanedCode = cleanedCode.replace(
+    /const\s+handleReset\s*=\s*\(\)\s*=>\s*\{[\s\S]*?setRowData\s*\(\s*sampleData\s*\);?\s*\};?/,
+    `const handleReset = () => {
+    fetchData();
+  };`
+  );
+
+  // AG Grid 스타일 추가
+  const agGridStyles = `
+{/* AG Grid 커스텀 스타일 */}
+<style jsx global>{\`
+  .ag-theme-alpine {
+    --ag-header-background-color: #4f7cba;
+    --ag-header-foreground-color: white;
+    --ag-row-hover-color: #f0f7ff;
+    --ag-selected-row-background-color: #e1efff;
+    --ag-border-color: #e5e7eb;
+    --ag-font-family: 'IBM Plex Sans', sans-serif;
+    --ag-font-size: 13px;
+  }
+  .ag-theme-alpine .ag-header-group-cell {
+    background: linear-gradient(180deg, #5a8ac7 0%, #4f7cba 100%);
+    font-weight: 600;
+  }
+  .ag-theme-alpine .ag-header-cell {
+    background: linear-gradient(180deg, #6b9bd1 0%, #5a8ac7 100%);
+  }
+  .ag-row-total {
+    background-color: #f8fafc !important;
+    font-weight: 600;
+    border-top: 2px solid #4f7cba;
+    border-bottom: 2px solid #4f7cba;
+  }
+\`}</style>
+`;
+
+  // return 문 앞에 스타일 삽입
+  if (cleanedCode.includes('return (')) {
+    cleanedCode = cleanedCode.replace(
+      'return (',
+      `return (
+    <>${agGridStyles}`
+    );
+    // 마지막 닫는 괄호 수정
+    const lastReturnEnd = cleanedCode.lastIndexOf(');');
+    if (lastReturnEnd > 0) {
+      cleanedCode = cleanedCode.slice(0, lastReturnEnd) + '</>);' + cleanedCode.slice(lastReturnEnd + 2);
+    }
+  }
+
+  return imports + cleanedCode;
+}
+
 // .env.local에서 직접 API 키 읽기 (환경 변수 오염 방지)
 function getAnthropicApiKey(): string | null {
   // 1. .env.local 파일에서 직접 읽기 시도
@@ -335,7 +468,7 @@ export const screenGeneratorRouter = createTRPCRouter({
     }),
 
   /**
-   * Claude API로 미리보기 생성
+   * Claude API로 미리보기 생성 (새로운 접근법: JSON 데이터만 생성)
    */
   generatePreview: publicProcedure
     .input(z.object({
@@ -356,7 +489,8 @@ export const screenGeneratorRouter = createTRPCRouter({
         
         const anthropic = new Anthropic({ apiKey });
         
-        const prompt = buildPreviewPrompt(input.parsedData, input.previewType);
+        // 새로운 접근법: JSON 데이터만 요청
+        const jsonPrompt = buildJsonDataPrompt(input.parsedData);
         
         const message = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
@@ -364,12 +498,12 @@ export const screenGeneratorRouter = createTRPCRouter({
           messages: [
             {
               role: "user",
-              content: prompt,
+              content: jsonPrompt,
             },
           ],
         });
         
-        // 응답에서 코드 추출
+        // 응답에서 JSON 추출
         const content = message.content[0];
         if (!content || content.type !== "text") {
           return {
@@ -378,30 +512,43 @@ export const screenGeneratorRouter = createTRPCRouter({
           };
         }
         
-        const responseText = (content as { type: "text"; text: string }).text;
+        console.log("[DEBUG] Claude JSON 응답:", content.text.substring(0, 500));
         
-        // HTML 또는 React 코드 추출 (마커 완전 제거)
-        let code = responseText;
-        
-        // ```html ... ``` 또는 ```tsx ... ``` 블록 추출
-        const codeMatch = responseText.match(/```(?:html|tsx|jsx|HTML)?\s*([\s\S]*?)```/i);
-        if (codeMatch && codeMatch[1]) {
-          code = codeMatch[1].trim();
+        // JSON 파싱
+        let gridData;
+        try {
+          // JSON 블록 추출
+          const jsonMatch = content.text.match(/```json\s*([\s\S]*?)\s*```/) || 
+                           content.text.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content.text;
+          gridData = JSON.parse(jsonStr);
+          console.log("[DEBUG] JSON 파싱 성공:", Object.keys(gridData));
+        } catch (parseError) {
+          console.error("[ERROR] JSON 파싱 실패:", parseError);
+          console.log("[DEBUG] 파싱 실패로 기본 데이터 사용");
+          
+          // 파싱 실패 시 parsedData에서 기본 데이터 생성
+          gridData = createDefaultGridData(input.parsedData);
         }
         
-        // 혹시 남은 마커 제거
-        code = code.replace(/^```(?:html|tsx|jsx|HTML)?\s*/i, '');
-        code = code.replace(/\s*```$/i, '');
+        // 템플릿에 데이터 주입하여 React 코드 생성
+        const reactCode = generateReactFromTemplate(input.parsedData, gridData);
         
-        // 선행 백틱/마커 문자열 제거
-        if (code.startsWith('`')) {
-          code = code.replace(/^`+/, '');
+        console.log("[DEBUG] 생성된 React 코드 길이:", reactCode.length);
+        
+        if (input.previewType === "html") {
+          const htmlCode = generateHtmlFromTemplate(input.parsedData, gridData);
+          return {
+            success: true,
+            html: htmlCode,
+            preview: htmlCode,
+          };
         }
         
         return {
           success: true,
-          html: input.previewType === "html" ? code : undefined,
-          componentCode: input.previewType === "react" ? code : undefined,
+          componentCode: reactCode,
+          preview: reactCode,
         };
       } catch (error) {
         return {
@@ -1121,7 +1268,28 @@ ORDER BY ${selectColumns[0] || 'yyyymm'} DESC
           JSON.stringify(menuEntry, null, 2)
         );
         
-        // 6. 임시 폴더 삭제
+        // 6. src/app/screens/[screenId]/page.tsx 생성 (실제 동작하는 페이지)
+        const componentPath = path.join(finalDir, 'component.tsx');
+        if (fs.existsSync(componentPath)) {
+          const componentCode = fs.readFileSync(componentPath, 'utf-8');
+          
+          // 실제 Next.js 페이지로 변환
+          const pageCode = convertToNextPage(componentCode, newScreenId, input.menuName);
+          
+          // src/app/screens/[screenId]/ 폴더 생성
+          const appScreenDir = path.join(process.cwd(), 'src', 'app', 'screens', newScreenId.toLowerCase());
+          fs.mkdirSync(appScreenDir, { recursive: true });
+          
+          // page.tsx 저장
+          fs.writeFileSync(
+            path.join(appScreenDir, 'page.tsx'),
+            pageCode
+          );
+          
+          console.log(`[DEBUG] 실제 페이지 생성: src/app/screens/${newScreenId.toLowerCase()}/page.tsx`);
+        }
+        
+        // 7. 임시 폴더 삭제
         fs.rmSync(tempScreenDir, { recursive: true, force: true });
         
         console.log(`[DEBUG] 화면 발행: ${input.screenId} → ${newScreenId}`);
@@ -1222,7 +1390,351 @@ ORDER BY ${selectColumns[0] || 'yyyymm'} DESC
 });
 
 /**
- * 미리보기 생성 프롬프트 작성
+ * Claude에게 JSON 데이터만 요청하는 프롬프트
+ */
+function buildJsonDataPrompt(parsedData: any): string {
+  const { screenName, screenNameEn, tableName, searchConditions, gridColumns } = parsedData;
+  
+  // 그리드 컬럼 구조 설명
+  const columnStructure = buildColumnStructureDescription(gridColumns);
+  
+  return `다음 Excel 템플릿 정보를 기반으로 AG Grid용 columnDefs와 샘플 데이터를 JSON 형식으로 생성해주세요.
+
+## 화면 정보
+- 화면명: ${screenName}
+- 화면명(영문): ${screenNameEn || "N/A"}
+- 테이블명: ${tableName || "N/A"}
+
+## 조회조건
+${searchConditions?.map((sc: any) => `- ${sc.label} (${sc.type})${sc.required ? " [필수]" : ""}`).join("\n") || "없음"}
+
+## 그리드 컬럼 구조
+${columnStructure}
+
+## 합계 행
+${gridColumns.summaryRows?.join(", ") || "없음"}
+
+## 출력 형식 (JSON만 출력!)
+\`\`\`json
+{
+  "screenName": "화면명",
+  "columnDefs": [
+    { "headerName": "컬럼1", "field": "col1", "width": 100 },
+    { "headerName": "컬럼2", "field": "col2", "width": 120, "type": "numericColumn" },
+    {
+      "headerName": "그룹명",
+      "children": [
+        { "headerName": "서브1", "field": "sub1", "width": 100 },
+        { "headerName": "서브2", "field": "sub2", "width": 100, "type": "numericColumn" }
+      ]
+    }
+  ],
+  "sampleData": [
+    { "col1": "값1", "col2": 1000, "sub1": "A", "sub2": 500 },
+    { "col1": "값2", "col2": 2000, "sub1": "B", "sub2": 600 }
+  ],
+  "summaryData": { "col1": "합계", "col2": 3000, "sub1": "", "sub2": 1100 },
+  "searchFields": [
+    { "label": "검색필드1", "field": "search1", "type": "text" },
+    { "label": "검색필드2", "field": "search2", "type": "select", "options": ["옵션1", "옵션2"] }
+  ]
+}
+\`\`\`
+
+## 규칙
+1. columnDefs: 그리드 컬럼 구조에 맞게 생성
+   - 숫자 컬럼은 "type": "numericColumn" 추가
+   - 그룹 헤더가 있으면 children으로 중첩
+2. sampleData: 3-5개의 샘플 행
+   - 숫자는 Number 타입
+3. summaryData: 합계 행 (있는 경우)
+4. searchFields: 조회조건 필드
+
+JSON만 출력하세요 (설명 없이):`;
+}
+
+/**
+ * JSON 파싱 실패 시 기본 그리드 데이터 생성
+ */
+function createDefaultGridData(parsedData: any): any {
+  const { screenName, gridColumns, searchConditions } = parsedData;
+  
+  // row3에서 컬럼 헤더 추출
+  const headers = gridColumns?.row3 || [];
+  const columnDefs = headers
+    .filter((h: string) => h && typeof h === 'string' && h.trim())
+    .map((header: string, index: number) => {
+      const name = header.trim();
+      const field = `col${index}`;
+      const isNumeric = name.includes('금액') || name.includes('수량') || name.includes('단가') || name.includes('합계');
+      
+      return {
+        headerName: name,
+        field: field,
+        width: isNumeric ? 120 : 100,
+        ...(isNumeric ? { type: 'numericColumn' } : {})
+      };
+    });
+  
+  // 샘플 데이터 생성
+  const sampleRow: any = {};
+  columnDefs.forEach((col: any, i: number) => {
+    const isNumeric = col.type === 'numericColumn';
+    sampleRow[col.field] = isNumeric ? (i + 1) * 1000 : `샘플${i + 1}`;
+  });
+  
+  // 검색 필드 생성
+  const searchFields = (searchConditions || []).map((sc: any) => ({
+    label: sc.label || '검색',
+    field: sc.id || 'search',
+    type: sc.type === 'select' ? 'select' : 'text'
+  }));
+  
+  return {
+    screenName: screenName || '화면',
+    columnDefs: columnDefs.length > 0 ? columnDefs : [
+      { headerName: '항목1', field: 'item1', width: 100 },
+      { headerName: '항목2', field: 'item2', width: 100 },
+      { headerName: '금액', field: 'amount', width: 120, type: 'numericColumn' }
+    ],
+    sampleData: columnDefs.length > 0 ? [sampleRow, sampleRow, sampleRow] : [
+      { item1: '데이터1', item2: 'A', amount: 1000 },
+      { item1: '데이터2', item2: 'B', amount: 2000 },
+      { item1: '데이터3', item2: 'C', amount: 3000 }
+    ],
+    summaryData: null,
+    searchFields: searchFields.length > 0 ? searchFields : [
+      { label: '검색어', field: 'search', type: 'text' }
+    ]
+  };
+}
+
+/**
+ * JSON 데이터를 기반으로 React 컴포넌트 생성
+ */
+function generateReactFromTemplate(parsedData: any, gridData: any): string {
+  const screenName = gridData.screenName || parsedData.screenName || "GeneratedScreen";
+  const componentName = screenName.replace(/[^a-zA-Z가-힣0-9]/g, '') || "GeneratedScreen";
+  
+  // columnDefs를 문자열로 변환
+  const columnDefsStr = JSON.stringify(gridData.columnDefs || [], null, 2)
+    .replace(/"type":\s*"numericColumn"/g, '"type": "numericColumn", "cellStyle": { "textAlign": "right" }');
+  
+  // sampleData를 문자열로 변환
+  const sampleDataStr = JSON.stringify(gridData.sampleData || [], null, 2);
+  
+  // summaryData를 문자열로 변환
+  const summaryDataStr = gridData.summaryData ? JSON.stringify([gridData.summaryData], null, 2) : "[]";
+  
+  // searchFields 처리
+  const searchFields = gridData.searchFields || [];
+  const searchFieldsJsx = searchFields.length > 0 
+    ? searchFields.map((sf: any, i: number) => {
+        if (sf.type === 'select' && sf.options) {
+          return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${sf.label}</label>
+            <select 
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}
+            >
+              <option value="">전체</option>
+              ${sf.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('\n              ')}
+            </select>
+          </div>`;
+        }
+        return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${sf.label}</label>
+            <input 
+              type="${sf.type === 'date' ? 'date' : 'text'}"
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}
+              placeholder="${sf.label}"
+            />
+          </div>`;
+      }).join('')
+    : `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>검색어</label>
+            <input 
+              type="text"
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 200 }}
+              placeholder="검색어를 입력하세요"
+            />
+          </div>`;
+  
+  return `import { useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+
+export default function ${componentName}() {
+  const columnDefs = ${columnDefsStr};
+
+  const defaultColDef = {
+    sortable: true,
+    resizable: true,
+    filter: true
+  };
+
+  const sampleData = ${sampleDataStr};
+  const summaryData = ${summaryDataStr};
+
+  const [rowData, setRowData] = useState(sampleData);
+
+  const handleSearch = () => {
+    console.log('검색 실행');
+  };
+
+  const handleReset = () => {
+    setRowData(sampleData);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 16, backgroundColor: '#ffffff', fontFamily: 'sans-serif', overflow: 'hidden' }}>
+      {/* 제목 */}
+      <h1 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, color: '#161616', flexShrink: 0 }}>
+        ${screenName}
+      </h1>
+
+      {/* 조회조건 */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'flex-end', 
+        gap: 16, 
+        marginBottom: 12, 
+        padding: 12, 
+        backgroundColor: '#f4f4f4', 
+        flexShrink: 0, 
+        border: '1px solid #e0e0e0' 
+      }}>
+        ${searchFieldsJsx}
+        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+          <button 
+            onClick={handleSearch}
+            style={{ 
+              height: 32, 
+              padding: '0 16px', 
+              backgroundColor: '#0f62fe', 
+              color: 'white', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontSize: 14
+            }}
+          >
+            검색
+          </button>
+          <button 
+            onClick={handleReset}
+            style={{ 
+              height: 32, 
+              padding: '0 16px', 
+              backgroundColor: '#e0e0e0', 
+              color: '#161616', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontSize: 14
+            }}
+          >
+            초기화
+          </button>
+        </div>
+      </div>
+
+      {/* AG Grid - 고정 높이 400px */}
+      <div className="ag-theme-alpine" style={{ width: '100%', height: 500, minHeight: 500 }}>
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          pinnedBottomRowData={summaryData.length > 0 ? summaryData : undefined}
+        />
+      </div>
+    </div>
+  );
+}
+`;
+}
+
+/**
+ * JSON 데이터를 기반으로 HTML 미리보기 생성
+ */
+function generateHtmlFromTemplate(parsedData: any, gridData: any): string {
+  const screenName = gridData.screenName || parsedData.screenName || "화면";
+  
+  // columnDefs를 문자열로 변환
+  const columnDefsStr = JSON.stringify(gridData.columnDefs || [], null, 2);
+  
+  // sampleData를 문자열로 변환
+  const sampleDataStr = JSON.stringify(gridData.sampleData || [], null, 2);
+  
+  // summaryData
+  const summaryDataStr = gridData.summaryData ? JSON.stringify([gridData.summaryData], null, 2) : "[]";
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${screenName}</title>
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: #fff; }
+    .container { padding: 16px; height: 100vh; display: flex; flex-direction: column; }
+    h1 { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #161616; }
+    .search-area { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 16px; padding: 16px; background: #f4f4f4; border: 1px solid #e0e0e0; }
+    .search-field { display: flex; flex-direction: column; gap: 4px; }
+    .search-field label { font-size: 12px; color: #525252; }
+    .search-field input { height: 32px; padding: 0 8px; border: 1px solid #e0e0e0; min-width: 120px; }
+    .btn-group { display: flex; gap: 8px; margin-left: auto; }
+    .btn { height: 32px; padding: 0 16px; border: none; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #0f62fe; color: white; }
+    .btn-secondary { background: #e0e0e0; color: #161616; }
+    .grid-container { flex: 1; min-height: 400px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>${screenName}</h1>
+    <div class="search-area">
+      <div class="search-field">
+        <label>검색어</label>
+        <input type="text" placeholder="검색어 입력">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary">검색</button>
+        <button class="btn btn-secondary">초기화</button>
+      </div>
+    </div>
+    <div id="myGrid" class="ag-theme-alpine grid-container"></div>
+  </div>
+  <script>
+    const columnDefs = ${columnDefsStr};
+    const rowData = ${sampleDataStr};
+    const pinnedBottomRowData = ${summaryDataStr};
+
+    const gridOptions = {
+      columnDefs: columnDefs,
+      rowData: rowData,
+      pinnedBottomRowData: pinnedBottomRowData.length > 0 ? pinnedBottomRowData : undefined,
+      defaultColDef: {
+        sortable: true,
+        resizable: true,
+        filter: true
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const gridDiv = document.querySelector('#myGrid');
+      agGrid.createGrid(gridDiv, gridOptions);
+    });
+  </script>
+</body>
+</html>`;
+}
+
+/**
+ * 미리보기 생성 프롬프트 작성 (기존 - 사용 안함)
  */
 function buildPreviewPrompt(parsedData: any, previewType: "html" | "react"): string {
   const { screenName, screenNameEn, tableName, searchConditions, gridColumns } = parsedData;
@@ -1272,7 +1784,7 @@ function buildPreviewPrompt(parsedData: any, previewType: "html" | "react"): str
 `;
 
   if (previewType === "html") {
-    return `다음 Excel 템플릿 정보를 기반으로 ERP 화면의 HTML 미리보기를 생성해주세요.
+    return `다음 Excel 템플릿 정보를 기반으로 AG Grid를 사용한 HTML 미리보기를 생성해주세요.
 
 ## 화면 정보
 - 화면명: ${screenName}
@@ -1291,26 +1803,33 @@ ${gridColumns.summaryRows?.join(", ") || "없음"}
 ${carbonStyleGuide}
 
 ## 요구사항
-1. 위의 IBM Carbon Design System 스타일을 정확히 적용
-2. 전체 레이아웃:
+1. AG Grid Community Edition CDN 사용:
+   - <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+   - <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+   - <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+2. IBM Carbon Design System 스타일 적용
+3. 전체 레이아웃:
    - 상단: 화면 제목 (배경 #f4f4f4, 패딩 16px)
    - 중단: 조회조건 영역 (배경 #f4f4f4, 테두리 #e0e0e0)
-   - 하단: 그리드 영역 (배경 #ffffff)
-3. 조회조건:
+   - 하단: AG Grid 영역 (배경 #ffffff)
+4. 조회조건 (🚨 중요: 가로 배치!):
    - 입력 필드는 밑줄 스타일 (border-bottom만)
-   - 라벨은 위에, 입력은 아래
+   - **🚨 절대 필수: 라벨과 입력 필드는 가로로 나란히 배치 (flex row)**
+   - 라벨 바로 오른쪽에 입력 필드가 위치해야 함
+   - 예시: <div style="display:flex; align-items:center; gap:8px"><span>년월</span><input/></div>
    - 검색/초기화 버튼은 오른쪽 정렬
-4. 그리드:
-   - 그룹 헤더가 있는 경우 2단 헤더 (상단 그룹, 하단 상세)
-   - 헤더 배경 #e0e0e0, 텍스트 굵게
-   - 숫자 컬럼은 오른쪽 정렬
-   - 합계 행은 배경 #f4f4f4로 구분
-5. 샘플 데이터 3-5행 포함
-6. 순수 HTML + inline CSS 사용 (외부 CSS 없이)
+5. AG Grid 설정:
+   - ag-theme-alpine 테마 사용
+   - 그룹 헤더가 있는 경우 columnDefs에 children으로 구성
+   - 숫자 컬럼은 오른쪽 정렬 (cellStyle)
+   - 합계 행은 pinnedBottomRowData 사용
+   - 기본 옵션: defaultColDef, rowData, 등
+6. 샘플 데이터 3-5행 포함
+7. 순수 HTML + inline CSS + JavaScript 사용
 
 HTML 코드만 출력해주세요 (설명 없이 코드만):`;
   } else {
-    return `다음 Excel 템플릿 정보를 기반으로 React 컴포넌트를 생성해주세요.
+    return `다음 Excel 템플릿 정보를 기반으로 AG Grid를 사용한 React 컴포넌트를 생성해주세요.
 
 ## 화면 정보
 - 화면명: ${screenName}
@@ -1328,19 +1847,85 @@ ${gridColumns.summaryRows?.join(", ") || "없음"}
 
 ${carbonStyleGuide}
 
-## 요구사항
-1. TypeScript + React 함수형 컴포넌트
-2. Tailwind CSS로 IBM Carbon 색상 적용:
-   - bg-white, bg-[#f4f4f4], bg-[#e0e0e0]
-   - text-[#161616], text-[#525252]
-   - border-[#e0e0e0]
-   - 버튼: bg-[#0f62fe] hover:bg-[#0043ce]
-3. 조회조건 + 그리드 레이아웃
-4. 그룹 헤더 지원 (colspan 사용)
-5. 타입 정의 포함
-6. 반응형 고려
+## 🚨 절대 금지 사항 (위반 시 코드가 동작하지 않음!)
+1. TypeScript 문법 사용 금지: useState<Type>(), : Type, interface, type, as Type 등
+2. valueFormatter/valueGetter 사용 금지 (버그 유발)
+3. font-family에 따옴표 없이 쓰기 금지: fontFamily: 'IBM Plex Sans, sans-serif' (O), fontFamily: IBM Plex Sans (X)
+4. style 객체에서 CSS 속성명 그대로 쓰기 금지: -apple-system (X), 문자열로 감싸서 font-family에 포함 (O)
 
-React 컴포넌트 코드만 출력해주세요 (설명 없이 코드만):`;
+## 🎯 필수 요구사항
+1. **순수 JavaScript** React 함수형 컴포넌트 + AG Grid Community
+2. 필수 import (정확히 이렇게만):
+   import { useState } from 'react';
+   import { AgGridReact } from 'ag-grid-react';
+3. **style 객체 작성 규칙 (매우 중요!):**
+   - 모든 속성은 camelCase: backgroundColor (O), background-color (X)
+   - 문자열 값은 반드시 따옴표로 감싸기: fontFamily: 'sans-serif' (O)
+   - 숫자는 따옴표 없이: fontSize: 20 (O), fontSize: '20px' (O 둘 다 가능)
+   - **예시 (복사해서 사용):**
+     style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16, fontFamily: 'sans-serif', backgroundColor: '#f4f4f4' }}
+4. AG Grid columnDefs 작성:
+   - 단순 컬럼: { headerName: '이름', field: 'name', width: 100 }
+   - 숫자 컬럼: { headerName: '금액', field: 'amount', width: 120, cellStyle: { textAlign: 'right' } }
+   - valueFormatter 절대 사용 금지!
+5. AG Grid 설정:
+   - defaultColDef: { sortable: true, resizable: true, filter: true }
+   - rowData: 샘플 데이터 3-5행
+   - pinnedBottomRowData: 합계 행 (있는 경우)
+6. 컴포넌트 구조:
+   - export default function 컴포넌트명() { ... }
+   - const [rowData, setRowData] = useState(sampleData);
+7. 코드 품질:
+   - 모든 괄호 {}[]() 는 반드시 짝이 맞아야 함
+   - 코드 마지막은 반드시 } 로 끝나야 함
+
+## ✅ 정확한 코드 템플릿 (이 구조를 정확히 따라서 작성):
+
+import { useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+
+export default function 화면명() {
+  const [yearMonth, setYearMonth] = useState('2024-01');
+  
+  const columnDefs = [
+    { headerName: '컬럼1', field: 'col1', width: 100 },
+    { headerName: '컬럼2', field: 'col2', width: 120, cellStyle: { textAlign: 'right' } }
+  ];
+
+  const defaultColDef = { sortable: true, resizable: true, filter: true };
+
+  const sampleData = [
+    { col1: '값1', col2: 1000 },
+    { col1: '값2', col2: 2000 }
+  ];
+
+  const [rowData, setRowData] = useState(sampleData);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16 }}>
+      <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>화면명</h1>
+      
+      {/* 🚨 조회조건 영역: 라벨과 입력은 반드시 가로 배치! */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, padding: 12, backgroundColor: '#f4f4f4', borderRadius: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap' }}>년월</span>
+          <input type="month" value={yearMonth} onChange={(e) => setYearMonth(e.target.value)} style={{ padding: '6px 10px', border: '1px solid #e0e0e0', borderRadius: 4 }} />
+        </div>
+        <button style={{ padding: '8px 16px', backgroundColor: '#0f62fe', color: 'white', border: 'none', borderRadius: 4 }}>조회</button>
+      </div>
+      
+      <div className="ag-theme-alpine" style={{ flex: 1, width: '100%' }}>
+        <AgGridReact
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+        />
+      </div>
+    </div>
+  );
+}
+
+**위 템플릿을 기반으로, 제공된 컬럼 구조에 맞게 완전한 코드를 작성해주세요:**`;
   }
 }
 
@@ -1451,8 +2036,26 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 - valueFormatter로 천단위 콤마 적용
 - 합계 행 구분: getRowClass로 스타일 적용
 
-### 4. 검색 필터 영역
+### 4. 검색 필터 영역 (🚨 중요: 가로 배치!)
 - 조회조건별 입력 필드 (Input, Select)
+- **🚨 절대 필수: 라벨과 입력필드는 반드시 가로로 나란히 배치!**
+  - label에 "block" 클래스 절대 사용 금지!
+  - label에 "mb-1" 사용 금지!
+  - 올바른 예시:
+    \`\`\`tsx
+    <div className="flex items-center gap-2">
+      <label className="text-sm font-medium text-gray-700 whitespace-nowrap">년월</label>
+      <input type="month" className="px-3 py-2 border rounded-md" />
+    </div>
+    \`\`\`
+  - 잘못된 예시 (사용 금지!):
+    \`\`\`tsx
+    <div>
+      <label className="block mb-1">년월</label>  <!-- 이렇게 하면 안됨! -->
+      <input />
+    </div>
+    \`\`\`
+- 전체 필터 영역도 flex로 가로 배치
 - 검색/초기화/엑셀다운로드 버튼
 - Tailwind CSS로 IBM Carbon 스타일 적용:
   - 배경: bg-[#f4f4f4]

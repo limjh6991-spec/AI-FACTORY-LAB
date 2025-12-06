@@ -1,8 +1,15 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Loader2, AlertTriangle, FileText } from "lucide-react";
+import dynamic from "next/dynamic";
+
+// Sandpack 동적 로드 (SSR 비활성화)
+const SandpackPreview = dynamic(
+  () => import("@/components/preview/SandpackPreview"),
+  { ssr: false }
+);
 
 interface ScreenMetadata {
   screenId: string;
@@ -15,21 +22,30 @@ interface ScreenMetadata {
 
 export default function DynamicScreenPage() {
   const params = useParams();
+  const router = useRouter();
   const screenId = params.screenId as string;
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<ScreenMetadata | null>(null);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const [reactContent, setReactContent] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadScreen() {
+      // SC로 시작하는 정식 화면은 소문자 경로로 리다이렉트
+      if (screenId.startsWith('SC') && screenId !== screenId.toLowerCase()) {
+        router.replace(`/screens/${screenId.toLowerCase()}`);
+        return;
+      }
+      
       try {
         setLoading(true);
         setError(null);
         
-        // 서버에서 화면 데이터 로드
-        const response = await fetch(`/api/screens/${screenId}`);
+        // 서버에서 화면 데이터 로드 (대문자 ID로 요청)
+        const upperScreenId = screenId.toUpperCase();
+        const response = await fetch(`/api/screens/${upperScreenId}`);
         
         if (!response.ok) {
           throw new Error(`화면을 찾을 수 없습니다: ${screenId}`);
@@ -38,6 +54,7 @@ export default function DynamicScreenPage() {
         const data = await response.json();
         setMetadata(data.metadata);
         setHtmlContent(data.htmlContent);
+        setReactContent(data.reactContent);
       } catch (err) {
         setError(err instanceof Error ? err.message : "화면 로드 실패");
       } finally {
@@ -48,7 +65,7 @@ export default function DynamicScreenPage() {
     if (screenId) {
       loadScreen();
     }
-  }, [screenId]);
+  }, [screenId, router]);
 
   if (loading) {
     return (
@@ -72,8 +89,12 @@ export default function DynamicScreenPage() {
 
   return (
     <div className="h-full bg-white">
-      {/* 콘텐츠 - 바로 미리보기 */}
-      {htmlContent ? (
+      {/* React 컴포넌트가 있으면 Sandpack으로 렌더링 */}
+      {reactContent ? (
+        <div className="h-[calc(100vh-120px)]">
+          <SandpackPreview code={reactContent} showEditor={false} />
+        </div>
+      ) : htmlContent ? (
         <iframe
           srcDoc={`
             <!DOCTYPE html>
@@ -92,9 +113,9 @@ export default function DynamicScreenPage() {
           title={metadata?.screenName || "화면 미리보기"}
         />
       ) : (
-        <div className="flex items-center justify-center h-[400px] text-slate-500">
-          <FileText className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-          <p>HTML 미리보기가 없습니다</p>
+        <div className="flex flex-col items-center justify-center h-[400px] text-slate-500">
+          <FileText className="h-12 w-12 mb-4 text-slate-300" />
+          <p>화면 콘텐츠가 없습니다</p>
         </div>
       )}
     </div>

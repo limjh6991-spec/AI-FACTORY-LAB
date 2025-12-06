@@ -1,48 +1,33 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { api } from "~/trpc/react";
 import {
   Upload,
   FolderTree,
   Eye,
   Terminal,
-  ChevronDown,
-  ChevronRight,
   FileSpreadsheet,
   CheckCircle2,
   AlertTriangle,
   XCircle,
   Loader2,
-  Play,
   Copy,
   Download,
   Trash2,
-  Plus,
-  Search,
   Monitor,
   Tablet,
   Smartphone,
-  Code,
-  FolderPlus,
-  RefreshCw,
   FileDown,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 
+// Sandpack은 클라이언트에서만 로드
+const SandpackPreview = lazy(() => import("~/components/preview/SandpackPreview"));
+
 // ============================================================
 // Types
 // ============================================================
-interface MenuNode {
-  menuId: string;
-  parentId: string | null;
-  menuName: string;
-  menuPath: string | null;
-  menuIcon: string | null;
-  sortOrder: number;
-  children: MenuNode[];
-}
-
 interface LogEntry {
   id: string;
   timestamp: Date;
@@ -68,95 +53,15 @@ interface ValidationResult {
 }
 
 // ============================================================
-// Menu Tree Component
-// ============================================================
-function MenuTreeItem({
-  item,
-  depth = 0,
-  selectedId,
-  onSelect,
-  onAddHere,
-}: {
-  item: MenuNode;
-  depth?: number;
-  selectedId: string | null;
-  onSelect: (item: MenuNode) => void;
-  onAddHere: (parentId: string) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(depth < 2);
-  const hasChildren = item.children && item.children.length > 0;
-  const isSelected = selectedId === item.menuId;
-
-  return (
-    <div className="w-full">
-      <div
-        className={cn(
-          "flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer text-sm transition-colors",
-          isSelected
-            ? "bg-[#0f62fe] text-white"
-            : "hover:bg-[#e0e0e0] text-[#161616]"
-        )}
-        style={{ paddingLeft: `${8 + depth * 16}px` }}
-        onClick={() => {
-          if (hasChildren) setIsOpen(!isOpen);
-          onSelect(item);
-        }}
-      >
-        {hasChildren ? (
-          isOpen ? (
-            <ChevronDown className="h-4 w-4 shrink-0" />
-          ) : (
-            <ChevronRight className="h-4 w-4 shrink-0" />
-          )
-        ) : (
-          <span className="w-4" />
-        )}
-        <FolderTree className="h-4 w-4 shrink-0 opacity-60" />
-        <span className="truncate flex-1">{item.menuName}</span>
-        {isSelected && !item.menuPath && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddHere(item.menuId);
-            }}
-            className="p-0.5 hover:bg-white/20 rounded"
-            title="여기에 추가"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-      {hasChildren && isOpen && (
-        <div>
-          {item.children.map((child) => (
-            <MenuTreeItem
-              key={child.menuId}
-              item={child}
-              depth={depth + 1}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              onAddHere={onAddHere}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
 // Main Component
 // ============================================================
 export default function ScreenGeneratorPage() {
   // State
-  const [selectedMenu, setSelectedMenu] = useState<MenuNode | null>(null);
-  const [menuSearch, setMenuSearch] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
-  const [activeTab, setActiveTab] = useState<"upload" | "reverse" | "template">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "template">("upload");
   const [previewMode, setPreviewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [showCode, setShowCode] = useState(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [generatedQuery, setGeneratedQuery] = useState<string>("");
   const [progress, setProgress] = useState(0);
@@ -164,10 +69,9 @@ export default function ScreenGeneratorPage() {
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [previewTab, setPreviewTab] = useState<"html" | "sql" | "react">("html");
+  const [previewTab, setPreviewTab] = useState<"grid" | "sql">("grid");
 
   // API
-  const { data: menuTree, isLoading: isMenuLoading } = api.menu.getMenuTree.useQuery();
   const validateMutation = api.screenGenerator.validateTemplate.useMutation();
   const previewMutation = api.screenGenerator.generatePreview.useMutation();
   const queryMutation = api.screenGenerator.generateQuery.useMutation();
@@ -275,22 +179,44 @@ export default function ScreenGeneratorPage() {
     setCurrentStep(2);
     setProgress(30);
     setIsGeneratingPreview(true);
-    addLog("info", "Step 2/4", "Claude API로 미리보기 생성 중...");
+    addLog("info", "Step 2/4", "Claude API로 AG Grid 미리보기 생성 중...");
     
     try {
+      // AG Grid React 컴포넌트 생성 요청
       const result = await previewMutation.mutateAsync({
         parsedData: validation.parsedData,
-        previewType: "html",
+        previewType: "react",
       });
       
-      if (result.success && result.html) {
-        setPreviewHtml(result.html);
-        setProgress(50);
-        addLog("success", "Step 2/4", "미리보기 생성 완료");
+      console.log("[Frontend] API 응답:", result);
+      console.log("[Frontend] componentCode 길이:", result.componentCode?.length);
+      
+      if (result.success) {
+        // React 코드가 있으면 저장
+        if (result.componentCode) {
+          console.log("[Frontend] setGeneratedReact 호출");
+          setGeneratedReact(result.componentCode);
+          setProgress(50);
+          addLog("success", "Step 2/4", `AG Grid 컴포넌트 생성 완료 (${result.componentCode.length}자)`);
+        } else if (result.html) {
+          // 구버전 호환: HTML도 지원
+          setPreviewHtml(result.html);
+          setProgress(50);
+          addLog("success", "Step 2/4", "미리보기 생성 완료 (HTML)");
+        } else if (result.preview) {
+          // preview 필드도 확인
+          console.log("[Frontend] preview 필드 사용");
+          setGeneratedReact(result.preview);
+          setProgress(50);
+          addLog("success", "Step 2/4", `AG Grid 컴포넌트 생성 완료 (preview: ${result.preview.length}자)`);
+        } else {
+          addLog("error", "Step 2/4", "응답에 코드가 없습니다");
+        }
       } else {
         addLog("error", "Step 2/4", result.error || "미리보기 생성 실패");
       }
     } catch (error) {
+      console.error("[Frontend] 에러:", error);
       addLog("error", "Step 2/4", `오류: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
     } finally {
       setIsGeneratingPreview(false);
@@ -458,47 +384,10 @@ export default function ScreenGeneratorPage() {
     }
   }, [generatedQuery, addLog]);
 
-  // Filter menu by search
-  const filterMenu = (items: MenuNode[], search: string): MenuNode[] => {
-    if (!search) return items;
-    return items
-      .map((item) => ({
-        ...item,
-        children: filterMenu(item.children, search),
-      }))
-      .filter(
-        (item) =>
-          item.menuName.toLowerCase().includes(search.toLowerCase()) ||
-          item.children.length > 0
-      );
-  };
-
-  const filteredMenu = menuTree ? filterMenu(menuTree, menuSearch) : [];
-
-  const getSelectedPath = () => {
-    if (!selectedMenu) return "메뉴를 선택하세요";
-    
-    const findPath = (items: MenuNode[], targetId: string, path: string[] = []): string[] | null => {
-      for (const item of items) {
-        if (item.menuId === targetId) {
-          return [...path, item.menuName];
-        }
-        if (item.children.length > 0) {
-          const found = findPath(item.children, targetId, [...path, item.menuName]);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-    
-    const path = menuTree ? findPath(menuTree, selectedMenu.menuId) : null;
-    return path ? path.join(" > ") : selectedMenu.menuName;
-  };
-
   return (
-    <div className="min-h-[150vh] flex flex-col gap-4">
+    <div className="h-[calc(100vh-120px)] flex flex-col gap-4 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0">
         <div>
           <h1 className="text-xl font-semibold text-[#161616]">화면 생성기</h1>
           <p className="text-sm text-[#525252]">Excel 파일을 업로드하여 화면을 자동으로 생성합니다</p>
@@ -515,67 +404,11 @@ export default function ScreenGeneratorPage() {
         </div>
       </div>
 
-      {/* Main Content - 2열 레이아웃: 좌측 메뉴(좁게) | 우측 Excel+미리보기(넓게) */}
-      <div className="flex-1 flex gap-4 min-h-0">
-        {/* 좌측: 메뉴 위치 선택 (우측 영역과 높이 동일, 내부 스크롤) */}
-        <div className="w-[280px] shrink-0 bg-white border border-[#e0e0e0] rounded-none flex flex-col self-stretch">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
-            <div className="flex items-center gap-2">
-              <FolderTree className="h-4 w-4 text-[#0f62fe]" />
-              <span className="font-medium text-sm text-[#161616]">메뉴 위치 선택</span>
-            </div>
-            <button
-              className="p-1.5 hover:bg-[#e0e0e0] rounded transition-colors"
-              title="새 폴더 추가"
-            >
-              <FolderPlus className="h-4 w-4 text-[#525252]" />
-            </button>
-          </div>
-          
-          {/* 검색 */}
-          <div className="px-3 py-2 border-b border-[#e0e0e0]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8d8d8d]" />
-              <input
-                type="text"
-                placeholder="메뉴 검색..."
-                value={menuSearch}
-                onChange={(e) => setMenuSearch(e.target.value)}
-                className="w-full h-8 pl-9 pr-3 text-sm bg-[#f4f4f4] border-0 border-b border-[#8d8d8d] focus:border-b-2 focus:border-[#0f62fe] outline-none"
-              />
-            </div>
-          </div>
-
-          {/* 트리 */}
-          <div className="flex-1 overflow-y-auto p-2">
-            {isMenuLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-5 w-5 animate-spin text-[#0f62fe]" />
-              </div>
-            ) : (
-              filteredMenu.map((item) => (
-                <MenuTreeItem
-                  key={item.menuId}
-                  item={item}
-                  selectedId={selectedMenu?.menuId ?? null}
-                  onSelect={setSelectedMenu}
-                  onAddHere={(parentId) => console.log("Add to:", parentId)}
-                />
-              ))
-            )}
-          </div>
-
-          {/* 선택된 경로 */}
-          <div className="px-3 py-2 border-t border-[#e0e0e0] bg-[#f4f4f4]">
-            <p className="text-xs text-[#525252]">선택된 위치:</p>
-            <p className="text-sm font-medium text-[#161616] truncate">{getSelectedPath()}</p>
-          </div>
-        </div>
-
-        {/* 우측: Excel 파일 + 미리보기 (세로 배치) */}
-        <div className="flex-1 flex flex-col gap-4 min-h-0">
-          {/* Excel 파일 처리 */}
-          <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col h-[360px] shrink-0">
+      {/* Main Content - 2열 레이아웃: 좌측 Excel | 우측 미리보기 */}
+      <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+        {/* 좌측: Excel 파일 처리 */}
+        <div className="w-[400px] shrink-0 flex flex-col min-h-0">
+          <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col flex-1 min-h-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="h-4 w-4 text-[#24a148]" />
@@ -583,11 +416,10 @@ export default function ScreenGeneratorPage() {
             </div>
           </div>
 
-          {/* 탭 */}
+          {/* 탭 - 업로드와 템플릿만 */}
           <div className="flex border-b border-[#e0e0e0]">
             {[
               { id: "upload", label: "업로드" },
-              { id: "reverse", label: "역생성" },
               { id: "template", label: "템플릿" },
             ].map((tab) => (
               <button
@@ -688,26 +520,19 @@ export default function ScreenGeneratorPage() {
               </div>
             )}
 
-            {activeTab === "reverse" && (
-              <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
-                <RefreshCw className="h-8 w-8 text-[#8d8d8d]" />
-                <p className="text-sm text-[#525252]">테이블명을 입력하면</p>
-                <p className="text-sm text-[#525252]">Excel 템플릿을 자동 생성합니다</p>
-                <input
-                  type="text"
-                  placeholder="테이블명 입력 (예: TB_PROD_BALANCE)"
-                  className="w-full h-8 px-3 mt-2 text-sm bg-[#f4f4f4] border-0 border-b border-[#8d8d8d] focus:border-b-2 focus:border-[#0f62fe] outline-none"
-                />
-              </div>
-            )}
-
             {activeTab === "template" && (
               <div className="h-full flex flex-col items-center justify-center gap-2">
                 <FileDown className="h-8 w-8 text-[#8d8d8d]" />
                 <p className="text-sm text-[#525252]">표준 템플릿 다운로드</p>
-                <button className="mt-2 px-4 py-2 bg-[#0f62fe] text-white text-sm hover:bg-[#0043ce] transition-colors">
+                <a
+                  href="/templates/screen_template.xlsx"
+                  download="screen_template.xlsx"
+                  className="mt-2 px-4 py-2 bg-[#0f62fe] text-white text-sm hover:bg-[#0043ce] transition-colors inline-flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
                   템플릿 다운로드
-                </button>
+                </a>
+                <p className="text-xs text-[#8d8d8d] mt-2">메타정보 시트와 데이터 시트 포함</p>
               </div>
             )}
           </div>
@@ -756,8 +581,9 @@ export default function ScreenGeneratorPage() {
             </button>
           </div>
         </div>
+        </div>
 
-          {/* 미리보기 */}
+          {/* 우측: 미리보기 */}
           <div className="flex-1 bg-white border border-[#e0e0e0] rounded-none flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
             <div className="flex items-center gap-2">
@@ -768,16 +594,15 @@ export default function ScreenGeneratorPage() {
               )}
             </div>
             <div className="flex items-center gap-1">
-              {/* 탭 전환: HTML / SQL / React */}
+              {/* 탭 전환: AG Grid / SQL */}
               <div className="flex bg-[#e0e0e0] rounded p-0.5 mr-2">
                 {[
-                  { id: "html" as const, label: "HTML" },
+                  { id: "grid" as const, label: "AG Grid" },
                   { id: "sql" as const, label: "SQL" },
-                  { id: "react" as const, label: "React" },
                 ].map(({ id, label }) => (
                   <button
                     key={id}
-                    onClick={() => setPreviewTab(id)}
+                    onClick={() => setPreviewTab(id as any)}
                     className={cn(
                       "px-2 py-1 text-xs font-medium transition-colors rounded",
                       previewTab === id
@@ -789,8 +614,8 @@ export default function ScreenGeneratorPage() {
                   </button>
                 ))}
               </div>
-              {/* 반응형 전환 (HTML 탭에서만) */}
-              {previewTab === "html" && [
+              {/* 반응형 전환 (Grid 탭에서만) */}
+              {previewTab === "grid" && [
                 { id: "desktop", icon: Monitor },
                 { id: "tablet", icon: Tablet },
                 { id: "mobile", icon: Smartphone },
@@ -812,10 +637,11 @@ export default function ScreenGeneratorPage() {
           </div>
 
           {/* 미리보기 내용 */}
-          <div className="flex-1 overflow-auto p-4 bg-[#f4f4f4]">
+          {/* flex flex-col 추가: 자식에게 flex-1 높이를 정확히 전달하기 위함 */}
+          <div className="flex-1 flex flex-col overflow-auto p-4 bg-[#f4f4f4] min-h-0">
             {/* SQL 탭 */}
             {previewTab === "sql" && (
-              <div className="bg-[#161616] h-full rounded overflow-auto">
+              <div className="bg-[#161616] flex-1 rounded overflow-auto">
                 {generatedQuery ? (
                   <pre className="p-4 text-sm text-[#f4f4f4] font-mono whitespace-pre-wrap">
                     {generatedQuery}
@@ -828,79 +654,47 @@ export default function ScreenGeneratorPage() {
               </div>
             )}
 
-            {/* React 탭 */}
-            {previewTab === "react" && (
-              <div className="bg-[#161616] h-full rounded overflow-auto">
+            {/* AG Grid 미리보기 탭 - Sandpack 실시간 실행 */}
+            {previewTab === "grid" && (
+              <div className="bg-white border border-[#e0e0e0] flex-1 flex flex-col overflow-auto min-h-[400px]">
+                {/* flex-1 사용 (부모가 flex-col이므로) */}
                 {generatedReact ? (
-                  <pre className="p-4 text-sm text-[#f4f4f4] font-mono whitespace-pre-wrap">
-                    {generatedReact}
-                  </pre>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-[#8d8d8d]">
-                    <div className="text-center">
-                      <Code className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">React 컴포넌트가 생성되면 여기에 표시됩니다</p>
-                      <p className="text-xs mt-2">1. 임시 저장 → 2. React 생성 버튼 클릭</p>
+                  <Suspense fallback={
+                    <div className="flex-1 flex items-center justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin text-[#0f62fe]" />
+                      <span className="ml-2 text-[#525252]">Sandpack 로딩 중...</span>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* HTML 탭 */}
-            {previewTab === "html" && (
-              <div
-                className={cn(
-                  "bg-white border border-[#e0e0e0] mx-auto transition-all duration-300 h-full overflow-hidden",
-                  previewMode === "desktop" && "w-full",
-                  previewMode === "tablet" && "max-w-[768px]",
-                  previewMode === "mobile" && "max-w-[375px]"
-                )}
-              >
-                {previewHtml ? (
-                  <iframe
-                    srcDoc={`
-                      <!DOCTYPE html>
-                      <html>
-                      <head>
-                        <meta charset="utf-8">
-                        <style>
-                          * { margin: 0; padding: 0; box-sizing: border-box; }
-                          body { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; }
-                        </style>
-                      </head>
-                      <body>${previewHtml}</body>
-                      </html>
-                    `}
-                    className="w-full h-full border-0"
-                    title="미리보기"
-                    sandbox="allow-same-origin"
-                  />
+                  }>
+                    <SandpackPreview 
+                      code={generatedReact} 
+                      className="flex-1"
+                      showEditor={false}
+                    />
+                  </Suspense>
                 ) : validation?.isValid ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-4 text-[#525252]">
+                  <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[#525252]">
                     <CheckCircle2 className="h-12 w-12 text-[#24a148]" />
                     <div className="text-center">
                       <p className="text-sm font-medium mb-1">검증 완료: {validation.columns}개 컬럼</p>
                       <p className="text-xs text-[#8d8d8d]">"미리보기 생성" 버튼을 클릭하면</p>
-                      <p className="text-xs text-[#8d8d8d]">Claude AI가 화면을 생성합니다</p>
+                      <p className="text-xs text-[#8d8d8d]">Claude AI가 AG Grid 화면을 생성합니다</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center gap-4 text-[#8d8d8d]">
+                  <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[#8d8d8d]">
                     <Eye className="h-16 w-16 opacity-30" />
                     <p className="text-sm">Excel 파일을 업로드하고 검증하면</p>
-                    <p className="text-sm">미리보기가 표시됩니다</p>
+                    <p className="text-sm">AG Grid 미리보기가 표시됩니다</p>
                   </div>
                 )}
               </div>
             )}
           </div>
         </div>
-        </div>{/* 우측 영역 끝 */}
       </div>{/* Main Content 끝 */}
 
       {/* 하단: 로그 & 결과 */}
-      <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col h-[200px] shrink-0">
+      <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col h-[180px] shrink-0">
           <div className="flex items-center justify-between px-4 py-2 border-b border-[#e0e0e0] bg-[#f4f4f4]">
             <div className="flex items-center gap-2">
               <Terminal className="h-4 w-4 text-[#24a148]" />
@@ -976,7 +770,7 @@ export default function ScreenGeneratorPage() {
           {/* 하단 버튼 */}
           <div className="flex items-center justify-between px-4 py-2 border-t border-[#e0e0e0]">
             <div className="flex items-center gap-2">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3].map((step) => (
                 <div
                   key={step}
                   className={cn(
@@ -993,8 +787,7 @@ export default function ScreenGeneratorPage() {
                 {currentStep === 0 && "대기 중"}
                 {currentStep === 1 && "검증 완료"}
                 {currentStep === 2 && "쿼리 생성"}
-                {currentStep === 3 && "UI 생성"}
-                {currentStep === 4 && "완료"}
+                {currentStep === 3 && "저장 완료"}
               </span>
             </div>
             <div className="flex gap-2">
@@ -1013,34 +806,18 @@ export default function ScreenGeneratorPage() {
                 <FileDown className="h-4 w-4" />
                 임시 저장
               </button>
-              <button
-                onClick={handleGenerateReact}
-                disabled={!tempScreenId || isGeneratingReact}
+              <a
+                href="/settings/menu"
                 className={cn(
                   "h-8 px-4 text-sm font-medium transition-colors flex items-center gap-2",
-                  tempScreenId && !isGeneratingReact
-                    ? "bg-[#393939] text-white hover:bg-[#525252]"
-                    : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed"
-                )}
-                title="AG Grid React 컴포넌트 생성"
-              >
-                {isGeneratingReact && <Loader2 className="h-4 w-4 animate-spin" />}
-                <Code className="h-4 w-4" />
-                React 생성
-              </button>
-              <button
-                onClick={handleComplete}
-                disabled={currentStep < 3}
-                className={cn(
-                  "h-8 px-4 text-sm font-medium transition-colors flex items-center gap-2",
-                  currentStep >= 3
+                  tempScreenId
                     ? "bg-[#0f62fe] text-white hover:bg-[#0043ce]"
-                    : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed"
+                    : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed pointer-events-none"
                 )}
               >
-                <Play className="h-4 w-4" />
-                화면 생성 완료
-              </button>
+                <FolderTree className="h-4 w-4" />
+                메뉴 관리로 이동
+              </a>
             </div>
           </div>
         </div>
