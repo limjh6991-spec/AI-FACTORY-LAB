@@ -471,11 +471,153 @@ console.log(jsonData);
 - `scripts/generate_report_with_rag.ts` - ✅ 올바른 import 방식 사용
 - `scripts/test_real_excel.ts` - ✅ 올바른 import 방식 사용
 
+---
+
+### 🔴 문제 7: 셸 환경 변수가 .env 파일을 덮어씀 (2025-12-06 발생) - 반복 발생 주의!
+
+**⚠️ 이 문제는 매번 반복 발생하므로 반드시 숙지!**
+
+**증상**:
+```bash
+# 화면에서 "미리보기 생성" 버튼 클릭 시
+❌ [Step 2/4] Claude API 오류: 401 {"type":"authentication_error","message":"invalid x-api-key"}
+
+# 또는
+❌ [Step 2/4] API 키가 잘려있습니다 (16자). .env.local 파일을 확인하세요.
+```
+
+**발생 원인**:
+1. 과거에 `.env` 파일에서 API 키가 줄바꿈으로 분리됨
+2. 터미널에서 `export`하거나 `source .env` 실행 시 잘린 키(16자)가 셸 환경 변수에 저장됨
+3. **dotenv/.env.local은 기존 환경 변수를 덮어쓰지 않음** (기본 동작)
+4. Next.js 서버가 셸에서 실행되면 잘린 키를 사용
+
+**진단 방법**:
+```bash
+# 1. 셸 환경 변수 길이 확인 (문제 있으면 17자 이하)
+echo "셸 환경 변수 길이: $(echo $ANTHROPIC_API_KEY | wc -c)"
+# 정상: 109 (108자 + 줄바꿈)
+# 비정상: 17 이하 (잘린 키)
+
+# 2. .env 파일 길이 확인
+echo ".env 파일 길이: $(grep 'ANTHROPIC_API_KEY' .env | cut -d= -f2 | wc -c)"
+# 정상: 109 (108자 + 줄바꿈)
+
+# 3. .env 파일에 줄바꿈 있는지 확인
+cat -A .env | grep ANTHROPIC
+# 비정상: 키가 두 줄에 걸쳐 표시됨
+# 정상: 한 줄에 키 전체 표시
+
+# 4. curl로 API 키 유효성 직접 테스트
+export $(grep ANTHROPIC .env | xargs) && curl -s https://api.anthropic.com/v1/messages \
+  -H "content-type: application/json" \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -d '{"model": "claude-sonnet-4-20250514", "max_tokens": 10, "messages": [{"role": "user", "content": "Hi"}]}'
+# 성공: {"model":"claude-sonnet-4-20250514"...}
+# 실패: {"type":"error","error":{"type":"authentication_error"...}}
+```
+
+**✅ 해결책 (영구적) - 코드에서 파일 직접 읽기**:
+
+`src/server/api/routers/screenGenerator.ts`에 다음 함수 추가:
+
+```typescript
+import * as fs from "fs";
+import * as path from "path";
+
+// .env.local에서 직접 API 키 읽기 (환경 변수 오염 방지)
+function getAnthropicApiKey(): string | null {
+  // 1. .env.local 파일에서 직접 읽기 시도
+  const envLocalPath = path.join(process.cwd(), '.env.local');
+  if (fs.existsSync(envLocalPath)) {
+    const content = fs.readFileSync(envLocalPath, 'utf-8');
+    const match = content.match(/^ANTHROPIC_API_KEY=(.+)$/m);
+    if (match && match[1]) {
+      const key = match[1].trim();
+      if (key.length >= 100) {
+        console.log(`[DEBUG] .env.local에서 API 키 로드 (${key.length}자)`);
+        return key;
+      }
+    }
+  }
+  
+  // 2. .env 파일에서 직접 읽기 시도
+  const envPath = path.join(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf-8');
+    const match = content.match(/^ANTHROPIC_API_KEY=(.+)$/m);
+    if (match && match[1]) {
+      const key = match[1].trim();
+      if (key.length >= 100) {
+        console.log(`[DEBUG] .env에서 API 키 로드 (${key.length}자)`);
+        return key;
+      }
+    }
+  }
+  
+  // 3. 환경 변수에서 가져오기 (폴백)
+  const envKey = (process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY)?.trim();
+  if (envKey && envKey.length >= 100) {
+    console.log(`[DEBUG] 환경 변수에서 API 키 로드 (${envKey.length}자)`);
+    return envKey;
+  }
+  
+  console.log(`[DEBUG] API 키를 찾을 수 없거나 잘려있음`);
+  return null;
+}
+
+// 사용 예시
+const apiKey = getAnthropicApiKey();
+if (!apiKey) {
+  return { success: false, error: "API 키를 찾을 수 없습니다." };
+}
+const anthropic = new Anthropic({ apiKey });
+```
+
+**✅ 해결책 (임시) - .env.local 파일 생성**:
+
+```bash
+# .env.local 파일에 API 키를 한 줄로 작성 (Next.js에서 우선 로드)
+cd /home/roarm_m3/ai-factory-lab
+printf 'ANTHROPIC_API_KEY=sk-ant-api03-여기에전체키입력\n' > .env.local
+
+# 확인 (127자 = 18자 키이름 + 108자 키값 + 1자 줄바꿈)
+cat .env.local | wc -c
+# 127
+```
+
+**✅ 해결책 (추가) - 셸 환경 변수 정리**:
+
+```bash
+# 1. 현재 터미널에서 환경 변수 해제
+unset ANTHROPIC_API_KEY
+
+# 2. ~/.bashrc 또는 ~/.zshrc에서 export 라인 제거
+nano ~/.bashrc
+# 다음 라인이 있으면 삭제:
+# export ANTHROPIC_API_KEY=...
+
+# 3. 새 터미널 열고 서버 재시작
+npm run dev
+```
+
+**예방책**:
+- ✅ `.env` 파일에서 API 키는 **반드시 한 줄**로 작성
+- ✅ `source .env` 또는 `export $(cat .env | xargs)` 실행 금지
+- ✅ Claude API 사용하는 코드는 `getAnthropicApiKey()` 함수 사용
+- ✅ 401 오류 발생 시 `echo $ANTHROPIC_API_KEY | wc -c`로 먼저 확인
+- ✅ `.bashrc`/`.zshrc`에 API 키 직접 export 금지
+
+**적용된 파일**:
+- `src/server/api/routers/screenGenerator.ts` - ✅ `getAnthropicApiKey()` 함수 적용 완료 (2025-12-06)
+
+---
 
 
 ---
 
-## �📁 프로젝트 구조
+## 📁 프로젝트 구조
 
 ```
 ai-factory-lab/

@@ -1,0 +1,264 @@
+{
+  "screenId": "SC004",
+  "screenName": "자재수불부",
+  "screenNameEn": "Material Inventory Ledger",
+  "description": "자재(원재료, 부재료, 소모품)의 입출고 및 재고 현황을 관리하는 화면",
+  "version": "1.0.0",
+  "createdAt": "2025-12-06",
+  "sourceFile": "원가시스템 폼.ver7.xlsx",
+  "sourceSheet": "4. 자재수불부",
+  
+  "layout": {
+    "type": "standard",
+    "sections": ["searchCondition", "summaryGrid", "detailGrid"]
+  },
+
+  "searchConditions": [
+    {
+      "id": "period",
+      "label": "기간",
+      "type": "dateRange",
+      "required": true,
+      "defaultValue": "currentMonth"
+    },
+    {
+      "id": "materialType",
+      "label": "자재구분",
+      "type": "select",
+      "options": [
+        { "value": "", "label": "전체" },
+        { "value": "RAW", "label": "원재료" },
+        { "value": "SUB", "label": "부재료" },
+        { "value": "CON", "label": "소모품" }
+      ],
+      "defaultValue": ""
+    },
+    {
+      "id": "categoryL",
+      "label": "대분류",
+      "type": "select",
+      "options": "dynamic",
+      "dependsOn": "materialType"
+    },
+    {
+      "id": "categoryM",
+      "label": "중분류",
+      "type": "select",
+      "options": "dynamic",
+      "dependsOn": "categoryL"
+    },
+    {
+      "id": "itemCode",
+      "label": "품번",
+      "type": "text",
+      "placeholder": "품번 입력"
+    },
+    {
+      "id": "itemName",
+      "label": "품명",
+      "type": "text",
+      "placeholder": "품명 입력"
+    }
+  ],
+
+  "grids": {
+    "summary": {
+      "id": "summaryGrid",
+      "title": "자재구분별 합계",
+      "height": 120,
+      "columns": [
+        { "field": "materialType", "headerName": "자재구분", "width": 120 },
+        { "field": "openQty", "headerName": "기초수량", "width": 100, "type": "number", "align": "right" },
+        { "field": "openAmt", "headerName": "기초금액", "width": 120, "type": "currency", "align": "right" },
+        { "field": "inQty", "headerName": "입고수량", "width": 100, "type": "number", "align": "right" },
+        { "field": "inAmt", "headerName": "입고금액", "width": 120, "type": "currency", "align": "right" },
+        { "field": "inEtcQty", "headerName": "기타입고수량", "width": 110, "type": "number", "align": "right" },
+        { "field": "inEtcAmt", "headerName": "기타입고금액", "width": 120, "type": "currency", "align": "right" },
+        { "field": "outQty", "headerName": "출고수량", "width": 100, "type": "number", "align": "right" },
+        { "field": "outAmt", "headerName": "출고금액", "width": 120, "type": "currency", "align": "right" },
+        { "field": "outEtcQty", "headerName": "기타출고수량", "width": 110, "type": "number", "align": "right" },
+        { "field": "outEtcAmt", "headerName": "기타출고금액", "width": 120, "type": "currency", "align": "right" },
+        { "field": "closeQty", "headerName": "재고수량", "width": 100, "type": "number", "align": "right" },
+        { "field": "closeAmt", "headerName": "재고금액", "width": 120, "type": "currency", "align": "right" }
+      ]
+    },
+    "detail": {
+      "id": "detailGrid",
+      "title": "자재수불 상세",
+      "height": "auto",
+      "columns": [
+        { 
+          "field": "materialType", 
+          "headerName": "자재구분", 
+          "width": 100,
+          "pinned": "left"
+        },
+        { 
+          "field": "itemCode", 
+          "headerName": "품번", 
+          "width": 150,
+          "pinned": "left"
+        },
+        { 
+          "field": "itemName", 
+          "headerName": "품명", 
+          "width": 200
+        },
+        { 
+          "field": "categoryL", 
+          "headerName": "대분류", 
+          "width": 100
+        },
+        { 
+          "field": "categoryM", 
+          "headerName": "중분류", 
+          "width": 100
+        },
+        { 
+          "field": "spec", 
+          "headerName": "규격", 
+          "width": 180
+        },
+        { 
+          "headerName": "기초",
+          "children": [
+            { "field": "openQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "openAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "openPrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        },
+        { 
+          "headerName": "입고",
+          "children": [
+            { "field": "inQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "inAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "inPrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        },
+        { 
+          "headerName": "기타입고",
+          "children": [
+            { "field": "inEtcQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "inEtcAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "inEtcPrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        },
+        { 
+          "headerName": "출고",
+          "children": [
+            { "field": "outQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "outAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "outPrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        },
+        { 
+          "headerName": "기타출고",
+          "children": [
+            { "field": "outEtcQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "outEtcAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "outEtcPrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        },
+        { 
+          "headerName": "재고",
+          "children": [
+            { "field": "closeQty", "headerName": "수량", "width": 90, "type": "number", "align": "right" },
+            { "field": "closeAmt", "headerName": "금액", "width": 110, "type": "currency", "align": "right" },
+            { "field": "closePrice", "headerName": "단가", "width": 100, "type": "currency", "align": "right" }
+          ]
+        }
+      ],
+      "features": {
+        "rowGrouping": true,
+        "groupByField": "materialType",
+        "aggregation": true,
+        "export": ["excel", "pdf"],
+        "columnResize": true,
+        "columnReorder": true,
+        "filter": true,
+        "sort": true
+      }
+    }
+  },
+
+  "dataSource": {
+    "type": "api",
+    "endpoint": "/api/inventory/material-ledger",
+    "method": "GET",
+    "parameters": {
+      "startDate": "searchConditions.period.start",
+      "endDate": "searchConditions.period.end",
+      "materialType": "searchConditions.materialType",
+      "categoryL": "searchConditions.categoryL",
+      "categoryM": "searchConditions.categoryM",
+      "itemCode": "searchConditions.itemCode",
+      "itemName": "searchConditions.itemName"
+    }
+  },
+
+  "dbMapping": {
+    "tables": {
+      "main": "inv_material_ledger",
+      "master": "mst_item",
+      "category": "mst_item_category"
+    },
+    "columns": {
+      "materialType": { "table": "mst_item", "column": "item_type", "description": "자재구분" },
+      "itemCode": { "table": "mst_item", "column": "item_code", "description": "품번" },
+      "itemName": { "table": "mst_item", "column": "item_name", "description": "품명" },
+      "categoryL": { "table": "mst_item_category", "column": "category_l", "description": "대분류" },
+      "categoryM": { "table": "mst_item_category", "column": "category_m", "description": "중분류" },
+      "spec": { "table": "mst_item", "column": "spec", "description": "규격" },
+      "openQty": { "table": "inv_material_ledger", "column": "open_qty", "description": "기초수량" },
+      "openAmt": { "table": "inv_material_ledger", "column": "open_amt", "description": "기초금액" },
+      "openPrice": { "table": "inv_material_ledger", "column": "open_price", "description": "기초단가" },
+      "inQty": { "table": "inv_material_ledger", "column": "in_qty", "description": "입고수량" },
+      "inAmt": { "table": "inv_material_ledger", "column": "in_amt", "description": "입고금액" },
+      "inPrice": { "table": "inv_material_ledger", "column": "in_price", "description": "입고단가" },
+      "inEtcQty": { "table": "inv_material_ledger", "column": "in_etc_qty", "description": "기타입고수량" },
+      "inEtcAmt": { "table": "inv_material_ledger", "column": "in_etc_amt", "description": "기타입고금액" },
+      "inEtcPrice": { "table": "inv_material_ledger", "column": "in_etc_price", "description": "기타입고단가" },
+      "outQty": { "table": "inv_material_ledger", "column": "out_qty", "description": "출고수량" },
+      "outAmt": { "table": "inv_material_ledger", "column": "out_amt", "description": "출고금액" },
+      "outPrice": { "table": "inv_material_ledger", "column": "out_price", "description": "출고단가" },
+      "outEtcQty": { "table": "inv_material_ledger", "column": "out_etc_qty", "description": "기타출고수량" },
+      "outEtcAmt": { "table": "inv_material_ledger", "column": "out_etc_amt", "description": "기타출고금액" },
+      "outEtcPrice": { "table": "inv_material_ledger", "column": "out_etc_price", "description": "기타출고단가" },
+      "closeQty": { "table": "inv_material_ledger", "column": "close_qty", "description": "재고수량" },
+      "closeAmt": { "table": "inv_material_ledger", "column": "close_amt", "description": "재고금액" },
+      "closePrice": { "table": "inv_material_ledger", "column": "close_price", "description": "재고단가" }
+    }
+  },
+
+  "actions": [
+    {
+      "id": "search",
+      "label": "조회",
+      "type": "primary",
+      "icon": "Search"
+    },
+    {
+      "id": "reset",
+      "label": "초기화",
+      "type": "secondary",
+      "icon": "Refresh"
+    },
+    {
+      "id": "exportExcel",
+      "label": "엑셀 다운로드",
+      "type": "tertiary",
+      "icon": "Download"
+    },
+    {
+      "id": "print",
+      "label": "인쇄",
+      "type": "tertiary",
+      "icon": "Printer"
+    }
+  ],
+
+  "unitInfo": {
+    "quantity": "EA / L",
+    "amount": "원(₩)"
+  }
+}

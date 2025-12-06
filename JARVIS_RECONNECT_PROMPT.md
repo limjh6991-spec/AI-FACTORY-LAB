@@ -78,6 +78,13 @@ Redis:       localhost:6379
 
 ## ⚠️ 주의사항
 
+### 🔴 API 키 401 오류 (반복 발생!)
+- **증상**: Claude API 호출 시 401 인증 오류, "API 키가 잘려있습니다 (16자)"
+- **원인**: 셸 환경 변수에 잘린 API 키가 남아있어 .env 파일을 덮어씀
+- **진단**: `echo $ANTHROPIC_API_KEY | wc -c` (17 이하면 문제)
+- **해결**: `getAnthropicApiKey()` 함수로 파일에서 직접 읽기 (이미 적용됨)
+- **상세**: `ENVIRONMENT.md` → "문제 7: 셸 환경 변수가 .env 파일을 덮어씀" 참조
+
 ### 보안
 - `.env` 파일 절대 커밋 금지
 - `GEMINI_API_KEY`, `ANTHROPIC_API_KEY` 로컬만 보관
