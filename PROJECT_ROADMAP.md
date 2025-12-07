@@ -1,130 +1,257 @@
-# 🏭 AI Factory Lab - Excel to Screen Automation (Ver 4.0)
+# 🏭 AI Factory Lab - Excel to Screen Automation# 🏭 AI Factory Lab - Excel to Screen Automation (Ver 4.0)
 
-**Project:** Excel 기반 자동 화면 생성 시스템 (Claude API + RealGrid)  
-**Architecture:** Excel → JSON → React 자동 생성 (3-Phase)  
-**Core Tech:** Next.js 15 + RealGrid 2.9.4 + Claude API, tRPC + Prisma  
-**Last Updated:** 2025년 12월 4일
 
----
 
-## 🎯 1. Vision & Goal (Updated)
+**Project:** Excel 기반 자동 화면 생성 시스템  **Project:** Excel 기반 자동 화면 생성 시스템 (Claude API + RealGrid)  
 
-### 🚀 **핵심 변경 사항**
-기존의 "PI 문서 → 코드 생성" 방식에서 **"Excel 파일 → 자동 화면 생성"** 시스템으로 전환
+**Architecture:** Excel → JSON → React 자동 생성 (Claude API + AG Grid)  **Architecture:** Excel → JSON → React 자동 생성 (3-Phase)  
 
-### 📊 **새로운 워크플로우**
-```
+**Core Tech:** Next.js 15 + AG Grid Community + Claude API + tRPC + Prisma  **Core Tech:** Next.js 15 + RealGrid 2.9.4 + Claude API, tRPC + Prisma  
+
+**Last Updated:** 2025년 12월 7일**Last Updated:** 2025년 12월 4일
+
+
+
+------
+
+
+
+## 🎯 프로젝트 목표## 🎯 1. Vision & Goal (Updated)
+
+
+
+### 📊 핵심 워크플로우### 🚀 **핵심 변경 사항**
+
+```기존의 "PI 문서 → 코드 생성" 방식에서 **"Excel 파일 → 자동 화면 생성"** 시스템으로 전환
+
+Excel 업로드 → AI 분석 (Claude) → Grid 자동 생성 
+
+→ 임시 메뉴 생성 → 사용자 확인 → 프로덕션 배포### 📊 **새로운 워크플로우**
+
+``````
+
 Excel 업로드 → AI 분석 (RAG) → Grid/Chart 자동 생성 
-→ 임시 메뉴 생성 → 사용자 확인 → 프로덕션 배포
-```
 
-### 🎯 **목표**
-1. **Excel 자동 분석 (90% 정확도):**
+### 🎯 목표→ 임시 메뉴 생성 → 사용자 확인 → 프로덕션 배포
+
+1. **Excel 자동 분석**: 자유 형식 Excel → 구조화된 화면 정의```
+
+2. **DB 컬럼 자동 매핑**: 한글명 → 영문 테이블/컬럼
+
+3. **UI 자동 생성**: AG Grid + React 컴포넌트 생성### 🎯 **목표**
+
+4. **비용 효율화**: Claude API 효율적 사용1. **Excel 자동 분석 (90% 정확도):**
+
    - 자유 형식 Excel → 구조 패턴 학습 (Vector DB)
-   - DB 컬럼 자동 매핑 (한글 → 영문 테이블/컬럼)
+
+---   - DB 컬럼 자동 매핑 (한글 → 영문 테이블/컬럼)
+
    - 차트 자동 생성 (Excel 차트 → Recharts 변환)
-   - 수식 변환 (Excel 함수 → SQL/JavaScript)
 
-2. **비용 최적화:**
-   - Hybrid LLM 전략 (Gemini 8% + Ollama 92%)
-   - 최종 월간 비용: **$1.2/월** (기존 $80/월 → 98.5% 절감)
-   - ROI: 2주 회수, 월 $412 이익
+## 🏗️ 기술 스택   - 수식 변환 (Excel 함수 → SQL/JavaScript)
 
-3. **단계별 구현:**
-   - Week 1-4: Gemini 프로토타입 (92% 정확도)
-   - Week 5-6: 최적 로컬 모델 조사 및 선택
-   - Week 7-9: Hybrid 전환 (점진적 Ollama 비율 증가)
 
----
 
-## 🏗️ 2. Architecture Overview (Updated)
+### Frontend2. **비용 최적화:**
 
-### 🛠️ Tech Stack (2025 Production-Ready)
+| 기술 | 버전 | 용도 |   - Hybrid LLM 전략 (Gemini 8% + Ollama 92%)
+
+|------|------|------|   - 최종 월간 비용: **$1.2/월** (기존 $80/월 → 98.5% 절감)
+
+| Next.js | 15.5.6 | App Router + Turbopack |   - ROI: 2주 회수, 월 $412 이익
+
+| TypeScript | 5.8 | 타입 안전성 |
+
+| Tailwind CSS | v4 | 스타일링 |3. **단계별 구현:**
+
+| shadcn/ui | Latest | UI 컴포넌트 |   - Week 1-4: Gemini 프로토타입 (92% 정확도)
+
+| AG Grid | Community | 데이터 그리드 |   - Week 5-6: 최적 로컬 모델 조사 및 선택
+
+| Recharts | Latest | 차트 |   - Week 7-9: Hybrid 전환 (점진적 Ollama 비율 증가)
+
+
+
+### Backend---
+
+| 기술 | 버전 | 용도 |
+
+|------|------|------|## 🏗️ 2. Architecture Overview (Updated)
+
+| tRPC | v11 | 타입 안전 API |
+
+| Prisma | 6.19.0 | ORM |### 🛠️ Tech Stack (2025 Production-Ready)
+
+| PostgreSQL | 16 | 데이터베이스 |
 
 **Frontend:**
-* **Framework:** Next.js 15.5.6 (App Router + Turbopack)
-* **Language:** TypeScript 5.8
-* **Styling:** Tailwind CSS v4
-* **UI Components:** shadcn/ui (Radix UI 기반)
-* **Grid:** TanStack Table v8 (서버사이드 그리드)
+
+### AI* **Framework:** Next.js 15.5.6 (App Router + Turbopack)
+
+| 기술 | 용도 |* **Language:** TypeScript 5.8
+
+|------|------|* **Styling:** Tailwind CSS v4
+
+| Claude Sonnet 4 | 코드 생성, Excel 분석 |* **UI Components:** shadcn/ui (Radix UI 기반)
+
+| Chroma | Vector DB (선택적) |* **Grid:** TanStack Table v8 (서버사이드 그리드)
+
 * **Charts:** Recharts (Excel 차트 변환)
-* **Excel Processing:** SheetJS (XLSX.js)
 
-**Backend:**
+---* **Excel Processing:** SheetJS (XLSX.js)
+
+
+
+## 📅 진행 현황**Backend:**
+
 * **API Layer:** tRPC (타입 안전 API)
-* **ORM:** Prisma 6.19.0
-* **Database:** PostgreSQL 16 (68 테이블, 34,594 rows)
-* **Real DB:** MS SQL Server (172.16.200.204:1433) - 기존 데이터 보존
 
-**AI & RAG Stack:**
-* **LLM (Current):** Google Gemini 2.0 Flash
+### ✅ Phase 0: 기반 구축 (완료)* **ORM:** Prisma 6.19.0
+
+- [x] Next.js 15 프로젝트 초기화* **Database:** PostgreSQL 16 (68 테이블, 34,594 rows)
+
+- [x] Prisma + PostgreSQL 연동* **Real DB:** MS SQL Server (172.16.200.204:1433) - 기존 데이터 보존
+
+- [x] tRPC API 레이어 구축
+
+- [x] shadcn/ui 컴포넌트 설치**AI & RAG Stack:**
+
+- [x] 동적 메뉴 시스템 구현* **LLM (Current):** Google Gemini 2.0 Flash
+
   - 정확도: 92%
-  - 응답 속도: 0.6초
-  - 비용: $15/월
-* **LLM (Future - Week 5+):** Ollama + 최적 모델 (선택 예정)
-  - 후보: Llama 3.2, Qwen 2.6, Gemma 3.0
-  - 정확도 목표: 85-90%
-  - 응답 속도: 3-5초
+
+### ✅ Phase 1: 화면 생성기 구현 (완료)  - 응답 속도: 0.6초
+
+- [x] Excel → JSON 변환 (Claude API)  - 비용: $15/월
+
+- [x] JSON → AG Grid 컴포넌트 생성* **LLM (Future - Week 5+):** Ollama + 최적 모델 (선택 예정)
+
+- [x] 임시화면 관리 시스템  - 후보: Llama 3.2, Qwen 2.6, Gemma 3.0
+
+- [x] 화면 발행 기능  - 정확도 목표: 85-90%
+
+- [x] IBM Carbon Design 스타일 적용  - 응답 속도: 3-5초
+
   - 비용: $0/월
-* **Embeddings:** OpenAI text-embedding-3-small ($25/월, Week 2+)
-* **Vector DB:** Chroma (로컬 Docker, 무료)
-* **Caching:** Redis (로컬 Docker, 무료)
-* **Full-text Search:** Elasticsearch (로컬 Docker, 선택적)
-* **Orchestration:** LangChain
 
----
+### ✅ Phase 2: 코드 구조 개선 (완료 - 2025.12.07)* **Embeddings:** OpenAI text-embedding-3-small ($25/월, Week 2+)
 
-### 📐 System Flow (Updated)
+- [x] screenGenerator.ts 모듈 분리 (2,461줄 → 1,217줄)* **Vector DB:** Chroma (로컬 Docker, 무료)
+
+- [x] 재사용 가능한 모듈 구조 생성* **Caching:** Redis (로컬 Docker, 무료)
+
+- [x] 타입 안전성 강화* **Full-text Search:** Elasticsearch (로컬 Docker, 선택적)
+
+- [x] 빌드 오류 전체 수정* **Orchestration:** LangChain
+
+
+
+### 📋 향후 계획---
+
+- [ ] SQL 쿼리 생성 LLM 교체 가능 구조 활용
+
+- [ ] 실제 DB 데이터 연동 강화### 📐 System Flow (Updated)
+
+- [ ] 사용자 피드백 기반 개선
 
 ```
-[Excel Upload] 
+
+---[Excel Upload] 
+
     ↓
-[AI Analysis - RAG Pipeline]
+
+## 🗂️ 모듈 구조[AI Analysis - RAG Pipeline]
+
 ├─ Excel 구조 분석 (Vector DB 패턴 매칭)
-├─ DB 컬럼 매핑 (한글명 → 테이블/컬럼)
-├─ 차트 인식 (Excel → Recharts 변환)
-└─ 수식 변환 (IF, SUM → SQL/JS)
-    ↓
-[Screen Generation]
-├─ TanStack Table 그리드 생성
-├─ Recharts 차트 컴포넌트 생성
-├─ 검색 폼 자동 생성
-└─ tRPC API 엔드포인트 생성
-    ↓
-[Temporary Menu]
-└─ DB에 임시 메뉴 생성 (승인 대기)
-    ↓
-[User Validation]
-├─ 사용자가 생성된 화면 확인
-├─ 데이터 검증 (Answer Key 비교)
-└─ 피드백 제공 → RAG 학습
-    ↓
-[Production Deploy]
-└─ 승인 시 프로덕션 메뉴로 이동
+
+### src/lib/screen-generator/├─ DB 컬럼 매핑 (한글명 → 테이블/컬럼)
+
+```├─ 차트 인식 (Excel → Recharts 변환)
+
+screen-generator/└─ 수식 변환 (IF, SUM → SQL/JS)
+
+├── index.ts                    # 메인 exports    ↓
+
+├── types.ts                    # 타입 정의[Screen Generation]
+
+├── db-metadata.ts              # DB 메타데이터 로딩├─ TanStack Table 그리드 생성
+
+├── id-generator.ts             # 화면 ID 생성├─ Recharts 차트 컴포넌트 생성
+
+├── api-key.ts                  # API 키 관리├─ 검색 폼 자동 생성
+
+├── query-generator.ts          # SQL 쿼리 생성 (LLM 교체 가능)└─ tRPC API 엔드포인트 생성
+
+├── converters/    ↓
+
+│   └── to-next-page.ts         # Next.js 페이지 변환[Temporary Menu]
+
+├── templates/└─ DB에 임시 메뉴 생성 (승인 대기)
+
+│   ├── ag-grid-styles.ts       # AG Grid 스타일    ↓
+
+│   ├── react-template.ts       # React 템플릿[User Validation]
+
+│   └── html-template.ts        # HTML 템플릿├─ 사용자가 생성된 화면 확인
+
+├── prompts/├─ 데이터 검증 (Answer Key 비교)
+
+│   ├── column-structure.ts     # 컬럼 구조 프롬프트└─ 피드백 제공 → RAG 학습
+
+│   ├── json-data-prompt.ts     # JSON 데이터 프롬프트    ↓
+
+│   └── react-component-prompt.ts # React 컴포넌트 프롬프트[Production Deploy]
+
+└── utils/└─ 승인 시 프로덕션 메뉴로 이동
+
+    └── helpers.ts              # 유틸리티 함수```
+
 ```
 
 ### 🧠 Agent 학습 사이클 (RAG 강화학습)
 
+---
+
 ```
-[자비스 역할] 인프라 구축
+
+## 🚀 빠른 시작[자비스 역할] 인프라 구축
+
 ├─ Vector DB 설정 및 관리
-├─ DB 메타데이터 수집 및 임베딩
-├─ API 엔드포인트 제공
-└─ UI 컴포넌트 템플릿
+
+```bash├─ DB 메타데이터 수집 및 임베딩
+
+# 설치├─ API 엔드포인트 제공
+
+npm install└─ UI 컴포넌트 템플릿
+
     ↓
-[Agent 역할] 실제 추론
-├─ Excel 파일 구조 분석
+
+# 개발 서버[Agent 역할] 실제 추론
+
+npm run dev├─ Excel 파일 구조 분석
+
 │  └─ Prompt: "이 Excel의 헤더 행은 몇 번째인가?"
-├─ RAG 기반 컨텍스트 검색
-│  └─ Vector DB에서 유사 매핑 사례 검색
+
+# 빌드├─ RAG 기반 컨텍스트 검색
+
+npm run build│  └─ Vector DB에서 유사 매핑 사례 검색
+
 ├─ DB 스키마 이해
-│  └─ Prompt: "Excel 컬럼 '부서코드'는 어느 DB 테이블/컬럼?"
-└─ 최적 매핑 추론
-   └─ Agent가 컨텍스트 기반으로 판단
+
+# 화면 생성기│  └─ Prompt: "Excel 컬럼 '부서코드'는 어느 DB 테이블/컬럼?"
+
+http://localhost:3000/settings/screen-generator└─ 최적 매핑 추론
+
+```   └─ Agent가 컨텍스트 기반으로 판단
+
     ↓
-[강화학습 사이클]
+
+---[강화학습 사이클]
+
 ├─ 사용자 피드백 수집
-│  └─ "이 매핑이 틀렸어요" → Vector DB 저장
+
+**작성일**: 2025년 12월 7일│  └─ "이 매핑이 틀렸어요" → Vector DB 저장
+
 ├─ Few-Shot Examples 누적
 │  └─ 성공/실패 사례를 Prompt에 포함
 ├─ Agent 정확도 향상

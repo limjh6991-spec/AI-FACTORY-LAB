@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import RealGrid, { GridView, LocalDataProvider } from 'realgrid';
+import RealGrid, { GridView, LocalDataProvider, ValueType, ColumnLayoutDirection } from 'realgrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,11 +54,11 @@ export default function FinancialStylePage() {
     const fields = [
       { fieldName: 'category' },
       { fieldName: 'item' },
-      { fieldName: 'prev', dataType: 'number' },
-      { fieldName: 'curr', dataType: 'number' },
-      { fieldName: 'budget', dataType: 'number' },
-      { fieldName: 'yoy', dataType: 'number' },
-      { fieldName: 'achieve', dataType: 'number' },
+      { fieldName: 'prev', dataType: ValueType.NUMBER },
+      { fieldName: 'curr', dataType: ValueType.NUMBER },
+      { fieldName: 'budget', dataType: ValueType.NUMBER },
+      { fieldName: 'yoy', dataType: ValueType.NUMBER },
+      { fieldName: 'achieve', dataType: ValueType.NUMBER },
     ];
     dataProvider.setFields(fields);
 
@@ -115,13 +115,13 @@ export default function FinancialStylePage() {
       'item',
       {
         name: 'amountGroup',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['prev', 'curr', 'budget'],
         header: { text: '💵 금액 (단위: 원)' }
       },
       {
         name: 'ratioGroup',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['yoy', 'achieve'],
         header: { text: '📈 분석지표' }
       }

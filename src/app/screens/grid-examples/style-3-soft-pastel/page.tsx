@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import RealGrid, { GridView, LocalDataProvider } from 'realgrid';
+import RealGrid, { GridView, LocalDataProvider, ValueType, ColumnLayoutDirection } from 'realgrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,10 +52,10 @@ export default function SoftPastelStylePage() {
     const fields = [
       { fieldName: 'name' },
       { fieldName: 'grade' },
-      { fieldName: 'orders', dataType: 'number' },
-      { fieldName: 'total', dataType: 'number' },
+      { fieldName: 'orders', dataType: ValueType.NUMBER },
+      { fieldName: 'total', dataType: ValueType.NUMBER },
       { fieldName: 'lastOrder' },
-      { fieldName: 'points', dataType: 'number' },
+      { fieldName: 'points', dataType: ValueType.NUMBER },
       { fieldName: 'status' },
     ];
     dataProvider.setFields(fields);
@@ -110,19 +110,19 @@ export default function SoftPastelStylePage() {
     const layout = [
       {
         name: 'customerInfo',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['name', 'grade'],
         header: { text: '🙋 고객 정보' }
       },
       {
         name: 'purchaseInfo',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['orders', 'total', 'lastOrder'],
         header: { text: '🛍️ 구매 정보' }
       },
       {
         name: 'benefitInfo',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['points', 'status'],
         header: { text: '✨ 혜택' }
       }

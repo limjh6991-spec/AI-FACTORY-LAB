@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import RealGrid, { GridView, LocalDataProvider } from 'realgrid';
+import RealGrid, { GridView, LocalDataProvider, ValueType, ColumnLayoutDirection } from 'realgrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,11 +52,11 @@ export default function ModernDarkStylePage() {
     const fields = [
       { fieldName: 'server' },
       { fieldName: 'status' },
-      { fieldName: 'cpu', dataType: 'number' },
-      { fieldName: 'memory', dataType: 'number' },
-      { fieldName: 'disk', dataType: 'number' },
-      { fieldName: 'network', dataType: 'number' },
-      { fieldName: 'response', dataType: 'number' },
+      { fieldName: 'cpu', dataType: ValueType.NUMBER },
+      { fieldName: 'memory', dataType: ValueType.NUMBER },
+      { fieldName: 'disk', dataType: ValueType.NUMBER },
+      { fieldName: 'network', dataType: ValueType.NUMBER },
+      { fieldName: 'response', dataType: ValueType.NUMBER },
       { fieldName: 'uptime' },
     ];
     dataProvider.setFields(fields);
@@ -119,13 +119,13 @@ export default function ModernDarkStylePage() {
       'status',
       {
         name: 'resourceGroup',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['cpu', 'memory', 'disk'],
         header: { text: '📊 Resource Usage' }
       },
       {
         name: 'performanceGroup',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['network', 'response'],
         header: { text: '⚡ Performance' }
       },

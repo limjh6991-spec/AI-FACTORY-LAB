@@ -88,10 +88,11 @@ export class VectorSearch {
     });
 
     // 결과 포맷팅
-    const formattedResults = results.documents[0].map((doc, idx) => ({
-      document: doc,
-      metadata: results.metadatas[0][idx],
-      score: results.distances ? results.distances[0][idx] : 0,
+    const docs = results.documents?.[0] ?? [];
+    const formattedResults = docs.map((doc, idx) => ({
+      document: doc ?? '',
+      metadata: results.metadatas?.[0]?.[idx] ?? {},
+      score: results.distances?.[0]?.[idx] ?? 0,
     }));
 
     return formattedResults;
@@ -121,10 +122,11 @@ export class VectorSearch {
       where: filters,
     });
 
-    return results.documents[0].map((doc, idx) => ({
-      document: doc,
-      metadata: results.metadatas[0][idx],
-      score: results.distances ? results.distances[0][idx] : 0,
+    const docs = results.documents?.[0] ?? [];
+    return docs.map((doc, idx) => ({
+      document: doc ?? '',
+      metadata: results.metadatas?.[0]?.[idx] ?? {},
+      score: results.distances?.[0]?.[idx] ?? 0,
     }));
   }
 

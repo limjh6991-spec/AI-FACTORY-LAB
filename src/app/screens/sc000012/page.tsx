@@ -333,8 +333,8 @@ export default function Screen000012() {
         border: '1px solid #e0e0e0' 
       }}>
         
-          <YearMonthPicker id="yearMonth" label="년월" defaultValue="2025-12" onChange={(value) => console.log('년월:', value)} />
-          <MaterialSelect id="material" label="자재" onChange={(value) => console.log('자재:', value)} />
+          <YearMonthPicker label="년월" onChange={(value) => console.log('년월:', value)} />
+          <MaterialSelect label="자재" onChange={(value) => console.log('자재:', value)} />
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button 
             onClick={handleSearch}

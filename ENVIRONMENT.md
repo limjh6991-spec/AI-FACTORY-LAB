@@ -1,165 +1,327 @@
-# AI Factory Lab - 개발 환경 설정
+# AI Factory Lab - 개발 환경 설정# AI Factory Lab - 개발 환경 설정
 
-## 📋 프로젝트 개요
 
-- **프로젝트명**: AI Factory Lab
+
+> **최종 업데이트**: 2025년 12월 7일## 📋 프로젝트 개요
+
+
+
+---- **프로젝트명**: AI Factory Lab
+
 - **목적**: AI 기반 자동 화면 생성 시스템 (Grid/Chart 중심)
-- **시작일**: 2025년 12월 1일
+
+## 🏗️ 기술 스택- **시작일**: 2025년 12월 1일
+
 - **기술 스택**: Next.js 14 + tRPC + Prisma + PostgreSQL
 
----
-
-## 🏗️ 기술 스택
-
 ### Frontend
-- **Framework**: Next.js 15.5.6 (App Router)
-- **언어**: TypeScript 5.x
-- **UI Framework**: 
-  - Tailwind CSS v4
-  - shadcn/ui (Radix UI 기반)
-- **🎨 디자인 시스템**: IBM Carbon Design System
-  - **적용일**: 2025년 12월 5일
-  - **테마**: Light Blue (연한 파란색 계열)
-  - **폰트**: IBM Plex Sans
-  - **색상 팔레트**: Carbon Gray 100 + Blue 60
-  - **참고**: `/resources/design-system/IBM_CARBON_DESIGN_SYSTEM.md`
-- **상태 관리**: TanStack Query (React Query)
-- **테이블**: TanStack Table (무료, RealGrid 대체)
-- **차트**: Recharts + Nivo
-- **폼 관리**: react-hook-form + zod
-- **아이콘**: lucide-react
 
-### Backend
-- **API Layer**: tRPC (End-to-End Type Safety)
-- **ORM**: Prisma 6.19.0
-- **Database**: PostgreSQL 16
+| 기술 | 버전 | 용도 |---
+
+|------|------|------|
+
+| Next.js | 15.5.6 | App Router + Turbopack |## 🏗️ 기술 스택
+
+| TypeScript | 5.8 | 타입 안전성 |
+
+| Tailwind CSS | v4 | 스타일링 |### Frontend
+
+| shadcn/ui | Latest | UI 컴포넌트 |- **Framework**: Next.js 15.5.6 (App Router)
+
+| AG Grid | Community | 데이터 그리드 |- **언어**: TypeScript 5.x
+
+| Recharts | Latest | 차트 |- **UI Framework**: 
+
+  - Tailwind CSS v4
+
+### Backend  - shadcn/ui (Radix UI 기반)
+
+| 기술 | 버전 | 용도 |- **🎨 디자인 시스템**: IBM Carbon Design System
+
+|------|------|------|  - **적용일**: 2025년 12월 5일
+
+| tRPC | v11 | 타입 안전 API |  - **테마**: Light Blue (연한 파란색 계열)
+
+| Prisma | 6.19.0 | ORM |  - **폰트**: IBM Plex Sans
+
+| PostgreSQL | 16 | 데이터베이스 |  - **색상 팔레트**: Carbon Gray 100 + Blue 60
+
+| Node.js | 22.20.0 | 런타임 |  - **참고**: `/resources/design-system/IBM_CARBON_DESIGN_SYSTEM.md`
+
+- **상태 관리**: TanStack Query (React Query)
+
+### AI- **테이블**: TanStack Table (무료, RealGrid 대체)
+
+| 기술 | 용도 |- **차트**: Recharts + Nivo
+
+|------|------|- **폼 관리**: react-hook-form + zod
+
+| Claude Sonnet 4 | 코드 생성, Excel 분석 |- **아이콘**: lucide-react
+
+
+
+### 디자인 시스템### Backend
+
+- **IBM Carbon Design System** (Light Blue 테마)- **API Layer**: tRPC (End-to-End Type Safety)
+
+- 색상: Carbon Gray 100 + Blue 60- **ORM**: Prisma 6.19.0
+
+- 헤더 배경: `bg-blue-100` (#dbeafe)- **Database**: PostgreSQL 16
+
 - **런타임**: Node.js 22.20.0
 
-### Development Tools
-- **Package Manager**: npm
-- **번들러**: Turbopack (Next.js 15)
-- **린터**: ESLint
-- **포매터**: Prettier (via shadcn/ui)
-
 ---
+
+### Development Tools
+
+## 🔌 포트 구성- **Package Manager**: npm
+
+- **번들러**: Turbopack (Next.js 15)
+
+| 서비스 | 포트 | 용도 |- **린터**: ESLint
+
+|--------|------|------|- **포매터**: Prettier (via shadcn/ui)
+
+| Next.js | 3000 (또는 3001) | 웹 애플리케이션 |
+
+| PostgreSQL | 5432 | 데이터베이스 |---
+
+| Chroma | 8000 | Vector DB (선택) |
 
 ## 🚀 설치 및 실행
 
-### 1. 필수 사항
-```bash
-# Node.js 18+ 필요
-node -v  # v22.20.0
-
-# PostgreSQL 16 설치
-sudo apt install postgresql-16
-
-# PostgreSQL 실행 확인
-sudo systemctl status postgresql
-```
-
-### 2. 프로젝트 설정
-```bash
-# 의존성 설치
-npm install
-
-# 환경 변수 설정
-cp .env.example .env
-# .env 파일에서 DATABASE_URL 확인/수정
-
-# PostgreSQL 데이터베이스 생성
-sudo -u postgres psql -c "CREATE DATABASE ai_factory_db;"
-sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-
-# Prisma 마이그레이션
-npm run db:push
-
-# Prisma Client 생성
-npx prisma generate
-
-# 샘플 데이터 추가
-node --import tsx prisma/seed.ts
-```
-
-### 3. 개발 서버 실행
-```bash
-# 개발 서버 시작 (Turbopack)
-npm run dev
-
-# 브라우저에서 확인
-# http://localhost:3000
-```
-
-### 4. 기타 명령어
-```bash
-# 빌드
-npm run build
-
-# 프로덕션 실행
-npm start
-
-# Prisma Studio (DB GUI)
-npx prisma studio
-
-# TypeScript 타입 체크
-npm run typecheck
-```
-
 ---
 
-## � API 키 설정
+### 1. 필수 사항
 
-### 필수 API 키
+## 🚀 설치 및 실행```bash
+
+# Node.js 18+ 필요
+
+### 1. 의존성 설치node -v  # v22.20.0
 
 ```bash
-# .env 파일에 추가
-GEMINI_API_KEY=your_gemini_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+npm install# PostgreSQL 16 설치
+
+```sudo apt install postgresql-16
+
+
+
+### 2. 환경 변수 설정# PostgreSQL 실행 확인
+
+```bashsudo systemctl status postgresql
+
+cp .env.example .env```
+
+# .env 파일 편집
+
+```### 2. 프로젝트 설정
+
+```bash
+
+### 3. 데이터베이스 설정# 의존성 설치
+
+```bashnpm install
+
+# PostgreSQL 데이터베이스 생성
+
+sudo -u postgres psql -c "CREATE DATABASE ai_factory_db;"# 환경 변수 설정
+
+cp .env.example .env
+
+# Prisma 마이그레이션# .env 파일에서 DATABASE_URL 확인/수정
+
+npm run db:push
+
+# PostgreSQL 데이터베이스 생성
+
+# Prisma Client 생성sudo -u postgres psql -c "CREATE DATABASE ai_factory_db;"
+
+npx prisma generatesudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
 ```
+
+# Prisma 마이그레이션
+
+### 4. 개발 서버 실행npm run db:push
+
+```bash
+
+npm run dev# Prisma Client 생성
+
+# http://localhost:3000npx prisma generate
+
+```
+
+# 샘플 데이터 추가
+
+---node --import tsx prisma/seed.ts
+
+```
+
+## 🔑 API 키 설정
+
+### 3. 개발 서버 실행
+
+### .env 파일```bash
+
+```bash# 개발 서버 시작 (Turbopack)
+
+# 필수npm run dev
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_factory_db"
+
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxx...# 브라우저에서 확인
+
+# http://localhost:3000
+
+# 선택```
+
+GEMINI_API_KEY=your_gemini_api_key_here
+
+```### 4. 기타 명령어
+
+```bash
+
+### API 키 발급# 빌드
+
+- **Anthropic (Claude)**: https://console.anthropic.com/settings/keysnpm run build
+
+- **Gemini**: https://aistudio.google.com/apikey
+
+# 프로덕션 실행
+
+---npm start
+
+
+
+## ⚠️ 주요 문제 해결# Prisma Studio (DB GUI)
+
+npx prisma studio
+
+### 1. API 키 401 오류
+
+# TypeScript 타입 체크
+
+**원인**: 셸 환경 변수에 잘린 API 키가 남아 `.env` 파일을 덮어씀npm run typecheck
+
+```
+
+**해결**: `getAnthropicApiKey()` 함수 사용 (이미 적용됨)
+
+```typescript---
+
+// src/lib/screen-generator/api-key.ts
+
+import { getAnthropicApiKey } from '~/lib/screen-generator';## � API 키 설정
+
+
+
+const apiKey = getAnthropicApiKey(); // 파일에서 직접 읽음### 필수 API 키
+
+```
+
+```bash
+
+### 2. RealGrid 라이센스 오류# .env 파일에 추가
+
+GEMINI_API_KEY=your_gemini_api_key_here
+
+**해결**: AG Grid Community로 전환 완료 (무료, 오픈소스)ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+```
+
+### 3. 포트 충돌
 
 ### API 키 발급 방법
 
-1. **Gemini API**: https://aistudio.google.com/apikey
+**증상**: Port 3000 is in use
+
+**해결**: 3001 포트로 자동 전환됨1. **Gemini API**: https://aistudio.google.com/apikey
+
 2. **Anthropic (Claude) API**: https://console.anthropic.com/settings/keys
 
 ---
 
+---
+
+## 📁 환경 변수 예시 (.env.example)
+
 ## ⚠️ API 키 문제 해결
 
-### 문제 1: 401 Authentication Error (invalid x-api-key)
+```bash
+
+# Database### 문제 1: 401 Authentication Error (invalid x-api-key)
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_factory_db"
 
 **증상**:
-```
-AuthenticationError: 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}
-```
 
-**원인**:
-1. API 키가 만료됨
-2. API 키가 잘못 복사됨 (공백 포함, 줄바꿈 등)
+# AI APIs```
+
+ANTHROPIC_API_KEY=sk-ant-api03-your-key-hereAuthenticationError: 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}
+
+GEMINI_API_KEY=your-gemini-key-here```
+
+
+
+# Optional - Vector DB**원인**:
+
+CHROMA_URL=http://localhost:80001. API 키가 만료됨
+
+```2. API 키가 잘못 복사됨 (공백 포함, 줄바꿈 등)
+
 3. API 키 형식 오류
-4. 크레딧 부족 (Free Tier 소진)
 
-**해결 방법**:
+---4. 크레딧 부족 (Free Tier 소진)
 
-```bash
-# 1. API 키 재발급
-# - Anthropic: https://console.anthropic.com/settings/keys
+
+
+## 🛠️ 유용한 명령어**해결 방법**:
+
+
+
+```bash```bash
+
+# 개발 서버# 1. API 키 재발급
+
+npm run dev# - Anthropic: https://console.anthropic.com/settings/keys
+
 # - 기존 키 삭제 후 새 키 생성
 
-# 2. .env 파일 확인
+# 빌드
+
+npm run build# 2. .env 파일 확인
+
 cat .env | grep ANTHROPIC_API_KEY
 
-# 3. API 키 형식 확인 (sk-ant-로 시작해야 함)
-# ✅ 올바른 형식: ANTHROPIC_API_KEY=sk-ant-api03-xxxxx...xxxxx
-# ❌ 잘못된 형식: ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
-#                  xxxxx  (줄바꿈 있음)
+# 타입 체크
 
-# 4. API 키에 공백 없는지 확인
-# .env 파일에서 ANTHROPIC_API_KEY 값 앞뒤 공백 제거
+npm run typecheck# 3. API 키 형식 확인 (sk-ant-로 시작해야 함)
+
+# ✅ 올바른 형식: ANTHROPIC_API_KEY=sk-ant-api03-xxxxx...xxxxx
+
+# Prisma Studio (DB GUI)# ❌ 잘못된 형식: ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
+
+npx prisma studio#                  xxxxx  (줄바꿈 있음)
+
+
+
+# 화면 생성# 4. API 키에 공백 없는지 확인
+
+http://localhost:3000/settings/screen-generator# .env 파일에서 ANTHROPIC_API_KEY 값 앞뒤 공백 제거
+
+```
 
 # 5. API 키 길이 확인 (일반적으로 108자)
-node -e "require('dotenv').config(); console.log('키 길이:', process.env.ANTHROPIC_API_KEY?.length)"
 
-# 6. 크레딧 확인
+---node -e "require('dotenv').config(); console.log('키 길이:', process.env.ANTHROPIC_API_KEY?.length)"
+
+
+
+**작성일**: 2025년 12월 7일# 6. 크레딧 확인
+
 # https://console.anthropic.com/settings/billing
 ```
 

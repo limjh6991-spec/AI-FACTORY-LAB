@@ -214,7 +214,7 @@ JSON 형식으로만 응답하세요.`;
   // JSON 추출
   let jsonText = content.text;
   const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonMatch) {
+  if (jsonMatch?.[1]) {
     jsonText = jsonMatch[1].trim();
   }
   

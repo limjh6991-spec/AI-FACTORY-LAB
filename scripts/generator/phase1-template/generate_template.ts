@@ -98,7 +98,7 @@ function analyzeSheet(sheetName: string): SheetAnalysis {
   
   // 고정 컬럼 수 파악 (설명에서 추출)
   const fixedMatch = description.match(/(\d+)열[은는]?\s*고정/);
-  const fixedColumns = fixedMatch ? parseInt(fixedMatch[1]) : 3;
+  const fixedColumns = fixedMatch ? parseInt(fixedMatch[1] ?? '3') : 3;
   
   // 동적 컬럼 (부서명 등)
   const dynamicColumns = headers.slice(fixedColumns);
@@ -244,14 +244,14 @@ const handleSearch = async () => {
   });
   
   const content = response.content[0];
-  if (content.type !== 'text') {
+  if (!content || content.type !== 'text') {
     throw new Error('텍스트 응답이 아닙니다');
   }
   
   // 코드 블록 추출
   let code = content.text;
   const codeMatch = code.match(/```(?:tsx?|typescript|javascript)?\s*([\s\S]*?)```/);
-  if (codeMatch) {
+  if (codeMatch?.[1]) {
     code = codeMatch[1].trim();
   }
   

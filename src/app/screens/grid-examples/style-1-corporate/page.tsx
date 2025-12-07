@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import RealGrid, { GridView, LocalDataProvider } from 'realgrid';
+import RealGrid, { GridView, LocalDataProvider, ValueType, ColumnLayoutDirection } from 'realgrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,18 +55,18 @@ export default function CorporateStylePage() {
       { fieldName: 'dept' },
       { fieldName: 'region' },
       { fieldName: 'product' },
-      { fieldName: 'q1Plan', dataType: 'number' },
-      { fieldName: 'q1Actual', dataType: 'number' },
-      { fieldName: 'q1Rate', dataType: 'number' },
-      { fieldName: 'q2Plan', dataType: 'number' },
-      { fieldName: 'q2Actual', dataType: 'number' },
-      { fieldName: 'q2Rate', dataType: 'number' },
-      { fieldName: 'q3Plan', dataType: 'number' },
-      { fieldName: 'q3Actual', dataType: 'number' },
-      { fieldName: 'q3Rate', dataType: 'number' },
-      { fieldName: 'q4Plan', dataType: 'number' },
-      { fieldName: 'q4Actual', dataType: 'number' },
-      { fieldName: 'q4Rate', dataType: 'number' },
+      { fieldName: 'q1Plan', dataType: ValueType.NUMBER },
+      { fieldName: 'q1Actual', dataType: ValueType.NUMBER },
+      { fieldName: 'q1Rate', dataType: ValueType.NUMBER },
+      { fieldName: 'q2Plan', dataType: ValueType.NUMBER },
+      { fieldName: 'q2Actual', dataType: ValueType.NUMBER },
+      { fieldName: 'q2Rate', dataType: ValueType.NUMBER },
+      { fieldName: 'q3Plan', dataType: ValueType.NUMBER },
+      { fieldName: 'q3Actual', dataType: ValueType.NUMBER },
+      { fieldName: 'q3Rate', dataType: ValueType.NUMBER },
+      { fieldName: 'q4Plan', dataType: ValueType.NUMBER },
+      { fieldName: 'q4Actual', dataType: ValueType.NUMBER },
+      { fieldName: 'q4Rate', dataType: ValueType.NUMBER },
     ];
     dataProvider.setFields(fields);
 
@@ -118,25 +118,25 @@ export default function CorporateStylePage() {
       'product',
       {
         name: 'q1Group',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['q1Plan', 'q1Actual', 'q1Rate'],
         header: { text: '1분기 (Q1)' }
       },
       {
         name: 'q2Group',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['q2Plan', 'q2Actual', 'q2Rate'],
         header: { text: '2분기 (Q2)' }
       },
       {
         name: 'q3Group',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['q3Plan', 'q3Actual', 'q3Rate'],
         header: { text: '3분기 (Q3)' }
       },
       {
         name: 'q4Group',
-        direction: 'horizontal',
+        direction: ColumnLayoutDirection.HORIZONTAL,
         items: ['q4Plan', 'q4Actual', 'q4Rate'],
         header: { text: '4분기 (Q4)' }
       }

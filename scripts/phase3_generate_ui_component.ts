@@ -30,6 +30,12 @@ const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
 const DEFINITION_PATH = process.argv[2] || 'data/report_designs/SC002_definition.json';
 const OUTPUT_DIR = path.join(process.cwd(), 'src', 'app', 'screens');
 
+// API 키 검증
+if (!CLAUDE_API_KEY) {
+  console.error('❌ ANTHROPIC_API_KEY 또는 CLAUDE_API_KEY 환경 변수가 설정되지 않았습니다');
+  process.exit(1);
+}
+
 // ============================================================================
 // 메인 함수
 // ============================================================================
