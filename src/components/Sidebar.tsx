@@ -115,8 +115,13 @@ function MenuItem({ item, depth = 0, collapsed }: { item: MenuNode; depth?: numb
     );
   }
 
+  // menuPath가 없거나 '#'이면 placeholder 페이지로 연결
+  const linkPath = (!item.menuPath || item.menuPath === "#") 
+    ? `/screens/placeholder?menu=${encodeURIComponent(item.menuName)}`
+    : item.menuPath;
+
   return (
-    <Link href={item.menuPath ?? "#"} className={cn(baseClass, isActive ? activeClass : inactiveClass)} style={{ paddingLeft: collapsed ? undefined : `${16 + depth * 16}px` }}>
+    <Link href={linkPath} className={cn(baseClass, isActive ? activeClass : inactiveClass)} style={{ paddingLeft: collapsed ? undefined : `${16 + depth * 16}px` }}>
       <DynamicIcon name={item.menuIcon} className={cn("h-5 w-5 shrink-0 transition-colors", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600")} />
       {!collapsed && <span className="truncate">{item.menuName}</span>}
     </Link>

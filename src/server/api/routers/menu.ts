@@ -147,4 +147,71 @@ export const menuRouter = createTRPCRouter({
 
     return roles;
   }),
+
+  /**
+   * 메뉴 삭제 (하위 메뉴 포함)
+   */
+  deleteMenu: publicProcedure
+    .input(z.object({ 
+      menuId: z.string(),
+      deleteChildren: z.boolean().default(true), // 하위 메뉴도 삭제할지 여부
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { menuId, deleteChildren } = input;
+
+      // 하위 메뉴가 있는지 확인
+      const children = await ctx.db.$queryRaw<Array<{ menu_id: string }>>`
+        SELECT menu_id FROM sys_menu WHERE parent_id = ${menuId}
+      `;
+
+      if (children.length > 0 && !deleteChildren) {
+        return {
+          success: false,
+          error: "하위 메뉴가 있습니다. 하위 메뉴를 먼저 삭제하거나 함께 삭제하세요.",
+          childCount: children.length,
+        };
+      }
+
+      try {
+        // 하위 메뉴가 있으면 재귀적으로 삭제
+        if (deleteChildren && children.length > 0) {
+          // 모든 하위 메뉴 ID 수집 (재귀적)
+          const getAllChildIds = async (parentId: string): Promise<string[]> => {
+            const directChildren = await ctx.db.$queryRaw<Array<{ menu_id: string }>>`
+              SELECT menu_id FROM sys_menu WHERE parent_id = ${parentId}
+            `;
+            
+            let allIds: string[] = [];
+            for (const child of directChildren) {
+              allIds.push(child.menu_id);
+              const grandChildren = await getAllChildIds(child.menu_id);
+              allIds = allIds.concat(grandChildren);
+            }
+            return allIds;
+          };
+
+          const childIds = await getAllChildIds(menuId);
+          
+          // 하위 메뉴들 먼저 삭제 (깊은 것부터)
+          for (const childId of childIds.reverse()) {
+            await ctx.db.$executeRaw`DELETE FROM sys_menu WHERE menu_id = ${childId}`;
+          }
+        }
+
+        // 해당 메뉴 삭제
+        await ctx.db.$executeRaw`DELETE FROM sys_menu WHERE menu_id = ${menuId}`;
+
+        return {
+          success: true,
+          deletedMenuId: menuId,
+          deletedChildCount: children.length,
+        };
+      } catch (error) {
+        console.error("메뉴 삭제 오류:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "메뉴 삭제 중 오류가 발생했습니다.",
+        };
+      }
+    }),
 });

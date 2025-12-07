@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense } from "react";
+import { useState, useCallback, lazy, Suspense, useRef, useEffect } from "react";
 import { api } from "~/trpc/react";
 import {
   Eye,
@@ -22,6 +22,10 @@ import {
   Settings,
   Search,
   FileSpreadsheet,
+  Shield,
+  Edit3,
+  FilePlus,
+  FolderPlus,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import Link from "next/link";
@@ -42,21 +46,55 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-// 화면생성기의 메뉴 트리 아이템 컴포넌트
+// 화면생성기의 메뉴 트리 아이템 컴포넌트 (편집 가능)
 function MenuTreeItem({
   item,
   depth = 0,
   selectedId,
   onSelect,
+  onRename,
 }: {
   item: MenuItem & { children?: MenuItem[] };
   depth?: number;
   selectedId: string | null;
   onSelect: (item: MenuItem) => void;
+  onRename?: (menuId: string, newName: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(depth < 2);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(item.menuName);
+  const inputRef = useRef<HTMLInputElement>(null);
   const hasChildren = item.children && item.children.length > 0;
   const isSelected = selectedId === item.menuId;
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditName(item.menuName);
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (editName.trim() && editName !== item.menuName && onRename) {
+      onRename(item.menuId, editName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setEditName(item.menuName);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -72,6 +110,7 @@ function MenuTreeItem({
           if (hasChildren) setIsOpen(!isOpen);
           onSelect(item);
         }}
+        onDoubleClick={handleDoubleClick}
       >
         {hasChildren ? (
           isOpen ? (
@@ -83,7 +122,20 @@ function MenuTreeItem({
           <span className="w-4" />
         )}
         <Folder className="h-4 w-4 shrink-0 opacity-60" />
-        <span className="truncate flex-1">{item.menuName}</span>
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 px-1 py-0.5 text-sm bg-white text-[#161616] border border-[#0f62fe] rounded outline-none"
+          />
+        ) : (
+          <span className="truncate flex-1">{item.menuName}</span>
+        )}
       </div>
       {hasChildren && isOpen && (
         <div>
@@ -94,6 +146,7 @@ function MenuTreeItem({
               depth={depth + 1}
               selectedId={selectedId}
               onSelect={onSelect}
+              onRename={onRename}
             />
           ))}
         </div>
@@ -104,7 +157,7 @@ function MenuTreeItem({
 
 export default function MenuManagementPage() {
   // 탭 상태
-  const [activeTab, setActiveTab] = useState<"menu" | "temp">("temp");
+  const [activeTab, setActiveTab] = useState<"menu" | "permission">("menu");
   
   // 임시화면 관리 상태
   const [selectedScreen, setSelectedScreen] = useState<string | null>(null);
@@ -114,18 +167,24 @@ export default function MenuManagementPage() {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [previewActiveTab, setPreviewActiveTab] = useState<"preview" | "sql" | "react">("preview");
   
+  // 메뉴 추가 모달 상태
+  const [showAddMenuModal, setShowAddMenuModal] = useState(false);
+  const [addMenuType, setAddMenuType] = useState<"empty" | "screen">("empty");
+  const [newMenuName, setNewMenuName] = useState("");
+  
   // 메뉴 위치 선택 상태
   const [menuSearch, setMenuSearch] = useState("");
   
   // API
   const { data: screenList, isLoading, refetch } = api.screenGenerator.getTempScreenList.useQuery();
-  const { data: menuTree } = api.menu.getMenuTree.useQuery();
+  const { data: menuTree, refetch: refetchMenu } = api.menu.getMenuTree.useQuery();
   const { data: screenDetail } = api.screenGenerator.getTempScreen.useQuery(
     { screenId: selectedScreen || "" },
     { enabled: !!selectedScreen }
   );
   const deleteMutation = api.screenGenerator.deleteTempScreen.useMutation();
   const publishMutation = api.screenGenerator.publishScreen.useMutation();
+  const deleteMenuMutation = api.menu.deleteMenu.useMutation();
 
   // 메뉴 토글
   const toggleMenu = (menuId: string) => {
@@ -149,6 +208,53 @@ export default function MenuManagementPage() {
         setSelectedScreen(null);
       }
       refetch();
+    } catch (error) {
+      alert("삭제 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
+    }
+  };
+
+  // 메뉴 삭제 핸들러
+  const handleDeleteMenu = async () => {
+    if (!selectedMenuId) {
+      alert("삭제할 메뉴를 선택해주세요.");
+      return;
+    }
+    
+    // 선택된 메뉴 정보 찾기
+    const findMenu = (menus: typeof menuTree, id: string): MenuItem | null => {
+      if (!menus) return null;
+      for (const menu of menus) {
+        if (menu.menuId === id) return menu;
+        if (menu.children) {
+          const found = findMenu(menu.children as typeof menuTree, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const selectedMenu = findMenu(menuTree, selectedMenuId);
+    const hasChildren = selectedMenu?.children && selectedMenu.children.length > 0;
+    
+    const confirmMessage = hasChildren 
+      ? `'${selectedMenu?.menuName}' 메뉴와 하위 ${selectedMenu?.children?.length}개 메뉴를 모두 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`
+      : `'${selectedMenu?.menuName}' 메뉴를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`;
+    
+    if (!confirm(confirmMessage)) return;
+    
+    try {
+      const result = await deleteMenuMutation.mutateAsync({
+        menuId: selectedMenuId,
+        deleteChildren: true,
+      });
+      
+      if (result.success) {
+        alert(`메뉴가 삭제되었습니다.${result.deletedChildCount ? `\n(하위 메뉴 ${result.deletedChildCount}개 포함)` : ''}`);
+        setSelectedMenuId(null);
+        refetchMenu();
+      } else {
+        alert("삭제 실패: " + result.error);
+      }
     } catch (error) {
       alert("삭제 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
     }
@@ -244,7 +350,7 @@ export default function MenuManagementPage() {
   const filteredMenu = menuTree ? filterMenu(menuTree as MenuItem[], menuSearch) : [];
 
   return (
-    <div className="min-h-screen bg-[#f4f4f4] p-4">
+    <div className="h-[calc(100vh-56px)] bg-[#f4f4f4] p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -274,8 +380,8 @@ export default function MenuManagementPage() {
       {/* 탭 */}
       <div className="flex border-b border-[#e0e0e0] bg-white mb-4">
         {[
-          { id: "temp" as const, label: "임시화면 관리", icon: FileSpreadsheet },
-          { id: "menu" as const, label: "메뉴 구조", icon: FolderTree },
+          { id: "menu" as const, label: "메뉴관리", icon: FolderTree },
+          { id: "permission" as const, label: "권한관리", icon: Shield },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -293,16 +399,25 @@ export default function MenuManagementPage() {
         ))}
       </div>
 
-      {/* 임시화면 관리 탭 */}
-      {activeTab === "temp" && (
+      {/* 메뉴관리 탭 */}
+      {activeTab === "menu" && (
         <div className="flex gap-4 h-[calc(100vh-200px)]">
-          {/* 좌측: 메뉴 위치 선택 */}
+          {/* 좌측: 메뉴 */}
           <div className="w-64 bg-white border border-[#e0e0e0] flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
               <div className="flex items-center gap-2">
                 <FolderTree className="h-4 w-4 text-[#0f62fe]" />
-                <span className="font-medium text-sm text-[#161616]">메뉴 위치</span>
+                <span className="font-medium text-sm text-[#161616]">메뉴</span>
               </div>
+              {/* 메뉴 추가 버튼 */}
+              <button
+                onClick={() => setShowAddMenuModal(true)}
+                className="h-7 px-2 bg-[#0f62fe] text-white text-xs flex items-center gap-1 hover:bg-[#0043ce] rounded"
+                title="메뉴 추가"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                추가
+              </button>
             </div>
             
             {/* 검색 */}
@@ -328,6 +443,11 @@ export default function MenuManagementPage() {
                     item={item}
                     selectedId={selectedMenuId}
                     onSelect={(menu) => setSelectedMenuId(menu.menuId)}
+                    onRename={(menuId, newName) => {
+                      // TODO: 메뉴명 변경 API 호출
+                      console.log("메뉴명 변경:", menuId, newName);
+                      alert(`메뉴명 변경 기능은 API 연동 후 동작합니다.\n${menuId} → ${newName}`);
+                    }}
                   />
                 ))
               ) : (
@@ -337,11 +457,22 @@ export default function MenuManagementPage() {
               )}
             </div>
 
-            {/* 선택된 메뉴 */}
+            {/* 선택된 메뉴 + 삭제 버튼 */}
             {selectedMenuId && (
               <div className="px-3 py-2 border-t border-[#e0e0e0] bg-[#e8f1ff]">
-                <p className="text-xs text-[#525252]">선택된 메뉴:</p>
-                <p className="text-sm font-medium text-[#0f62fe] truncate">{selectedMenuId}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#525252]">선택된 메뉴:</p>
+                    <p className="text-sm font-medium text-[#0f62fe] truncate">{selectedMenuId}</p>
+                  </div>
+                  <button
+                    onClick={handleDeleteMenu}
+                    className="ml-2 p-1.5 text-[#da1e28] hover:bg-[#fff1f1] rounded transition-colors"
+                    title="메뉴 삭제"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -476,9 +607,9 @@ export default function MenuManagementPage() {
                 {/* 탭 */}
                 <div className="flex border-b border-[#e0e0e0]">
                   {[
-                    { id: "preview" as const, label: "AG Grid 미리보기", icon: Eye, disabled: !screenDetail.reactContent },
-                    { id: "sql" as const, label: "SQL 쿼리", icon: Database, disabled: !screenDetail.sqlQuery },
-                    { id: "react" as const, label: "React 코드", icon: FileCode, disabled: !screenDetail.reactContent },
+                    { id: "preview" as const, label: "미리보기", icon: Eye, disabled: !screenDetail.reactContent },
+                    { id: "sql" as const, label: "SQL", icon: Database, disabled: !screenDetail.sqlQuery },
+                    { id: "react" as const, label: "React", icon: FileCode, disabled: !screenDetail.reactContent },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -546,13 +677,133 @@ export default function MenuManagementPage() {
         </div>
       )}
 
-      {/* 메뉴 구조 탭 */}
-      {activeTab === "menu" && (
+      {/* 권한관리 탭 */}
+      {activeTab === "permission" && (
         <div className="bg-white border border-[#e0e0e0] p-8 h-[calc(100vh-200px)] flex items-center justify-center">
           <div className="text-center text-[#525252]">
-            <Settings className="h-16 w-16 mx-auto mb-4 text-[#8d8d8d]" />
-            <h3 className="text-lg font-medium text-[#161616] mb-2">메뉴 구조 관리</h3>
-            <p className="text-sm">메뉴 추가, 수정, 삭제 기능이 추가될 예정입니다</p>
+            <Shield className="h-16 w-16 mx-auto mb-4 text-[#8d8d8d]" />
+            <h3 className="text-lg font-medium text-[#161616] mb-2">권한 관리</h3>
+            <p className="text-sm">사용자/그룹별 메뉴 접근 권한 관리 기능이 추가될 예정입니다</p>
+          </div>
+        </div>
+      )}
+
+      {/* 메뉴 추가 모달 */}
+      {showAddMenuModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white w-[400px] shadow-xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+              <h3 className="font-medium text-[#161616]">메뉴 추가</h3>
+              <button
+                onClick={() => {
+                  setShowAddMenuModal(false);
+                  setNewMenuName("");
+                }}
+                className="p-1 hover:bg-[#e0e0e0] rounded"
+              >
+                <X className="h-4 w-4 text-[#525252]" />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              {/* 추가 위치 */}
+              {selectedMenuId ? (
+                <div className="mb-4 p-3 bg-[#e8f1ff] rounded">
+                  <p className="text-xs text-[#525252]">추가 위치 (상위 메뉴)</p>
+                  <p className="text-sm font-medium text-[#0f62fe]">{selectedMenuId}</p>
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-[#fff1f1] rounded">
+                  <p className="text-xs text-[#da1e28]">좌측에서 상위 메뉴를 먼저 선택해주세요</p>
+                </div>
+              )}
+
+              {/* 추가 유형 선택 */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-[#161616] mb-2">추가 유형</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setAddMenuType("empty")}
+                    className={cn(
+                      "flex-1 h-10 px-3 text-sm flex items-center justify-center gap-2 border rounded transition-colors",
+                      addMenuType === "empty"
+                        ? "bg-[#0f62fe] text-white border-[#0f62fe]"
+                        : "bg-white text-[#161616] border-[#e0e0e0] hover:bg-[#f4f4f4]"
+                    )}
+                  >
+                    <FolderPlus className="h-4 w-4" />
+                    빈 메뉴
+                  </button>
+                  <button
+                    onClick={() => setAddMenuType("screen")}
+                    className={cn(
+                      "flex-1 h-10 px-3 text-sm flex items-center justify-center gap-2 border rounded transition-colors",
+                      addMenuType === "screen"
+                        ? "bg-[#0f62fe] text-white border-[#0f62fe]"
+                        : "bg-white text-[#161616] border-[#e0e0e0] hover:bg-[#f4f4f4]"
+                    )}
+                  >
+                    <FilePlus className="h-4 w-4" />
+                    임시화면 등록
+                  </button>
+                </div>
+              </div>
+
+              {/* 빈 메뉴 추가 */}
+              {addMenuType === "empty" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#161616] mb-1">
+                    메뉴명 <span className="text-[#da1e28]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="메뉴명 입력 (예: 화면작업중)"
+                    value={newMenuName}
+                    onChange={(e) => setNewMenuName(e.target.value)}
+                    className="w-full h-10 px-3 text-sm bg-white border border-[#8d8d8d] focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe] outline-none"
+                  />
+                  <p className="text-xs text-[#525252] mt-1">작업 중인 화면의 placeholder로 사용할 수 있습니다.</p>
+                </div>
+              )}
+
+              {/* 임시화면 등록 */}
+              {addMenuType === "screen" && (
+                <div className="mb-4">
+                  <p className="text-sm text-[#525252]">
+                    중앙의 임시화면 목록에서 등록할 화면을 선택한 후 
+                    <span className="text-[#24a148] font-medium"> "선택한 메뉴에 등록"</span> 버튼을 사용하세요.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex justify-end gap-2 px-4 py-3 border-t border-[#e0e0e0] bg-[#f4f4f4]">
+              <button
+                onClick={() => {
+                  setShowAddMenuModal(false);
+                  setNewMenuName("");
+                }}
+                className="h-8 px-4 text-sm text-[#161616] bg-white border border-[#e0e0e0] hover:bg-[#f4f4f4]"
+              >
+                취소
+              </button>
+              {addMenuType === "empty" && (
+                <button
+                  disabled={!selectedMenuId || !newMenuName.trim()}
+                  onClick={() => {
+                    // TODO: 빈 메뉴 추가 API 호출
+                    console.log("빈 메뉴 추가:", selectedMenuId, newMenuName);
+                    alert(`메뉴 추가 기능은 API 연동 후 동작합니다.\n상위: ${selectedMenuId}\n메뉴명: ${newMenuName}`);
+                    setShowAddMenuModal(false);
+                    setNewMenuName("");
+                  }}
+                  className="h-8 px-4 text-sm text-white bg-[#0f62fe] hover:bg-[#0043ce] disabled:bg-[#c6c6c6] disabled:cursor-not-allowed"
+                >
+                  추가
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

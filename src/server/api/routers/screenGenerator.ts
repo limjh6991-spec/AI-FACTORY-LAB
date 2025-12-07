@@ -89,56 +89,159 @@ async function generateScreenId(ctx: any): Promise<string> {
  * - TypeScript 타입 추가
  * - AG Grid 모듈 등록 추가
  * - 실제 동작하는 UI 컴포넌트 import 추가
+ * - 공통 옵션 컴포넌트 import 추가
  */
 function convertToNextPage(componentCode: string, screenId: string, screenName: string): string {
-  // 기본 import 구문 (API 호출을 위해 useEffect, useCallback 추가)
+  // ========================================
+  // 1. 사용된 옵션 컴포넌트 감지
+  // ========================================
+  const usedOptions: { type: string; label: string; stateVar: string; paramName: string }[] = [];
+  
+  // 년월 감지
+  if (componentCode.match(/년월|기간|type="month"/i)) {
+    usedOptions.push({ type: 'YearMonthPicker', label: '년월', stateVar: 'yearMonth', paramName: 'yearMonth' });
+  }
+  // 년도 감지
+  if (componentCode.match(/년도|연도/i) && !componentCode.match(/년월/)) {
+    usedOptions.push({ type: 'YearPicker', label: '년도', stateVar: 'year', paramName: 'year' });
+  }
+  // 자재 감지
+  if (componentCode.match(/자재|품목|품번/i)) {
+    usedOptions.push({ type: 'MaterialSelect', label: '자재', stateVar: 'materialCode', paramName: 'materialCode' });
+  }
+  // 거래처 감지
+  if (componentCode.match(/거래처|고객/i)) {
+    usedOptions.push({ type: 'CustomerSelect', label: '거래처', stateVar: 'customerCode', paramName: 'customerCode' });
+  }
+  // 부서 감지
+  if (componentCode.match(/부서|팀/i)) {
+    usedOptions.push({ type: 'DepartmentSelect', label: '부서', stateVar: 'deptCode', paramName: 'deptCode' });
+  }
+  // 사업장 감지
+  if (componentCode.match(/사업장|site/i)) {
+    usedOptions.push({ type: 'SiteSelect', label: '사업장', stateVar: 'site', paramName: 'site' });
+  }
+  // 모델 감지
+  if (componentCode.match(/모델/i)) {
+    usedOptions.push({ type: 'ModelSelect', label: '모델', stateVar: 'modelCode', paramName: 'modelCode' });
+  }
+  // 계정 감지
+  if (componentCode.match(/계정/i)) {
+    usedOptions.push({ type: 'AccountSelect', label: '계정', stateVar: 'accountCode', paramName: 'accountCode' });
+  }
+
+  // ========================================
+  // 2. 상태 변수 선언 코드 생성
+  // - 년월: 현재 년월 (yyyymm)
+  // - 년도: 현재 년도 (yyyy)
+  // - 기타: 빈 문자열 (전체)
+  // ========================================
+  const stateDeclarations = usedOptions.map(opt => {
+    if (opt.type === 'YearMonthPicker') {
+      // 년월: 현재 년월이 기본값
+      return `const [${opt.stateVar}, set${capitalize(opt.stateVar)}] = useState<string>(() => {
+    const now = new Date();
+    return \`\${now.getFullYear()}\${String(now.getMonth() + 1).padStart(2, '0')}\`;
+  });`;
+    } else if (opt.type === 'YearPicker') {
+      // 년도: 현재 년도가 기본값
+      return `const [${opt.stateVar}, set${capitalize(opt.stateVar)}] = useState<string>(String(new Date().getFullYear()));`;
+    } else {
+      // 기타 옵션: '전체' (빈 문자열)가 기본값
+      return `const [${opt.stateVar}, set${capitalize(opt.stateVar)}] = useState<string>('');`;
+    }
+  }).join('\n  ');
+
+  // ========================================
+  // 3. URL 파라미터 생성 코드
+  // ========================================
+  const paramBuilderCode = usedOptions.length > 0 
+    ? `const params = new URLSearchParams();
+      ${usedOptions.map(opt => `if (${opt.stateVar}) params.append('${opt.paramName}', ${opt.stateVar});`).join('\n      ')}
+      const queryString = params.toString();
+      const url = \`/api/screens/${screenId.toLowerCase()}/data\${queryString ? '?' + queryString : ''}\`;`
+    : `const url = '/api/screens/${screenId.toLowerCase()}/data';`;
+
+  // ========================================
+  // 4. 옵션 컴포넌트 JSX 생성
+  // ========================================
+  const optionComponentsJsx = usedOptions.map(opt => {
+    return `<${opt.type}
+          label="${opt.label}"
+          value={${opt.stateVar}}
+          onChange={(value) => set${capitalize(opt.stateVar)}(value)}
+        />`;
+  }).join('\n        ');
+
+  // ========================================
+  // 5. 기본 import 구문
+  // ========================================
   const imports = `'use client';
 
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
 import { Search, RotateCcw, Download, Loader2 } from 'lucide-react';
+// 공통 옵션 컴포넌트
+import {
+  SiteSelect,
+  YearMonthPicker,
+  YearPicker,
+  CustomerSelect,
+  MaterialSelect,
+  ModelSelect,
+  AccountSelect,
+  ExpenSelSelect,
+  DepartmentSelect,
+  SelCodeSelect,
+} from "~/components/options";
 
 // AG Grid 모듈 등록 (필수!)
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 `;
 
-  // 기존 코드에서 import 부분 제거
+  // ========================================
+  // 6. 기존 코드 정리
+  // ========================================
   let cleanedCode = componentCode
-    // 기존 import 제거
     .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '')
-    // "use client" 제거
     .replace(/['"]use client['"];?\s*/g, '')
-    // export default function 찾아서 컴포넌트명 추출
     .trim();
   
-  // 컴포넌트명을 영문으로 변환 (한글 함수명 방지)
+  // 컴포넌트명을 영문으로 변환
   const safeComponentName = `Screen${screenId.replace('SC', '')}`;
   cleanedCode = cleanedCode.replace(
     /export\s+default\s+function\s+[\w가-힣]+\s*\(/,
     `export default function ${safeComponentName}(`
   );
 
-  // 샘플 데이터 기반 코드를 API 호출 코드로 변환
-  // 1. sampleData 선언 제거하고 빈 배열로 초기화
+  // ========================================
+  // 7. 샘플 데이터 → API 호출 코드로 변환
+  // ========================================
   cleanedCode = cleanedCode.replace(
     /const\s+sampleData\s*=\s*\[[\s\S]*?\];/,
     '// 샘플 데이터는 제거됨 - API에서 조회'
   );
   
-  // 2. useState(sampleData) → useState([])
+  // useState(sampleData) → 상태 및 API 호출 코드
+  // 주의: useEffect 의존성에서 옵션 상태를 제거하여 옵션 변경 시 자동 조회 방지
+  // 조회 버튼 클릭 시에만 데이터를 가져옴
   cleanedCode = cleanedCode.replace(
     /const\s*\[\s*rowData\s*,\s*setRowData\s*\]\s*=\s*useState\s*\(\s*sampleData\s*\)/,
     `const [rowData, setRowData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 검색 조건 상태
+  ${stateDeclarations}
 
-  // 실제 DB 데이터 조회
-  const fetchData = useCallback(async () => {
+  // 실제 DB 데이터 조회 (버튼 클릭 시에만 호출)
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/screens/${screenId.toLowerCase()}/data');
+      ${paramBuilderCode}
+      const response = await fetch(url);
       if (!response.ok) throw new Error('데이터 조회 실패');
       const result = await response.json();
       setRowData(result.data || []);
@@ -147,23 +250,43 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  // 초기 로드
+  // 초기 로드 (컴포넌트 마운트 시 1회만)
   useEffect(() => {
     fetchData();
-  }, [fetchData])`
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])`
   );
   
-  // 3. handleSearch 수정 - 실제 API 호출
+  // handleSearch 수정 - 여러 패턴 지원
+  // 패턴 1: console.log만 있는 경우
   cleanedCode = cleanedCode.replace(
-    /const\s+handleSearch\s*=\s*\(\)\s*=>\s*\{[\s\S]*?console\.log\(['"]검색 실행['"]\);?\s*\};?/,
+    /const\s+handleSearch\s*=\s*\(\)\s*=>\s*\{\s*console\.log\s*\(\s*['"]검색 실행['"]\s*\)\s*;?\s*\}\s*;?/g,
     `const handleSearch = () => {
     fetchData();
   };`
   );
+  // 패턴 2: 빈 함수인 경우
+  cleanedCode = cleanedCode.replace(
+    /const\s+handleSearch\s*=\s*\(\)\s*=>\s*\{\s*\}\s*;?/g,
+    `const handleSearch = () => {
+    fetchData();
+  };`
+  );
+  // 패턴 3: 아직 handleSearch가 없는 경우 (handleReset 바로 위에 추가)
+  if (!cleanedCode.includes('const handleSearch')) {
+    cleanedCode = cleanedCode.replace(
+      /(const\s+handleReset)/,
+      `const handleSearch = () => {
+    fetchData();
+  };
+
+  $1`
+    );
+  }
   
-  // 4. handleReset 수정
+  // handleReset 수정
   cleanedCode = cleanedCode.replace(
     /const\s+handleReset\s*=\s*\(\)\s*=>\s*\{[\s\S]*?setRowData\s*\(\s*sampleData\s*\);?\s*\};?/,
     `const handleReset = () => {
@@ -171,43 +294,92 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   };`
   );
 
-  // AG Grid 스타일 추가
+  // ========================================
+  // 8. 인라인 HTML → 공통 옵션 컴포넌트로 교체
+  // ========================================
+  // 조회조건 영역 전체를 새로운 옵션 컴포넌트로 교체
+  if (usedOptions.length > 0) {
+    cleanedCode = cleanedCode.replace(
+      /(<div style=\{\{\s*display:\s*['"]flex['"][\s\S]*?조회조건[\s\S]*?\}\}>\s*)([\s\S]*?)(<div style=\{\{\s*display:\s*['"]flex['"]\s*,\s*gap:\s*8)/,
+      `$1
+        ${optionComponentsJsx}
+        $3`
+    );
+  }
+
+  // 남아있는 인라인 년월 입력 제거 (이미 옵션 컴포넌트로 대체됨)
+  cleanedCode = cleanedCode.replace(
+    /<div style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*gap:\s*4\s*\}\}>\s*<label[^>]*>(년월|기간)[^<]*<\/label>\s*<input\s+type="month"[\s\S]*?<\/div>/g,
+    ''
+  );
+  
+  // 남아있는 인라인 select 제거
+  cleanedCode = cleanedCode.replace(
+    /<div style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*gap:\s*4\s*\}\}>\s*<label[^>]*>(자재|품목|품번|거래처|고객|부서|팀|사업장|모델)[^<]*<\/label>\s*<select[\s\S]*?<\/select>\s*<\/div>/g,
+    ''
+  );
+
+  // ========================================
+  // 9. AG Grid 스타일 추가 (메뉴 hover 색상 #dbeafe 적용)
+  // ========================================
   const agGridStyles = `
 {/* AG Grid 커스텀 스타일 */}
 <style jsx global>{\`
   .ag-theme-alpine {
-    --ag-header-background-color: #4f7cba;
-    --ag-header-foreground-color: white;
-    --ag-row-hover-color: #f0f7ff;
-    --ag-selected-row-background-color: #e1efff;
+    --ag-header-background-color: #dbeafe;
+    --ag-header-foreground-color: #1e3a5f;
+    --ag-row-hover-color: #eff6ff;
+    --ag-selected-row-background-color: #dbeafe;
     --ag-border-color: #e5e7eb;
-    --ag-font-family: 'IBM Plex Sans', sans-serif;
-    --ag-font-size: 13px;
+    --ag-font-family: inherit;
+    --ag-font-size: 14px;
   }
   .ag-theme-alpine .ag-header-group-cell {
-    background: linear-gradient(180deg, #5a8ac7 0%, #4f7cba 100%);
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
     font-weight: 600;
+    color: #1e40af;
   }
   .ag-theme-alpine .ag-header-cell {
-    background: linear-gradient(180deg, #6b9bd1 0%, #5a8ac7 100%);
+    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+    color: #1e3a5f;
+    font-weight: 500;
+  }
+  .ag-theme-alpine .ag-header-cell-text {
+    font-size: 14px;
+  }
+  .ag-theme-alpine .ag-cell {
+    font-size: 14px;
   }
   .ag-row-total {
     background-color: #f8fafc !important;
     font-weight: 600;
-    border-top: 2px solid #4f7cba;
-    border-bottom: 2px solid #4f7cba;
+    border-top: 2px solid #93c5fd;
+    border-bottom: 2px solid #93c5fd;
   }
 \`}</style>
 `;
 
-  // return 문 앞에 스타일 삽입
+  // ========================================
+  // 10. AG Grid 높이 수정 (화면 전체 채움)
+  // ========================================
+  // 고정 높이 → flex-grow로 변경
+  cleanedCode = cleanedCode.replace(
+    /className="ag-theme-alpine"\s+style=\{\{\s*width:\s*['"]100%['"]\s*,\s*height:\s*\d+\s*,?\s*(minHeight:\s*\d+\s*,?)?\s*\}\}/g,
+    'className="ag-theme-alpine" style={{ width: \'100%\', flex: 1, minHeight: 300 }}'
+  );
+  
+  // div에 height: '100vh' → height: '100%'로 변경 (상위 컨테이너)
+  cleanedCode = cleanedCode.replace(
+    /style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*height:\s*['"]100vh['"]/g,
+    "style={{ display: 'flex', flexDirection: 'column', height: '100%'"
+  );
+
   if (cleanedCode.includes('return (')) {
     cleanedCode = cleanedCode.replace(
       'return (',
       `return (
     <>${agGridStyles}`
     );
-    // 마지막 닫는 괄호 수정
     const lastReturnEnd = cleanedCode.lastIndexOf(');');
     if (lastReturnEnd > 0) {
       cleanedCode = cleanedCode.slice(0, lastReturnEnd) + '</>);' + cleanedCode.slice(lastReturnEnd + 2);
@@ -215,6 +387,11 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   }
 
   return imports + cleanedCode;
+}
+
+// 문자열 첫 글자 대문자 변환 헬퍼
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // .env.local에서 직접 API 키 읽기 (환경 변수 오염 방지)
@@ -298,8 +475,8 @@ export const screenGeneratorRouter = createTRPCRouter({
         const errors: string[] = [];
         const warnings: string[] = [];
         
-        // 1. 필수 시트 확인
-        const requiredSheets = ["메타정보", "조회조건", "그리드컬럼"];
+        // 1. 필수 시트 확인 (조회조건 시트 제거 - 메타정보의 옵션 필드로 대체)
+        const requiredSheets = ["메타정보", "그리드컬럼"];
         for (const sheetName of requiredSheets) {
           if (!workbook.SheetNames.includes(sheetName)) {
             errors.push(`필수 시트 '${sheetName}'이(가) 없습니다.`);
@@ -321,6 +498,7 @@ export const screenGeneratorRouter = createTRPCRouter({
         let screenName = "";
         let screenNameEn = "";
         let tableName = "";
+        let options = "";  // 옵션 필드 추가
         
         // 디버그: 메타정보 시트 내용 출력
         console.log("[DEBUG] 메타정보 시트 파싱:");
@@ -328,11 +506,12 @@ export const screenGeneratorRouter = createTRPCRouter({
           const key = row[0]?.toString().trim() || "";
           const value = row[1]?.toString().trim() || "";
           console.log(`  [${key}] = [${value}]`);
-          if (key === "화면명") screenName = value;
+          if (key === "화면명" || key === "화면명(한글)") screenName = value;
           if (key === "화면명(영문)") screenNameEn = value;
           if (key === "테이블명" || key === "사용테이블") tableName = value;
+          if (key === "옵션") options = value;  // 옵션 파싱
         }
-        console.log(`[DEBUG] 파싱 결과: screenName=${screenName}, tableName=${tableName}`);
+        console.log(`[DEBUG] 파싱 결과: screenName=${screenName}, tableName=${tableName}, options=${options}`);
         
         if (!screenName) {
           errors.push("메타정보 시트에 '화면명'이 없습니다.");
@@ -342,10 +521,35 @@ export const screenGeneratorRouter = createTRPCRouter({
           warnings.push("메타정보 시트에 '테이블명'이 없습니다. 쿼리 생성 시 수동 입력이 필요합니다.");
         }
         
-        // 3. 조회조건 시트 파싱
-        const searchSheet = workbook.Sheets["조회조건"];
-        const searchData = XLSX.utils.sheet_to_json<string[]>(searchSheet!, { header: 1, defval: "" });
-        const searchConditions = searchData.filter((row, i) => i >= 2 && row[0]).length;
+        // 3. 옵션 파싱 (쉼표로 구분된 옵션명 → searchConditions로 변환)
+        const optionMapping: Record<string, { label: string; type: string }> = {
+          '년월': { label: '년월', type: 'yearmonth' },
+          '년': { label: '년', type: 'year' },
+          '자재': { label: '자재', type: 'material' },
+          '거래처': { label: '거래처', type: 'customer' },
+          '부서': { label: '부서', type: 'department' },
+          '계정': { label: '계정', type: 'account' },
+          '모델': { label: '모델', type: 'model' },
+          '사업장': { label: '사업장', type: 'site' },
+          '비용': { label: '비용', type: 'expense' },
+        };
+        
+        const searchConditions: any[] = [];
+        if (options) {
+          const optionList = options.split(',').map(o => o.trim()).filter(o => o);
+          for (const opt of optionList) {
+            const mapping = optionMapping[opt];
+            if (mapping) {
+              searchConditions.push({
+                label: mapping.label,
+                type: mapping.type,
+                field: mapping.type,
+                required: false
+              });
+            }
+          }
+        }
+        console.log(`[DEBUG] 파싱된 옵션: ${searchConditions.length}개`, searchConditions);
         
         // 4. 그리드컬럼 시트 파싱 (핵심!)
         const gridSheet = workbook.Sheets["그리드컬럼"];
@@ -415,19 +619,30 @@ export const screenGeneratorRouter = createTRPCRouter({
         // 최종 결과
         const isValid = errors.length === 0;
         
+        // 5. 샘플데이터 시트 파싱 (있는 경우)
+        let sampleDataRows: any[] = [];
+        if (workbook.SheetNames.includes("샘플데이터")) {
+          const sampleSheet = workbook.Sheets["샘플데이터"];
+          const sampleSheetData = XLSX.utils.sheet_to_json<string[]>(sampleSheet!, { header: 1, defval: "" });
+          // Row 1: 제목, Row 2: 헤더, Row 3+: 데이터
+          sampleDataRows = sampleSheetData.slice(2).filter(row => {
+            const firstCell = row[0]?.toString() || "";
+            return firstCell && !firstCell.includes("합계");
+          }).slice(0, 5);
+        } else {
+          // 샘플데이터 시트가 없으면 그리드컬럼에서 추출
+          sampleDataRows = gridData.slice(3).filter(row => {
+            const firstCell = row[0]?.toString() || "";
+            return firstCell && !firstCell.includes("합계");
+          }).slice(0, 5);
+        }
+        
         // 파싱 데이터 (Claude API 전송용)
         const parsedData = {
           screenName,
           screenNameEn,
           tableName,
-          searchConditions: searchData.filter((row, i) => i >= 2 && row[0]).map(row => ({
-            id: row[0],
-            label: row[1],
-            type: row[2],
-            required: row[3] === "Y",
-            defaultValue: row[4],
-            description: row[5],
-          })),
+          searchConditions,  // 메타정보의 옵션에서 파싱한 조회조건 사용
           gridColumns: {
             row1: gridData[0],
             row2: row2,
@@ -439,10 +654,7 @@ export const screenGeneratorRouter = createTRPCRouter({
               endRow: m.e.r,
             })),
             summaryRows,
-            sampleData: gridData.slice(3).filter(row => {
-              const firstCell = row[0]?.toString() || "";
-              return firstCell && !firstCell.includes("합계");
-            }).slice(0, 5), // 샘플 5행만
+            sampleData: sampleDataRows,
           },
         };
         
@@ -1398,6 +1610,11 @@ function buildJsonDataPrompt(parsedData: any): string {
   // 그리드 컬럼 구조 설명
   const columnStructure = buildColumnStructureDescription(gridColumns);
   
+  // 옵션 정보 생성
+  const optionInfo = searchConditions?.length > 0
+    ? searchConditions.map((sc: any) => `- ${sc.label} (${sc.type})`).join("\n")
+    : "기본: 년월";
+  
   return `다음 Excel 템플릿 정보를 기반으로 AG Grid용 columnDefs와 샘플 데이터를 JSON 형식으로 생성해주세요.
 
 ## 화면 정보
@@ -1405,8 +1622,8 @@ function buildJsonDataPrompt(parsedData: any): string {
 - 화면명(영문): ${screenNameEn || "N/A"}
 - 테이블명: ${tableName || "N/A"}
 
-## 조회조건
-${searchConditions?.map((sc: any) => `- ${sc.label} (${sc.type})${sc.required ? " [필수]" : ""}`).join("\n") || "없음"}
+## 사용할 옵션 (공통 컴포넌트)
+${optionInfo}
 
 ## 그리드 컬럼 구조
 ${columnStructure}
@@ -1435,8 +1652,8 @@ ${gridColumns.summaryRows?.join(", ") || "없음"}
   ],
   "summaryData": { "col1": "합계", "col2": 3000, "sub1": "", "sub2": 1100 },
   "searchFields": [
-    { "label": "검색필드1", "field": "search1", "type": "text" },
-    { "label": "검색필드2", "field": "search2", "type": "select", "options": ["옵션1", "옵션2"] }
+    { "label": "년월", "field": "yearmonth", "type": "yearmonth" },
+    { "label": "자재", "field": "material", "type": "material" }
   ]
 }
 \`\`\`
@@ -1448,7 +1665,8 @@ ${gridColumns.summaryRows?.join(", ") || "없음"}
 2. sampleData: 3-5개의 샘플 행
    - 숫자는 Number 타입
 3. summaryData: 합계 행 (있는 경우)
-4. searchFields: 조회조건 필드
+4. searchFields: 위 "사용할 옵션" 정보를 기반으로 생성
+   - 옵션 타입: yearmonth, year, material, customer, department, account, model, site, expense
 
 JSON만 출력하세요 (설명 없이):`;
 }
@@ -1510,7 +1728,8 @@ function createDefaultGridData(parsedData: any): any {
 }
 
 /**
- * JSON 데이터를 기반으로 React 컴포넌트 생성
+ * JSON 데이터를 기반으로 React 컴포넌트 생성 (Sandpack 미리보기용)
+ * Note: Sandpack에서는 로컬 import가 안되므로 인라인 컴포넌트 사용
  */
 function generateReactFromTemplate(parsedData: any, gridData: any): string {
   const screenName = gridData.screenName || parsedData.screenName || "GeneratedScreen";
@@ -1526,39 +1745,103 @@ function generateReactFromTemplate(parsedData: any, gridData: any): string {
   // summaryData를 문자열로 변환
   const summaryDataStr = gridData.summaryData ? JSON.stringify([gridData.summaryData], null, 2) : "[]";
   
-  // searchFields 처리
+  // searchFields 처리 - Sandpack용 인라인 컴포넌트
   const searchFields = gridData.searchFields || [];
-  const searchFieldsJsx = searchFields.length > 0 
-    ? searchFields.map((sf: any, i: number) => {
-        if (sf.type === 'select' && sf.options) {
-          return `
+  
+  // 옵션 타입별 인라인 컴포넌트 생성
+  const generateInlineComponent = (sf: any): string => {
+    const label = sf.label || '검색';
+    const type = sf.type?.toLowerCase() || 'text';
+    
+    // 년월 선택
+    if (type === 'yearmonth' || label.includes('년월') || label.includes('기간')) {
+      return `
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, color: '#525252' }}>${sf.label}</label>
-            <select 
-              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}
-            >
-              <option value="">전체</option>
-              ${sf.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('\n              ')}
-            </select>
-          </div>`;
-        }
-        return `
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, color: '#525252' }}>${sf.label}</label>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
             <input 
-              type="${sf.type === 'date' ? 'date' : 'text'}"
-              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}
-              placeholder="${sf.label}"
+              type="month"
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 140 }}
+              defaultValue="${new Date().toISOString().slice(0, 7)}"
             />
           </div>`;
-      }).join('')
-    : `
+    }
+    
+    // 년도 선택
+    if (type === 'year' || (label.includes('년') && !label.includes('월'))) {
+      const currentYear = new Date().getFullYear();
+      const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+      return `
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 12, color: '#525252' }}>검색어</label>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
+            <select style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 100 }}>
+              ${years.map(y => `<option value="${y}">${y}년</option>`).join('\n              ')}
+            </select>
+          </div>`;
+    }
+    
+    // 자재/품목 선택
+    if (type === 'material' || label.includes('자재') || label.includes('품목') || label.includes('품번')) {
+      return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
+            <select style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 150 }}>
+              <option value="">전체</option>
+              <option value="MAT001">원자재A</option>
+              <option value="MAT002">원자재B</option>
+              <option value="MAT003">부품C</option>
+            </select>
+          </div>`;
+    }
+    
+    // 거래처 선택
+    if (type === 'customer' || label.includes('거래처') || label.includes('고객')) {
+      return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
+            <select style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 150 }}>
+              <option value="">전체</option>
+              <option value="CUST001">거래처A</option>
+              <option value="CUST002">거래처B</option>
+            </select>
+          </div>`;
+    }
+    
+    // 부서 선택
+    if (type === 'department' || label.includes('부서') || label.includes('팀')) {
+      return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
+            <select style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}>
+              <option value="">전체</option>
+              <option value="DEPT001">영업부</option>
+              <option value="DEPT002">생산부</option>
+              <option value="DEPT003">관리부</option>
+            </select>
+          </div>`;
+    }
+    
+    // 기본 텍스트 입력
+    return `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>${label}</label>
             <input 
               type="text"
-              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 200 }}
-              placeholder="검색어를 입력하세요"
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 120 }}
+              placeholder="${label}"
+            />
+          </div>`;
+  };
+  
+  // searchFields JSX 생성
+  const searchFieldsJsx = searchFields.length > 0 
+    ? searchFields.map((sf: any) => generateInlineComponent(sf)).join('')
+    : `
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 12, color: '#525252' }}>기간</label>
+            <input 
+              type="month"
+              style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0', borderRadius: 0, minWidth: 140 }}
+              defaultValue="${new Date().toISOString().slice(0, 7)}"
             />
           </div>`;
   
@@ -1987,6 +2270,58 @@ function buildReactComponentPrompt(parsedData: any, sqlQuery: string | null): st
     `{ field: "${sc.label}", type: "${sc.type}", required: ${sc.required} }`
   ).join(",\n    ") || "";
   
+  // 검색 조건을 공통 옵션 컴포넌트로 매핑
+  const optionComponentMapping = `
+## 🚨 중요: 공통 옵션 컴포넌트 사용 필수!
+
+검색조건은 반드시 아래 공통 옵션 컴포넌트를 import해서 사용하세요:
+
+\`\`\`tsx
+import {
+  CustomerSelect,    // 거래처 선택 (label: 거래처, 업체, 고객)
+  MaterialSelect,    // 부품/자재 선택 (label: 부품, 자재, 품목)
+  ModelSelect,       // 모델 선택 (label: 모델, 제품)
+  AccountSelect,     // 계정 선택 (label: 계정, 계정과목)
+  ExpenSelSelect,    // 비용구분 선택 (label: 비용구분, 비용, 경비)
+  DepartmentSelect,  // 부서 선택 (label: 부서, 팀)
+  SiteSelect,        // Site 선택 (label: Site, 사업장, 법인)
+  SelCodeSelect,     // SEL_CODE 선택 (label: SEL_CODE, 구분)
+  YearMonthPicker,   // 년월 선택 (label: 년월, 기준월, 월)
+  YearPicker,        // 년도 선택 (label: 년도, 연도, 기준년)
+} from "~/components/options";
+\`\`\`
+
+### 옵션 컴포넌트 사용 규칙:
+1. **Site** → SiteSelect 사용
+2. **년월, 기준월** → YearMonthPicker 사용  
+3. **년도, 기준년** → YearPicker 사용
+4. **거래처, 업체, 고객** → CustomerSelect 사용
+5. **부품, 자재, 품목** → MaterialSelect 사용
+6. **모델, 제품** → ModelSelect 사용
+7. **계정, 계정과목** → AccountSelect 사용
+8. **비용구분, 비용** → ExpenSelSelect 사용
+9. **부서** → DepartmentSelect 사용
+10. **SEL_CODE** → SelCodeSelect 사용
+
+### 사용 예시:
+\`\`\`tsx
+// state 정의
+const [site, setSite] = useState("HQ");
+const [yearMonth, setYearMonth] = useState("");
+const [customer, setCustomer] = useState("");
+
+// 컴포넌트 사용
+<SiteSelect value={site} onChange={setSite} label="Site" />
+<YearMonthPicker value={yearMonth} onChange={setYearMonth} label="기준월" />
+<CustomerSelect value={customer} onChange={setCustomer} site={site} label="거래처" />
+\`\`\`
+
+주의사항:
+- 모든 옵션 컴포넌트는 inline 스타일(라벨 왼쪽) 기본 적용됨
+- site prop이 있는 컴포넌트는 Site 연동 필터링 지원
+- 직접 input/select 만들지 말고 공통 컴포넌트 사용!
+`;
+  
   return `다음 ERP 화면 정보를 기반으로 AG Grid를 사용하는 React 컴포넌트를 생성해주세요.
 
 ## 화면 정보
@@ -2008,6 +2343,8 @@ ${sqlQuery ? `## SQL 쿼리 참고
 ${sqlQuery}
 \`\`\`` : ""}
 
+${optionComponentMapping}
+
 ## 필수 요구사항
 
 ### 1. 기술 스택
@@ -2015,6 +2352,7 @@ ${sqlQuery}
 - AG Grid Community (ag-grid-react, ag-grid-community)
 - Tailwind CSS
 - lucide-react 아이콘
+- **공통 옵션 컴포넌트 (~/components/options)**
 
 ### 2. 필수 import 구문
 \`\`\`tsx
@@ -2025,6 +2363,19 @@ import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
 import { Search, RotateCcw, Download } from 'lucide-react';
+// 🚨 공통 옵션 컴포넌트 import 필수!
+import {
+  SiteSelect,
+  YearMonthPicker,
+  YearPicker,
+  CustomerSelect,
+  MaterialSelect,
+  ModelSelect,
+  AccountSelect,
+  ExpenSelSelect,
+  DepartmentSelect,
+  SelCodeSelect,
+} from "~/components/options";
 
 // AG Grid 모듈 등록 (필수!)
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -2036,31 +2387,29 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 - valueFormatter로 천단위 콤마 적용
 - 합계 행 구분: getRowClass로 스타일 적용
 
-### 4. 검색 필터 영역 (🚨 중요: 가로 배치!)
-- 조회조건별 입력 필드 (Input, Select)
-- **🚨 절대 필수: 라벨과 입력필드는 반드시 가로로 나란히 배치!**
-  - label에 "block" 클래스 절대 사용 금지!
-  - label에 "mb-1" 사용 금지!
-  - 올바른 예시:
-    \`\`\`tsx
-    <div className="flex items-center gap-2">
-      <label className="text-sm font-medium text-gray-700 whitespace-nowrap">년월</label>
-      <input type="month" className="px-3 py-2 border rounded-md" />
-    </div>
-    \`\`\`
-  - 잘못된 예시 (사용 금지!):
-    \`\`\`tsx
-    <div>
-      <label className="block mb-1">년월</label>  <!-- 이렇게 하면 안됨! -->
-      <input />
-    </div>
-    \`\`\`
-- 전체 필터 영역도 flex로 가로 배치
-- 검색/초기화/엑셀다운로드 버튼
-- Tailwind CSS로 IBM Carbon 스타일 적용:
-  - 배경: bg-[#f4f4f4]
-  - 테두리: border-[#e0e0e0]
-  - 버튼: bg-[#0f62fe] hover:bg-[#0043ce]
+### 4. 검색 필터 영역 (공통 옵션 컴포넌트 사용!)
+- **직접 input/select 만들지 말고 공통 옵션 컴포넌트 사용!**
+- 조회조건 라벨에 맞는 컴포넌트 선택
+- 예시:
+\`\`\`tsx
+<div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+  <SiteSelect value={site} onChange={setSite} label="Site" />
+  <YearMonthPicker value={yearMonth} onChange={setYearMonth} label="기준월" />
+  <CustomerSelect value={customer} onChange={setCustomer} site={site} label="거래처" />
+  
+  {/* 버튼 영역 */}
+  <div className="flex gap-2 ml-auto">
+    <button className="inline-flex items-center h-9 px-4 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+      <Search className="w-4 h-4 mr-2" />
+      조회
+    </button>
+    <button onClick={handleReset} className="inline-flex items-center h-9 px-4 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600">
+      <RotateCcw className="w-4 h-4 mr-2" />
+      초기화
+    </button>
+  </div>
+</div>
+\`\`\`
 
 ### 5. AG Grid 설정
 \`\`\`tsx
@@ -2105,6 +2454,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 - 완전한 React 컴포넌트 코드만 출력
 - 설명 없이 코드만
 - export default 포함
+- **검색조건은 반드시 공통 옵션 컴포넌트 사용!**
 
 React 컴포넌트 코드:`;
 }

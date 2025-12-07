@@ -43,7 +43,7 @@ interface ValidationResult {
   screenNameEn?: string;
   tableName?: string;
   columns?: number;
-  searchConditions?: number;
+  searchConditions?: Array<{ label: string; type: string; field: string; required: boolean }>;
   filters?: number;
   formulas?: number;
   summaryRows?: string[];
@@ -506,7 +506,7 @@ export default function ScreenGeneratorPage() {
                         <span>화면명: {validation.screenName}</span>
                         <span>컬럼: {validation.columns}개</span>
                         <span>테이블: {validation.tableName || "(미지정)"}</span>
-                        <span>조회조건: {validation.searchConditions || 0}개</span>
+                        <span>옵션: {validation.searchConditions?.length || 0}개</span>
                       </div>
                     )}
                     {validation.warnings?.map((w, i) => (

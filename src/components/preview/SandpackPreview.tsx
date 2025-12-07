@@ -5,11 +5,10 @@ import {
   SandpackLayout,
   SandpackPreview as SandpackPreviewPane,
   SandpackCodeEditor,
-  SandpackConsole,
   useSandpack,
 } from "@codesandbox/sandpack-react";
 import { useState, useEffect } from "react";
-import { Code2, Eye, RefreshCw, Maximize2, Minimize2, Terminal } from "lucide-react";
+import { Code2, Eye, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SandpackPreviewProps {
@@ -403,13 +402,13 @@ html {
 /* ===== SC002 Corporate Style - AG Grid ===== */
 .ag-theme-alpine,
 .ag-theme-alpine.ag-corporate-style {
-  --ag-header-background-color: #4f7cba;
-  --ag-header-foreground-color: white;
-  --ag-row-hover-color: #f0f7ff;
-  --ag-selected-row-background-color: #e1efff;
+  --ag-header-background-color: #dbeafe;
+  --ag-header-foreground-color: #1e3a5f;
+  --ag-row-hover-color: #eff6ff;
+  --ag-selected-row-background-color: #dbeafe;
   --ag-border-color: #e5e7eb;
-  --ag-font-family: 'IBM Plex Sans', sans-serif;
-  --ag-font-size: 13px;
+  --ag-font-family: inherit;
+  --ag-font-size: 14px;
   --ag-grid-size: 6px;
   --ag-row-height: 42px;
   --ag-header-height: 45px;
@@ -429,18 +428,19 @@ html {
 
 /* 그룹 헤더 스타일 */
 .ag-theme-alpine .ag-header-group-cell {
-  background: linear-gradient(180deg, #5a8ac7 0%, #4f7cba 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  border-right: 1px solid rgba(147, 197, 253, 0.5);
   font-weight: 600;
   font-size: 14px;
+  color: #1e40af;
 }
 
 /* 일반 헤더 스타일 */
 .ag-theme-alpine .ag-header-cell {
-  background: linear-gradient(180deg, #6b9bd1 0%, #5a8ac7 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-right: 1px solid rgba(147, 197, 253, 0.5);
   font-weight: 500;
-  color: white;
+  color: #1e3a5f;
 }
 
 /* 합계 행 스타일 */
@@ -448,8 +448,8 @@ html {
 .ag-row-total {
   background-color: #f8fafc !important;
   font-weight: 600;
-  border-top: 2px solid #4f7cba;
-  border-bottom: 2px solid #4f7cba;
+  border-top: 2px solid #93c5fd;
+  border-bottom: 2px solid #93c5fd;
 }
 
 .ag-theme-alpine .ag-row-total .ag-cell {
@@ -458,7 +458,7 @@ html {
 
 /* 행 호버 */
 .ag-theme-alpine .ag-row:hover {
-  background-color: #f0f7ff;
+  background-color: #eff6ff;
 }
 
 /* 셀 스타일 */
@@ -466,13 +466,13 @@ html {
   display: flex;
   align-items: center;
   border-right: 1px solid #f3f4f6;
+  font-size: 14px;
 }
 
 /* 홀수 행 */
 .ag-theme-alpine .ag-row-odd {
   background-color: #fafafa;
 }
-
 /* 짝수 행 */
 .ag-theme-alpine .ag-row-even {
   background-color: #ffffff;
@@ -727,7 +727,6 @@ export default function SandpackPreview({
   showEditor: initialShowEditor = true  // 기본적으로 에디터 표시
 }: SandpackPreviewProps) {
   const [showEditor, setShowEditor] = useState(initialShowEditor);
-  const [showConsole, setShowConsole] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -776,10 +775,7 @@ export default function SandpackPreview({
       {/* 툴바 */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#e0e0e0] bg-[#f4f4f4] shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-[#161616]">실시간 미리보기</span>
-          <span className="text-xs text-[#525252] bg-[#e0e0e0] px-2 py-0.5 rounded">
-            AG Grid
-          </span>
+          {/* 라벨 없음 */}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -791,16 +787,6 @@ export default function SandpackPreview({
             title={showEditor ? "코드 숨기기" : "코드 보기"}
           >
             <Code2 className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowConsole(!showConsole)}
-            className={cn(
-              "p-1.5 rounded transition-colors",
-              showConsole ? "bg-[#da1e28] text-white" : "hover:bg-[#e0e0e0]"
-            )}
-            title={showConsole ? "콘솔 숨기기" : "콘솔 보기"}
-          >
-            <Terminal className="h-4 w-4" />
           </button>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
@@ -894,15 +880,6 @@ export default function SandpackPreview({
                 overflow: 'auto'  // 미리보기 스크롤
               }}
             />
-            {showConsole && (
-              <SandpackConsole
-                style={{
-                  height: "150px",
-                  minHeight: "150px",
-                }}
-                showHeader
-              />
-            )}
           </SandpackLayout>
         </SandpackProvider>
       </div>

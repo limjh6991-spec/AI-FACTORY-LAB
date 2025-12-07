@@ -2,8 +2,9 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Loader2, AlertTriangle, FileText } from "lucide-react";
+import { Loader2, Construction, FileText, ArrowLeft } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 // Sandpack 동적 로드 (SSR 비활성화)
 const SandpackPreview = dynamic(
@@ -77,12 +78,40 @@ export default function DynamicScreenPage() {
   }
 
   if (error) {
+    // 화면을 찾을 수 없으면 "화면이 추가될 예정입니다" 표시
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
-        <h2 className="text-lg font-semibold text-slate-800 mb-2">화면을 찾을 수 없습니다</h2>
-        <p className="text-slate-500">{error}</p>
-        <p className="text-sm text-slate-400 mt-2">화면 ID: {screenId}</p>
+      <div className="h-[calc(100vh-56px)] flex items-center justify-center bg-[#f4f4f4]">
+        <div className="text-center">
+          {/* 아이콘 */}
+          <div className="mb-6 inline-flex items-center justify-center w-24 h-24 rounded-full bg-blue-100">
+            <Construction className="w-12 h-12 text-blue-500" />
+          </div>
+          
+          {/* 메시지 */}
+          <h1 className="text-2xl font-semibold text-[#161616] mb-2">
+            {screenId.toUpperCase()}
+          </h1>
+          <p className="text-lg text-[#525252] mb-8">
+            화면이 추가될 예정입니다
+          </p>
+          
+          {/* 추가 안내 */}
+          <div className="bg-white border border-[#e0e0e0] rounded-lg p-6 max-w-md mx-auto mb-6">
+            <p className="text-sm text-[#525252] leading-relaxed">
+              이 화면은 현재 개발 중입니다.<br />
+              빠른 시일 내에 화면이 추가될 예정입니다.
+            </p>
+          </div>
+          
+          {/* 뒤로가기 버튼 */}
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 h-10 px-4 bg-[#0f62fe] text-white text-sm font-medium rounded hover:bg-[#0043ce] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            대시보드로 이동
+          </Link>
+        </div>
       </div>
     );
   }

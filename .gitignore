@@ -48,3 +48,6 @@ yarn-error.log*
 # idea files
 .idea.env.backup
 .keys_backup
+
+# system logs
+/system_log/*.log
