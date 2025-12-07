@@ -595,6 +595,552 @@ Phase 3 (Logic → UI):        20% 🔄
 
 ---
 
-**Last Updated:** 2025년 12월 4일  
-**Version:** 4.0  
+**Last Updated:** 2025년 12월 7일  
+**Version:** 4.1  
 **Status:** Phase 3 진행 중 (SC002 완성, SC006-SC009 대기)
+
+---
+
+## 🚀 8. 화면 생성기 고도화 개발 계획 (Screen Generator Enhancement)
+
+> **"Excel 템플릿 → 완전 자동화된 화면 생성 시스템"**
+> 
+> 담당: Claude API 기반 화면 생성 (자비스)
+> 협업: 로컬 LLM 기반 쿼리 생성 (별도 팀 개발)
+
+### 📋 8.1 개요
+
+#### 현재 상태 vs 목표
+
+| 영역 | 현재 (As-Is) | 목표 (To-Be) |
+|------|-------------|-------------|
+| 컬럼 매핑 | 수동 매핑 필요 | **DB 메타데이터 기반 자동 매핑** |
+| 화면 타입 | 조회형만 지원 | **CRUD, 마스터-디테일, 피벗 테이블** |
+| 템플릿 | 단일 템플릿 | **업무별 템플릿 라이브러리** |
+
+#### 기대 효과
+- 화면 생성 시간: **2시간 → 10분** (92% 단축)
+- 컬럼 매핑 정확도: **70% → 95%** (자동화)
+- 지원 화면 유형: **1종 → 5종** (확장)
+
+---
+
+### 📊 8.2 DB 메타데이터 기반 자동 컬럼 매핑
+
+#### 8.2.1 현재 문제점
+```
+Excel 컬럼명: "자재구분", "품번", "품명", "입고수량"
+     ↓ (수동 매핑 필요)
+DB 컬럼명: mat_class, mat_code, mat_name, in_qty
+```
+- 한글 컬럼명 ↔ 영문 DB 컬럼 매핑을 개발자가 직접 해야 함
+- 매핑 테이블(COLUMN_MAPPING)을 하드코딩으로 관리
+- 새로운 테이블 추가 시 매번 코드 수정 필요
+
+#### 8.2.2 목표 아키텍처
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DB 메타데이터 자동 매핑                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [Excel 컬럼명]     [Vector DB 검색]      [DB 컬럼]         │
+│       ↓                   ↓                  ↓             │
+│    "자재구분"  →  유사도 검색 (0.95)  →  mat_class         │
+│    "품번"      →  유사도 검색 (0.92)  →  mat_code          │
+│    "입고수량"  →  유사도 검색 (0.88)  →  in_qty            │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ Vector DB (Chroma)                                   │  │
+│  │ ├─ 테이블 메타데이터 (68 tables)                      │  │
+│  │ ├─ 컬럼 설명 임베딩 (382+ chunks)                     │  │
+│  │ ├─ 한글-영문 매핑 사전                                │  │
+│  │ └─ 유사 매핑 성공 이력                                │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 8.2.3 구현 단계
+
+**Phase A: 메타데이터 수집 및 강화 (1주)**
+```typescript
+// 1. DB 컬럼 설명 강화
+interface EnhancedColumnMetadata {
+  tableName: string;
+  columnName: string;        // mat_class
+  columnComment: string;     // 자재구분
+  koreanAliases: string[];   // ["자재분류", "품목구분", "재료구분"]
+  dataType: string;          // varchar(10)
+  sampleValues: string[];    // ["원재료", "부재료", "소모품"]
+  relatedColumns: string[];  // ["mat_code", "mat_name"]
+}
+
+// 2. 메타데이터 임베딩
+// scripts/enhance_column_metadata.ts
+```
+
+**Phase B: 자동 매핑 엔진 구현 (1주)**
+```typescript
+// src/lib/column-mapper.ts
+class ColumnMapper {
+  private vectorDB: ChromaClient;
+  
+  async mapColumns(excelColumns: string[]): Promise<ColumnMapping[]> {
+    const mappings: ColumnMapping[] = [];
+    
+    for (const excelCol of excelColumns) {
+      // 1. Vector DB에서 유사 컬럼 검색
+      const candidates = await this.vectorDB.query({
+        queryTexts: [excelCol],
+        nResults: 5,
+      });
+      
+      // 2. 유사도 점수 기반 최적 매핑 선택
+      const bestMatch = this.selectBestMatch(candidates);
+      
+      // 3. 신뢰도 낮으면 사용자 확인 요청
+      if (bestMatch.confidence < 0.80) {
+        mappings.push({
+          ...bestMatch,
+          requiresConfirmation: true,
+        });
+      } else {
+        mappings.push(bestMatch);
+      }
+    }
+    
+    return mappings;
+  }
+}
+```
+
+**Phase C: 피드백 학습 루프 (1주)**
+```typescript
+// 사용자 피드백 기반 학습
+async function learnFromFeedback(
+  excelColumn: string,
+  selectedDbColumn: string,
+  wasCorrect: boolean
+) {
+  if (wasCorrect) {
+    // 성공 사례 Vector DB에 추가
+    await vectorDB.add({
+      documents: [`${excelColumn} → ${selectedDbColumn}`],
+      metadatas: [{ type: 'confirmed_mapping', confidence: 1.0 }],
+    });
+  } else {
+    // 실패 사례 negative example로 저장
+    await vectorDB.add({
+      documents: [`${excelColumn} ≠ ${selectedDbColumn}`],
+      metadatas: [{ type: 'rejected_mapping', confidence: 0 }],
+    });
+  }
+}
+```
+
+#### 8.2.4 산출물
+- [ ] `scripts/enhance_column_metadata.ts` - 메타데이터 강화 스크립트
+- [ ] `src/lib/column-mapper.ts` - 자동 매핑 엔진
+- [ ] `src/components/ColumnMappingConfirm.tsx` - 매핑 확인 UI
+- [ ] `data/column_aliases.json` - 한글-영문 별칭 사전
+
+---
+
+### 🖥️ 8.3 화면 타입 확장 (조회 → CRUD, 마스터-디테일, 피벗)
+
+#### 8.3.1 지원 화면 타입 정의
+
+| 타입 | 설명 | 예시 화면 | 복잡도 |
+|------|------|----------|--------|
+| **조회형** | 읽기 전용 그리드 | 자재수불부, 매출현황 | ⭐ |
+| **CRUD형** | 생성/수정/삭제 가능 | 거래처관리, 자재등록 | ⭐⭐ |
+| **마스터-디테일** | 상위-하위 연동 | 수주관리(수주-수주상세) | ⭐⭐⭐ |
+| **피벗 테이블** | 동적 집계/분석 | 월별매출분석, 부서별원가 | ⭐⭐⭐ |
+| **트리 그리드** | 계층 구조 표시 | BOM, 조직도 | ⭐⭐⭐⭐ |
+
+#### 8.3.2 화면 타입별 구현 계획
+
+**Type 1: CRUD형 화면 (2주)**
+```typescript
+// Excel 템플릿 메타정보 시트에 옵션 추가
+// 화면타입: CRUD
+
+interface CRUDScreenConfig {
+  screenType: 'CRUD';
+  tableName: string;
+  primaryKey: string;
+  
+  // 권한 설정
+  permissions: {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  };
+  
+  // 필드별 편집 설정
+  fields: {
+    fieldName: string;
+    editable: boolean;
+    required: boolean;
+    validation?: string;  // 정규식 또는 함수명
+  }[];
+}
+
+// 생성되는 컴포넌트 구조
+// src/app/screens/{screenId}/page.tsx
+export default function CRUDScreen() {
+  const [mode, setMode] = useState<'view' | 'edit' | 'create'>('view');
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  
+  // tRPC mutations
+  const createMutation = api.screen.create.useMutation();
+  const updateMutation = api.screen.update.useMutation();
+  const deleteMutation = api.screen.delete.useMutation();
+  
+  return (
+    <div>
+      {/* 툴바: 신규, 수정, 삭제, 저장 버튼 */}
+      <CRUDToolbar mode={mode} onModeChange={setMode} />
+      
+      {/* 그리드 */}
+      <AGGrid
+        editable={mode !== 'view'}
+        onRowSelected={setSelectedRow}
+      />
+      
+      {/* 상세 폼 (선택적) */}
+      {mode !== 'view' && <DetailForm data={selectedRow} />}
+    </div>
+  );
+}
+```
+
+**Type 2: 마스터-디테일 화면 (2주)**
+```typescript
+// Excel 템플릿 구조
+// Sheet 1: 메타정보
+//   화면타입: 마스터-디테일
+//   마스터테이블: order_header
+//   디테일테이블: order_detail
+//   관계키: order_no
+// Sheet 2: 마스터컬럼
+// Sheet 3: 디테일컬럼
+
+interface MasterDetailConfig {
+  screenType: 'MasterDetail';
+  master: {
+    tableName: string;
+    primaryKey: string;
+    columns: ColumnDef[];
+  };
+  detail: {
+    tableName: string;
+    foreignKey: string;
+    columns: ColumnDef[];
+  };
+  layout: 'horizontal' | 'vertical' | 'tab';
+}
+
+// 생성되는 컴포넌트
+export default function MasterDetailScreen() {
+  const [selectedMaster, setSelectedMaster] = useState<any>(null);
+  
+  // 디테일 데이터는 마스터 선택 시 자동 로드
+  const { data: detailData } = api.screen.getDetail.useQuery(
+    { masterId: selectedMaster?.id },
+    { enabled: !!selectedMaster }
+  );
+  
+  return (
+    <div className="flex flex-col h-full">
+      {/* 마스터 그리드 (상단 40%) */}
+      <div className="h-2/5">
+        <AGGrid
+          data={masterData}
+          onRowSelected={setSelectedMaster}
+        />
+      </div>
+      
+      {/* 디테일 그리드 (하단 60%) */}
+      <div className="h-3/5">
+        <AGGrid
+          data={detailData}
+          editable={true}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+**Type 3: 피벗 테이블 화면 (2주)**
+```typescript
+// Excel 템플릿 구조
+// Sheet 1: 메타정보
+//   화면타입: 피벗
+//   행축: 부서, 계정
+//   열축: 월
+//   값: 금액 (SUM)
+
+interface PivotConfig {
+  screenType: 'Pivot';
+  dataSource: string;  // 테이블 또는 쿼리
+  
+  rowFields: string[];     // ['dept_code', 'acct_code']
+  columnFields: string[];  // ['yyyymm']
+  valueFields: {
+    field: string;
+    aggregation: 'SUM' | 'AVG' | 'COUNT' | 'MAX' | 'MIN';
+  }[];
+  
+  // 드릴다운 설정
+  drillDown?: {
+    enabled: boolean;
+    targetScreen: string;
+  };
+}
+
+// 동적 피벗 쿼리 생성 (로컬 LLM 담당 예정)
+// 현재는 기본 템플릿 제공
+```
+
+#### 8.3.3 산출물
+- [ ] `src/lib/screen-types/crud-generator.ts` - CRUD 화면 생성기
+- [ ] `src/lib/screen-types/master-detail-generator.ts` - 마스터-디테일 생성기
+- [ ] `src/lib/screen-types/pivot-generator.ts` - 피벗 테이블 생성기
+- [ ] `src/components/ui/CRUDToolbar.tsx` - CRUD 툴바 컴포넌트
+- [ ] `src/components/ui/MasterDetailLayout.tsx` - 마스터-디테일 레이아웃
+
+---
+
+### 📚 8.4 업무별 템플릿 라이브러리
+
+#### 8.4.1 템플릿 카테고리
+
+```
+templates/
+├── 재고관리/
+│   ├── 자재수불부.xlsx
+│   ├── 재고현황.xlsx
+│   └── 입출고내역.xlsx
+├── 생산관리/
+│   ├── 생산실적.xlsx
+│   ├── 공정현황.xlsx
+│   └── 작업지시서.xlsx
+├── 영업관리/
+│   ├── 수주현황.xlsx
+│   ├── 매출분석.xlsx
+│   └── 거래처관리.xlsx
+├── 원가관리/
+│   ├── 제조원가.xlsx
+│   ├── 부서별원가.xlsx
+│   └── 제품별원가.xlsx
+└── 기준정보/
+    ├── 자재마스터.xlsx
+    ├── 거래처마스터.xlsx
+    └── 부서마스터.xlsx
+```
+
+#### 8.4.2 템플릿 구조 표준화
+
+**Excel 템플릿 표준 구조 (3 시트)**
+```
+Sheet 1: 메타정보
+├── 화면명: 자재수불부
+├── 화면명(영문): Material Inventory Ledger
+├── 화면타입: 조회 | CRUD | 마스터-디테일 | 피벗
+├── 테이블명: doi_material_resc
+├── 옵션: 년월, 자재
+├── 카테고리: 재고관리
+└── 설명: 자재별 입출고 및 재고 현황 조회
+
+Sheet 2: 그리드컬럼
+├── Row 1: 제목 행 (화면명, 단위 등)
+├── Row 2: 그룹 헤더 (기초, 입고, 출고, 재고)
+└── Row 3: 상세 컬럼 (수량, 금액, 단가)
+
+Sheet 3: 조회조건 (선택사항)
+├── 조건명, 조건타입, 필수여부
+└── 년월, yearmonth, Y
+```
+
+#### 8.4.3 템플릿 관리 시스템
+
+```typescript
+// src/lib/template-library.ts
+
+interface ScreenTemplate {
+  id: string;
+  name: string;
+  category: string;
+  screenType: 'Query' | 'CRUD' | 'MasterDetail' | 'Pivot';
+  description: string;
+  
+  // 템플릿 파일 정보
+  templateFile: string;      // Excel 파일 경로
+  thumbnailUrl?: string;     // 미리보기 이미지
+  
+  // 사용 통계
+  usageCount: number;
+  lastUsed: Date;
+  rating: number;            // 사용자 평점
+  
+  // 메타데이터
+  requiredTables: string[];  // 필요 테이블 목록
+  requiredOptions: string[]; // 필요 옵션 목록
+}
+
+// 템플릿 라이브러리 API
+const templateLibrary = {
+  // 카테고리별 템플릿 조회
+  getByCategory: (category: string) => Template[],
+  
+  // 템플릿 검색
+  search: (query: string) => Template[],
+  
+  // 인기 템플릿 조회
+  getPopular: (limit: number) => Template[],
+  
+  // 템플릿 적용
+  applyTemplate: (templateId: string) => GeneratedScreen,
+  
+  // 사용자 템플릿 저장
+  saveAsTemplate: (screen: Screen) => Template,
+};
+```
+
+#### 8.4.4 템플릿 선택 UI
+
+```typescript
+// src/app/settings/screen-generator/TemplateSelector.tsx
+
+export function TemplateSelector() {
+  const [category, setCategory] = useState('전체');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      {/* 좌측: 카테고리 필터 */}
+      <div className="col-span-1">
+        <CategoryList 
+          selected={category}
+          onSelect={setCategory}
+        />
+      </div>
+      
+      {/* 우측: 템플릿 그리드 */}
+      <div className="col-span-3">
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          {templates.map(template => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onSelect={() => applyTemplate(template)}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+#### 8.4.5 산출물
+- [ ] `public/templates/` - 업무별 템플릿 파일 (20개)
+- [ ] `src/lib/template-library.ts` - 템플릿 관리 라이브러리
+- [ ] `src/components/TemplateSelector.tsx` - 템플릿 선택 UI
+- [ ] `src/app/settings/templates/page.tsx` - 템플릿 관리 페이지
+
+---
+
+### 📅 8.5 개발 일정
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    화면 생성기 고도화 일정                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Week 1-2: DB 메타데이터 기반 자동 매핑                          │
+│  ├─ Week 1: 메타데이터 수집 및 Vector DB 강화                    │
+│  └─ Week 2: 자동 매핑 엔진 + 피드백 루프                         │
+│                                                                 │
+│  Week 3-4: CRUD 화면 타입                                       │
+│  ├─ Week 3: CRUD 생성기 구현                                    │
+│  └─ Week 4: 테스트 및 디버깅                                    │
+│                                                                 │
+│  Week 5-6: 마스터-디테일 화면 타입                               │
+│  ├─ Week 5: 마스터-디테일 생성기 구현                            │
+│  └─ Week 6: 레이아웃 옵션 (수평/수직/탭)                         │
+│                                                                 │
+│  Week 7-8: 피벗 테이블 화면 타입                                 │
+│  ├─ Week 7: 피벗 생성기 기본 구현                                │
+│  └─ Week 8: 드릴다운 및 동적 집계                                │
+│                                                                 │
+│  Week 9-10: 템플릿 라이브러리                                    │
+│  ├─ Week 9: 템플릿 관리 시스템                                   │
+│  └─ Week 10: 20개 업무별 템플릿 생성                             │
+│                                                                 │
+│  Week 11-12: 통합 테스트 및 문서화                               │
+│  ├─ Week 11: 전체 기능 통합 테스트                               │
+│  └─ Week 12: 사용자 가이드 및 문서화                             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 🔗 8.6 로컬 LLM 연동 계획 (별도 팀 협업)
+
+> **참고**: 아래 기능은 별도 팀에서 로컬 LLM으로 개발 진행 중
+> 추후 API 연동 예정
+
+#### 연동 예정 기능
+1. **JOIN 쿼리 자동 생성**: 복잡한 다중 테이블 쿼리
+2. **자연어 쿼리**: "지난달 매출 상위 10개 제품"
+3. **이상 탐지**: 비정상 데이터 패턴 감지
+4. **예측 분석**: 수요 예측, 재고 적정량 추천
+
+#### 연동 인터페이스 (예정)
+```typescript
+// src/lib/llm-interface.ts
+
+interface LocalLLMService {
+  // 쿼리 생성
+  generateQuery(params: {
+    tables: string[];
+    columns: string[];
+    conditions: string[];
+    joins?: JoinConfig[];
+  }): Promise<string>;
+  
+  // 자연어 → SQL
+  naturalLanguageToSQL(query: string): Promise<string>;
+  
+  // 이상 탐지
+  detectAnomaly(data: any[]): Promise<AnomalyResult>;
+}
+
+// API 연동 시점: Phase 3-4 완료 후
+```
+
+---
+
+### 📊 8.7 성공 지표 (KPI)
+
+| 지표 | 현재 | 목표 | 측정 방법 |
+|------|------|------|----------|
+| 컬럼 매핑 정확도 | 70% (수동) | **95%** (자동) | 테스트 케이스 100개 |
+| 화면 생성 시간 | 2시간 | **10분** | 타이머 측정 |
+| 지원 화면 유형 | 1종 | **5종** | 기능 체크리스트 |
+| 템플릿 수 | 1개 | **20개** | 파일 카운트 |
+| 사용자 만족도 | - | **4.0/5.0** | 설문조사 |
+
+---
+
+**담당**: 자비스 (Claude API 기반)  
+**협업**: 로컬 LLM 팀 (쿼리 생성, 자연어 처리)  
+**예상 기간**: 12주  
+**우선순위**: 높음
