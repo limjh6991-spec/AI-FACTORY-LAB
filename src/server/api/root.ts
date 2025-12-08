@@ -5,6 +5,7 @@ import { screen982157Router } from "~/server/api/routers/screen982157";
 import { menuRouter } from "~/server/api/routers/menu";
 import { screenGeneratorRouter } from "~/server/api/routers/screenGenerator";
 import { optionsRouter } from "~/server/api/routers/options";
+import { biMasterRouter } from "~/server/api/routers/biMaster";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   menu: menuRouter,
   screenGenerator: screenGeneratorRouter,
   options: optionsRouter,
+  biMaster: biMasterRouter,
 });
 
 // export type definition of API
