@@ -99,82 +99,57 @@ export class SimpleGridCrudTemplate extends BaseTemplate implements ICrudTemplat
    * Import 문 생성
    */
   private generateComponentImports(): string {
-    return `import { useState, useCallback, useRef, useMemo } from 'react';
+    return `import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import type { ColDef, GridReadyEvent, CellValueChangedEvent, RowNode } from 'ag-grid-community';
-import { 
-  Button, 
-  Content,
-  Grid,
-  Column,
-  Loading,
-  InlineNotification,
-} from '@carbon/react';
-import { Add, Save, TrashCan, Reset, Search } from '@carbon/icons-react';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import type { ColDef, CellValueChangedEvent, IRowNode } from 'ag-grid-community';
+import { Plus, Save, Trash2, RotateCcw, Download } from 'lucide-react';
 import { api } from '~/trpc/react';
 
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';`;
+// AG Grid 모듈 등록
+ModuleRegistry.registerModules([AllCommunityModule]);`;
   }
 
   /**
-   * 컴포넌트 본문 생성
+   * 컴포넌트 본문 생성 (/master/dept 스타일)
    */
   private generateComponentBody(componentName: string, data: CrudParsedData): string {
-    const { crudConfig, crudColumns, tableName } = data;
+    const { crudConfig, crudColumns } = data;
     const routerName = this.getRouterName(data.screenId ?? 'SC000');
+    const pkField = crudConfig.primaryKey;
 
     return `
-// 행 상태 타입
-type RowStatus = 'unchanged' | 'added' | 'modified' | 'deleted';
-
-// 행 데이터 타입
+// 데이터 타입
 interface RowData {
-  _status: RowStatus;
-  _original?: Record<string, any>;
   ${this.generateRowDataFields(crudColumns)}
+  _isNew?: boolean;
+  _isModified?: boolean;
+  _isDeleted?: boolean;
 }
 
-// 기본값 생성 함수
-const createEmptyRow = (): RowData => ({
-  _status: 'added',
-  ${this.generateDefaultValues(crudColumns, crudConfig)}
-});
-
-function ${componentName}() {
-  // Grid ref
-  const gridRef = useRef<AgGridReact<RowData>>(null);
-
-  // 상태
-  const [rowData, setRowData] = useState<RowData[]>([]);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<RowData[]>([]);
-
-  // tRPC queries/mutations
-  const { data: fetchedData, isLoading, error, refetch } = api.${routerName}.getAll.useQuery();
+export default function ${componentName}() {
+  const gridRef = useRef<AgGridReact>(null);
   
-  const saveMutation = api.${routerName}.save.useMutation({
-    onSuccess: () => {
-      refetch();
-      setHasChanges(false);
-    },
-  });
+  // 그리드 데이터
+  const [rowData, setRowData] = useState<RowData[]>([]);
+  const [modifiedRows, setModifiedRows] = useState<Set<string>>(new Set());
+  const [deletedRows, setDeletedRows] = useState<Set<string>>(new Set());
 
-  // 데이터 초기화
-  useMemo(() => {
-    if (fetchedData) {
-      setRowData(
-        fetchedData.map((row: any) => ({
-          ...row,
-          _status: 'unchanged' as RowStatus,
-          _original: { ...row },
-        }))
-      );
+  // API 호출
+  const { data, isLoading, refetch } = api.${routerName}.getAll.useQuery();
+  const saveMutation = api.${routerName}.save.useMutation();
+
+  // 데이터 로드
+  useEffect(() => {
+    if (data) {
+      setRowData(data as RowData[]);
+      setModifiedRows(new Set());
+      setDeletedRows(new Set());
     }
-  }, [fetchedData]);
+  }, [data]);
 
   // 컬럼 정의
-  const columnDefs: ColDef<RowData>[] = useMemo(() => [
+  const columnDefs = useMemo<ColDef[]>(() => [
     {
       headerCheckboxSelection: true,
       checkboxSelection: true,
@@ -182,200 +157,200 @@ function ${componentName}() {
       pinned: 'left',
       lockPosition: true,
     },
-    ${this.generateAgGridColumnDefs(crudColumns)}
+${this.generateAgGridColumnDefs(crudColumns)}
   ], []);
 
   // 기본 컬럼 설정
-  const defaultColDef: ColDef = useMemo(() => ({
+  const defaultColDef = useMemo(() => ({
     sortable: true,
-    filter: true,
     resizable: true,
-    editable: true,
+    filter: true,
   }), []);
 
-  // Grid Ready 핸들러
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    params.api.sizeColumnsToFit();
-  }, []);
-
-  // 셀 값 변경 핸들러
-  const onCellValueChanged = useCallback((event: CellValueChangedEvent<RowData>) => {
-    const { data, node } = event;
-    if (data && data._status === 'unchanged') {
-      data._status = 'modified';
-      node?.setData(data);
+  // 셀 값 변경 시
+  const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
+    const { data } = event;
+    if (!data._isNew) {
+      data._isModified = true;
     }
-    setHasChanges(true);
-  }, []);
-
-  // 선택 변경 핸들러
-  const onSelectionChanged = useCallback(() => {
-    const selectedNodes = gridRef.current?.api.getSelectedNodes() ?? [];
-    setSelectedRows(selectedNodes.map((node: RowNode<RowData>) => node.data!).filter(Boolean));
+    setModifiedRows(prev => new Set(prev).add(data.${pkField}));
+    event.api.refreshCells({ rowNodes: [event.node!], force: true });
   }, []);
 
   // 행 추가
   const handleAddRow = useCallback(() => {
-    const newRow = createEmptyRow();
+    const newRow: RowData = {
+      ${this.generateDefaultValues(crudColumns, crudConfig)}
+      _isNew: true,
+    };
     setRowData(prev => [newRow, ...prev]);
-    setHasChanges(true);
   }, []);
 
   // 선택된 행 삭제
   const handleDeleteSelected = useCallback(() => {
-    setRowData(prev =>
-      prev.map(row =>
-        selectedRows.some(s => s.${crudConfig.primaryKey} === row.${crudConfig.primaryKey})
-          ? { ...row, _status: 'deleted' as RowStatus }
-          : row
-      ).filter(row => row._status !== 'added' || !selectedRows.some(s => s === row))
-    );
-    setHasChanges(true);
-    setSelectedRows([]);
-    gridRef.current?.api.deselectAll();
-  }, [selectedRows]);
+    const selectedNodes = gridRef.current?.api.getSelectedNodes();
+    if (!selectedNodes || selectedNodes.length === 0) {
+      alert('삭제할 행을 선택해주세요.');
+      return;
+    }
+
+    if (!confirm(\`선택된 \${selectedNodes.length}개 행을 삭제하시겠습니까?\`)) {
+      return;
+    }
+
+    const deleteIds = new Set<string>();
+    selectedNodes.forEach((node: IRowNode) => {
+      if (!node.data._isNew) {
+        deleteIds.add(node.data.${pkField});
+      }
+    });
+
+    setRowData(prev => prev.filter(row => {
+      const isSelected = selectedNodes.some((n: IRowNode) => n.data.${pkField} === row.${pkField});
+      if (isSelected && row._isNew) return false;
+      return true;
+    }));
+
+    setDeletedRows(prev => new Set([...prev, ...deleteIds]));
+  }, []);
 
   // 저장
   const handleSave = useCallback(async () => {
-    const inserts = rowData.filter(r => r._status === 'added')
-      .map(({ _status, _original, ...data }) => data);
-    const updates = rowData.filter(r => r._status === 'modified')
-      .map(({ _status, _original, ...data }) => data);
-    const deletes = rowData.filter(r => r._status === 'deleted')
-      .map(r => String(r.${crudConfig.primaryKey}));
+    try {
+      const inserts = rowData.filter(r => r._isNew).map(({ _isNew, _isModified, _isDeleted, ...data }) => data);
+      const updates = rowData.filter(r => r._isModified && !r._isNew).map(({ _isNew, _isModified, _isDeleted, ...data }) => data);
+      const deletes = Array.from(deletedRows);
 
-    await saveMutation.mutateAsync({ inserts, updates, deletes });
-  }, [rowData, saveMutation]);
+      await saveMutation.mutateAsync({ inserts, updates, deletes });
+      alert('저장되었습니다.');
+      refetch();
+    } catch (error) {
+      console.error('저장 오류:', error);
+      alert('저장 중 오류가 발생했습니다.');
+    }
+  }, [rowData, deletedRows, saveMutation, refetch]);
 
-  // 초기화 (새로고침)
+  // 초기화
   const handleReset = useCallback(() => {
     refetch();
-    setHasChanges(false);
-    setSelectedRows([]);
   }, [refetch]);
 
-  // 로딩 상태
-  if (isLoading) {
-    return <Loading description="데이터를 불러오는 중..." />;
-  }
+  // 엑셀 다운로드
+  const handleExcelExport = useCallback(() => {
+    gridRef.current?.api.exportDataAsCsv({
+      fileName: '${data.screenName}.csv',
+    });
+  }, []);
 
-  // 에러 상태
-  if (error) {
-    return (
-      <InlineNotification
-        kind="error"
-        title="데이터 로드 실패"
-        subtitle={error.message}
-      />
-    );
-  }
+  const hasChanges = modifiedRows.size > 0 || deletedRows.size > 0 || rowData.some(r => r._isNew);
 
   return (
-    <Content>
-      <Grid fullWidth>
-        {/* 제목 및 버튼 영역 */}
-        <Column lg={16} md={8} sm={4}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '1rem' 
-          }}>
-            <h2>${data.screenName}</h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <Button
-                kind="primary"
-                size="sm"
-                renderIcon={Add}
-                onClick={handleAddRow}
-              >
-                행 추가
-              </Button>
-              <Button
-                kind="danger--ghost"
-                size="sm"
-                renderIcon={TrashCan}
-                onClick={handleDeleteSelected}
-                disabled={selectedRows.length === 0}
-              >
-                삭제
-              </Button>
-              <Button
-                kind="secondary"
-                size="sm"
-                renderIcon={Reset}
-                onClick={handleReset}
-              >
-                초기화
-              </Button>
-              <Button
-                kind="primary"
-                size="sm"
-                renderIcon={Save}
-                onClick={handleSave}
-                disabled={!hasChanges || saveMutation.isPending}
-              >
-                {saveMutation.isPending ? '저장 중...' : '저장'}
-              </Button>
-            </div>
-          </div>
-        </Column>
+    <>
+      {/* AG Grid 커스텀 스타일 */}
+      <style jsx global>{\`
+        .ag-theme-alpine {
+          --ag-header-background-color: #dbeafe;
+          --ag-header-foreground-color: #1e3a5f;
+          --ag-row-hover-color: #eff6ff;
+          --ag-selected-row-background-color: #dbeafe;
+          --ag-border-color: #e5e7eb;
+          --ag-font-family: inherit;
+          --ag-font-size: 14px;
+        }
+        .ag-theme-alpine .ag-header-cell {
+          background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+          color: #1e3a5f;
+          font-weight: 500;
+        }
+        .ag-theme-alpine .ag-row-selected {
+          background-color: #dbeafe !important;
+        }
+      \`}</style>
 
-        {/* 변경사항 알림 */}
+      <div className="flex flex-col h-full p-4 bg-white font-sans">
+        {/* 제목 */}
+        <h1 className="text-lg font-semibold mb-3 text-[#161616]">
+          ${data.screenName}
+        </h1>
+
+        {/* 툴바 */}
+        <div className="flex items-center gap-2 mb-2">
+          <button
+            onClick={handleAddRow}
+            className="flex items-center gap-1 h-8 px-3 bg-[#0f62fe] text-white text-sm hover:bg-[#0353e9] transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            행 추가
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className="flex items-center gap-1 h-8 px-3 bg-[#24a148] text-white text-sm hover:bg-[#198038] transition-colors disabled:bg-[#c6c6c6] disabled:cursor-not-allowed"
+          >
+            <Save className="w-4 h-4" />
+            저장
+          </button>
+          <button
+            onClick={handleDeleteSelected}
+            className="flex items-center gap-1 h-8 px-3 bg-[#da1e28] text-white text-sm hover:bg-[#ba1b23] transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            삭제
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1 h-8 px-3 bg-[#e0e0e0] text-[#161616] text-sm hover:bg-[#c6c6c6] transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            초기화
+          </button>
+          <div className="ml-auto">
+            <button
+              onClick={handleExcelExport}
+              className="flex items-center gap-1 h-8 px-3 bg-[#393939] text-white text-sm hover:bg-[#4c4c4c] transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              엑셀
+            </button>
+          </div>
+        </div>
+
+        {/* 상태 표시 */}
         {hasChanges && (
-          <Column lg={16} md={8} sm={4}>
-            <InlineNotification
-              kind="warning"
-              title="변경사항이 있습니다"
-              subtitle="저장 버튼을 클릭하여 변경사항을 저장하세요."
-              lowContrast
-              hideCloseButton
-            />
-          </Column>
+          <div className="flex items-center gap-4 mb-2 text-xs text-[#525252]">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-[#e8f5e9] border border-[#c6c6c6]"></span>
+              신규 ({rowData.filter(r => r._isNew).length})
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-[#fff3e0] border border-[#c6c6c6]"></span>
+              수정 ({modifiedRows.size})
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-[#ffebee] border border-[#c6c6c6]"></span>
+              삭제 ({deletedRows.size})
+            </span>
+          </div>
         )}
 
         {/* AG Grid */}
-        <Column lg={16} md={8} sm={4}>
-          <div 
-            className="ag-theme-alpine" 
-            style={{ height: 'calc(100vh - 220px)', width: '100%' }}
-          >
-            <AgGridReact<RowData>
-              ref={gridRef}
-              rowData={rowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              rowSelection="${crudConfig.rowSelection}"
-              onGridReady={onGridReady}
-              onCellValueChanged={onCellValueChanged}
-              onSelectionChanged={onSelectionChanged}
-              animateRows={true}
-              ${crudConfig.pagination ? `pagination={true}\n              paginationPageSize={${crudConfig.pageSize ?? 50}}` : ''}
-              getRowId={(params) => String(params.data.${crudConfig.primaryKey})}
-              rowClassRules={{
-                'row-added': (params) => params.data?._status === 'added',
-                'row-modified': (params) => params.data?._status === 'modified',
-                'row-deleted': (params) => params.data?._status === 'deleted',
-              }}
-            />
-          </div>
-        </Column>
-      </Grid>
-
-      {/* 행 상태 스타일 */}
-      <style jsx global>{\`
-        .row-added {
-          background-color: #d4edda !important;
-        }
-        .row-modified {
-          background-color: #fff3cd !important;
-        }
-        .row-deleted {
-          background-color: #f8d7da !important;
-          text-decoration: line-through;
-        }
-      \`}</style>
-    </Content>
+        <div className="ag-theme-alpine flex-1" style={{ minHeight: 400 }}>
+          <AgGridReact
+            ref={gridRef}
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            rowSelection="multiple"
+            suppressRowClickSelection={true}
+            onCellValueChanged={onCellValueChanged}
+            getRowId={(params) => params.data.${pkField}}
+            loading={isLoading}
+            overlayLoadingTemplate="<span>데이터 로딩 중...</span>"
+            overlayNoRowsTemplate="<span>조회된 데이터가 없습니다</span>"
+          />
+        </div>
+      </div>
+    </>
   );
 }`;
   }
@@ -411,7 +386,7 @@ function ${componentName}() {
   }
 
   /**
-   * AG Grid 컬럼 정의 생성
+   * AG Grid 컬럼 정의 생성 (/master/dept 스타일)
    */
   private generateAgGridColumnDefs(columns: CrudColumnDef[]): string {
     return columns.map(col => {
@@ -421,9 +396,19 @@ function ${componentName}() {
       parts.push(`field: '${col.field}'`);
       parts.push(`width: ${col.width}`);
       
+      // 편집 가능 여부 (신규 행만 편집 가능한 PK 컬럼 등)
       if (!col.editable) {
-        parts.push(`editable: false`);
+        parts.push(`editable: (params) => params.data?._isNew === true`);
+      } else {
+        parts.push(`editable: true`);
       }
+      
+      // 셀 스타일 (신규: 연초록, 수정: 연주황)
+      parts.push(`cellStyle: (params) => {
+        if (params.data?._isNew) return { backgroundColor: '#e8f5e9' };
+        if (params.data?._isModified) return { backgroundColor: '#fff3e0' };
+        return null;
+      }`);
       
       // 셀 에디터 타입
       const cellEditor = this.getCellEditor(col);
@@ -431,17 +416,12 @@ function ${componentName}() {
         parts.push(cellEditor);
       }
 
-      // 정렬
-      if (col.align) {
-        parts.push(`cellClass: '${col.align === 'right' ? 'ag-right-aligned-cell' : col.align === 'center' ? 'ag-center-aligned-cell' : ''}'`);
-      }
-
       // 숨김
       if (col.hidden) {
         parts.push(`hide: true`);
       }
 
-      return `    { ${parts.join(', ')} },`;
+      return `    {\n      ${parts.join(',\n      ')},\n    },`;
     }).join('\n');
   }
 
