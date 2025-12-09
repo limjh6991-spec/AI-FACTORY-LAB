@@ -21,6 +21,7 @@ import {
   validateTemplate,
   generatePreview,
   generatePreviewTemplate,
+  generateCrudPreview,
   generateQuery,
   getTableList,
   getTableColumns,
@@ -52,6 +53,9 @@ export const screenGeneratorRouter = createTRPCRouter({
   
   /** 템플릿 기반 미리보기 생성 (Claude API 없이) */
   generatePreviewTemplate,
+  
+  /** CRUD 화면 미리보기 생성 */
+  generateCrudPreview,
   
   // ============================================================
   // 쿼리 (Query)

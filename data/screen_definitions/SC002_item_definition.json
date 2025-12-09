@@ -1,0 +1,182 @@
+{
+  "screenId": "SC002_CRUD",
+  "screenName": "품목관리",
+  "screenNameEn": "ItemMaster",
+  "tableName": "tb_item",
+  "screenType": "simpleGridCrud",
+  "description": "품목 기준정보 관리 화면",
+  "crudConfig": {
+    "primaryKey": "item_cd",
+    "autoGeneratePk": true,
+    "pkPattern": "ITM{YYYYMMDD}{SEQ:4}",
+    "sortColumn": "item_nm",
+    "sortDirection": "asc",
+    "softDelete": false,
+    "auditColumns": true,
+    "rowSelection": "multiple",
+    "pagination": true,
+    "pageSize": 100
+  },
+  "searchConditions": [
+    {
+      "label": "품목코드",
+      "field": "item_cd",
+      "type": "text",
+      "required": false
+    },
+    {
+      "label": "품목명",
+      "field": "item_nm",
+      "type": "text",
+      "required": false
+    },
+    {
+      "label": "품목유형",
+      "field": "item_type",
+      "type": "select",
+      "required": false,
+      "options": [
+        { "value": "", "label": "전체" },
+        { "value": "RAW", "label": "원자재" },
+        { "value": "SEMI", "label": "반제품" },
+        { "value": "PROD", "label": "완제품" }
+      ]
+    }
+  ],
+  "crudColumns": [
+    {
+      "headerName": "품목코드",
+      "field": "item_cd",
+      "width": 120,
+      "editorType": "text",
+      "editable": false,
+      "required": true,
+      "align": "left"
+    },
+    {
+      "headerName": "품목명",
+      "field": "item_nm",
+      "width": 200,
+      "editorType": "text",
+      "editable": true,
+      "required": true,
+      "align": "left",
+      "maxLength": 100
+    },
+    {
+      "headerName": "품목영문명",
+      "field": "item_nm_en",
+      "width": 150,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "규격",
+      "field": "spec",
+      "width": 150,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "품목유형",
+      "field": "item_type",
+      "width": 100,
+      "editorType": "select",
+      "editable": true,
+      "required": true,
+      "defaultValue": "RAW",
+      "options": [
+        { "value": "RAW", "label": "원자재" },
+        { "value": "SEMI", "label": "반제품" },
+        { "value": "PROD", "label": "완제품" }
+      ],
+      "align": "center"
+    },
+    {
+      "headerName": "단위",
+      "field": "unit_cd",
+      "width": 80,
+      "editorType": "select",
+      "editable": true,
+      "required": true,
+      "defaultValue": "EA",
+      "options": [
+        { "value": "EA", "label": "개" },
+        { "value": "KG", "label": "Kg" },
+        { "value": "M", "label": "M" },
+        { "value": "L", "label": "L" },
+        { "value": "BOX", "label": "Box" }
+      ],
+      "align": "center"
+    },
+    {
+      "headerName": "표준단가",
+      "field": "std_price",
+      "width": 100,
+      "editorType": "number",
+      "editable": true,
+      "required": false,
+      "defaultValue": 0,
+      "align": "right"
+    },
+    {
+      "headerName": "안전재고",
+      "field": "safety_stock",
+      "width": 100,
+      "editorType": "number",
+      "editable": true,
+      "required": false,
+      "defaultValue": 0,
+      "align": "right"
+    },
+    {
+      "headerName": "재고창고",
+      "field": "wh_cd",
+      "width": 100,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "사용여부",
+      "field": "use_yn",
+      "width": 80,
+      "editorType": "checkbox",
+      "editable": true,
+      "required": true,
+      "defaultValue": true,
+      "align": "center"
+    },
+    {
+      "headerName": "비고",
+      "field": "remark",
+      "width": 200,
+      "editorType": "textarea",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "등록일",
+      "field": "created_at",
+      "width": 120,
+      "editorType": "readonly",
+      "editable": false,
+      "required": false,
+      "align": "center"
+    }
+  ],
+  "gridColumns": {
+    "row1": [],
+    "row2": ["품목코드", "품목명", "품목영문명", "규격", "품목유형", "단위", "표준단가", "안전재고", "재고창고", "사용여부", "비고", "등록일"],
+    "row3": ["item_cd", "item_nm", "item_nm_en", "spec", "item_type", "unit_cd", "std_price", "safety_stock", "wh_cd", "use_yn", "remark", "created_at"],
+    "merges": [],
+    "summaryRows": [],
+    "sampleData": []
+  }
+}

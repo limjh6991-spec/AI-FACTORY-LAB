@@ -13,6 +13,11 @@ import {
   generateHtmlFromTemplate,
   buildJsonDataPrompt,
 } from "~/lib/screen-generator";
+import { 
+  ScreenType,
+  type CrudParsedData,
+} from "../_shared/types";
+import { SimpleGridCrudTemplate } from "../templates/simpleGridCrud";
 
 /**
  * Claude API로 미리보기 생성
@@ -123,6 +128,56 @@ export const generatePreviewTemplate = publicProcedure
       return {
         success: false,
         error: `미리보기 생성 오류: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
+      };
+    }
+  });
+
+/**
+ * CRUD 화면 미리보기 생성
+ * - 템플릿 기반 컴포넌트 + API 코드 생성
+ */
+export const generateCrudPreview = publicProcedure
+  .input(z.object({
+    parsedData: z.any(), // CrudParsedData
+    screenId: z.string().optional(),
+  }))
+  .mutation(async ({ input }) => {
+    try {
+      const parsedData = input.parsedData as CrudParsedData;
+      
+      // screenId 설정
+      if (input.screenId) {
+        parsedData.screenId = input.screenId;
+      }
+      
+      // 화면 유형 확인
+      const screenType = parsedData.screenType;
+      if (screenType !== ScreenType.SIMPLE_GRID_CRUD && 
+          screenType !== ScreenType.COMPLEX_GRID_CRUD) {
+        return {
+          success: false,
+          error: 'CRUD 화면 유형이 아닙니다.',
+        };
+      }
+      
+      // 템플릿 인스턴스 생성
+      const template = new SimpleGridCrudTemplate();
+      
+      // 전체 화면 생성 (컴포넌트 + API)
+      const result = await template.generateScreen(parsedData);
+      
+      return {
+        success: result.success,
+        component: result.component,
+        api: result.api,
+        warnings: result.warnings,
+        generationTime: result.generationTime,
+        error: result.success ? undefined : '화면 생성에 실패했습니다.',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `CRUD 미리보기 생성 오류: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
       };
     }
   });

@@ -1,0 +1,208 @@
+{
+  "screenId": "SC001",
+  "screenName": "거래처관리",
+  "screenNameEn": "CustomerMaster",
+  "tableName": "tb_customer",
+  "screenType": "simpleGridCrud",
+  "description": "거래처 기준정보 관리 화면",
+  "crudConfig": {
+    "primaryKey": "cust_cd",
+    "autoGeneratePk": false,
+    "sortColumn": "cust_nm",
+    "sortDirection": "asc",
+    "softDelete": false,
+    "auditColumns": true,
+    "rowSelection": "multiple",
+    "pagination": false
+  },
+  "searchConditions": [
+    {
+      "label": "거래처코드",
+      "field": "cust_cd",
+      "type": "text",
+      "required": false
+    },
+    {
+      "label": "거래처명",
+      "field": "cust_nm",
+      "type": "text",
+      "required": false
+    },
+    {
+      "label": "사용여부",
+      "field": "use_yn",
+      "type": "select",
+      "required": false,
+      "options": [
+        { "value": "", "label": "전체" },
+        { "value": "Y", "label": "사용" },
+        { "value": "N", "label": "미사용" }
+      ]
+    }
+  ],
+  "crudColumns": [
+    {
+      "headerName": "거래처코드",
+      "field": "cust_cd",
+      "width": 100,
+      "editorType": "text",
+      "editable": false,
+      "required": true,
+      "align": "left",
+      "maxLength": 20
+    },
+    {
+      "headerName": "거래처명",
+      "field": "cust_nm",
+      "width": 200,
+      "editorType": "text",
+      "editable": true,
+      "required": true,
+      "align": "left",
+      "maxLength": 100
+    },
+    {
+      "headerName": "사업자번호",
+      "field": "biz_no",
+      "width": 120,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "center",
+      "maxLength": 13
+    },
+    {
+      "headerName": "대표자명",
+      "field": "repr_nm",
+      "width": 100,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left",
+      "maxLength": 50
+    },
+    {
+      "headerName": "업태",
+      "field": "biz_type",
+      "width": 100,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "업종",
+      "field": "biz_cond",
+      "width": 100,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "거래처유형",
+      "field": "cust_type",
+      "width": 100,
+      "editorType": "select",
+      "editable": true,
+      "required": true,
+      "defaultValue": "A",
+      "options": [
+        { "value": "A", "label": "일반" },
+        { "value": "B", "label": "특약" },
+        { "value": "C", "label": "VIP" }
+      ],
+      "align": "center"
+    },
+    {
+      "headerName": "전화번호",
+      "field": "tel_no",
+      "width": 120,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "center"
+    },
+    {
+      "headerName": "팩스번호",
+      "field": "fax_no",
+      "width": 120,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "center"
+    },
+    {
+      "headerName": "이메일",
+      "field": "email",
+      "width": 180,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "주소",
+      "field": "address",
+      "width": 250,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "담당자",
+      "field": "pic_nm",
+      "width": 100,
+      "editorType": "text",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "사용여부",
+      "field": "use_yn",
+      "width": 80,
+      "editorType": "checkbox",
+      "editable": true,
+      "required": true,
+      "defaultValue": true,
+      "align": "center"
+    },
+    {
+      "headerName": "비고",
+      "field": "remark",
+      "width": 200,
+      "editorType": "textarea",
+      "editable": true,
+      "required": false,
+      "align": "left"
+    },
+    {
+      "headerName": "등록일",
+      "field": "created_at",
+      "width": 120,
+      "editorType": "readonly",
+      "editable": false,
+      "required": false,
+      "align": "center"
+    },
+    {
+      "headerName": "수정일",
+      "field": "updated_at",
+      "width": 120,
+      "editorType": "readonly",
+      "editable": false,
+      "required": false,
+      "align": "center"
+    }
+  ],
+  "gridColumns": {
+    "row1": [],
+    "row2": ["거래처코드", "거래처명", "사업자번호", "대표자명", "업태", "업종", "거래처유형", "전화번호", "팩스번호", "이메일", "주소", "담당자", "사용여부", "비고", "등록일", "수정일"],
+    "row3": ["cust_cd", "cust_nm", "biz_no", "repr_nm", "biz_type", "biz_cond", "cust_type", "tel_no", "fax_no", "email", "address", "pic_nm", "use_yn", "remark", "created_at", "updated_at"],
+    "merges": [],
+    "summaryRows": [],
+    "sampleData": []
+  }
+}

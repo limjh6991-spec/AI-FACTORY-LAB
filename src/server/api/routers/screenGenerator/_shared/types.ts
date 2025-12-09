@@ -146,6 +146,7 @@ export interface GridColumnDef {
   type?: 'numericColumn' | 'dateColumn' | 'textColumn';
   editable?: boolean;
   cellStyle?: Record<string, string>;
+  align?: 'left' | 'center' | 'right';
   children?: GridColumnDef[]; // 그룹 헤더용
 }
 
@@ -154,6 +155,7 @@ export interface GridColumnDef {
 // ============================================================
 
 export interface ParsedData {
+  screenId?: string;
   screenName: string;
   screenNameEn?: string;
   tableName?: string;
@@ -227,3 +229,186 @@ export interface QueryGenerationResult {
   suggestion?: string;
   error?: string;
 }
+
+// ============================================================
+// CRUD 관련 타입 (기준정보 관리용)
+// ============================================================
+
+/**
+ * CRUD 컬럼 편집 타입
+ */
+export type CrudEditorType = 
+  | 'text'       // 일반 텍스트
+  | 'number'     // 숫자
+  | 'date'       // 날짜
+  | 'datetime'   // 날짜+시간
+  | 'select'     // 선택 (콤보박스)
+  | 'checkbox'   // 체크박스 (Y/N)
+  | 'textarea'   // 여러 줄 텍스트
+  | 'readonly';  // 읽기 전용
+
+/**
+ * CRUD 컬럼 정의
+ * Excel 템플릿의 그리드컬럼 시트에서 파싱
+ */
+export interface CrudColumnDef {
+  /** 화면 표시명 (한글) */
+  headerName: string;
+  /** DB 컬럼명 */
+  field: string;
+  /** 컬럼 너비 (px) */
+  width: number;
+  /** 편집기 타입 */
+  editorType: CrudEditorType;
+  /** 편집 가능 여부 */
+  editable: boolean;
+  /** 필수 입력 여부 */
+  required: boolean;
+  /** 기본값 */
+  defaultValue?: string | number | boolean;
+  /** select 타입인 경우 옵션 목록 또는 옵션 API */
+  options?: Array<{ value: string; label: string }> | string;
+  /** 정렬 (left, center, right) */
+  align?: 'left' | 'center' | 'right';
+  /** 최대 길이 (text 타입) */
+  maxLength?: number;
+  /** 최소값 (number 타입) */
+  minValue?: number;
+  /** 최대값 (number 타입) */
+  maxValue?: number;
+  /** 정규식 패턴 (유효성 검사) */
+  pattern?: string;
+  /** 숨김 여부 */
+  hidden?: boolean;
+}
+
+/**
+ * CRUD 화면 설정
+ * Excel 템플릿의 메타정보 시트에서 파싱
+ */
+export interface CrudConfig {
+  /** Primary Key 컬럼명 (복합 키는 쉼표로 구분) */
+  primaryKey: string;
+  /** PK 자동 생성 여부 */
+  autoGeneratePk: boolean;
+  /** PK 생성 패턴 (예: 'PREFIX_{YYYYMMDD}_{SEQ:4}') */
+  pkPattern?: string;
+  /** 정렬 컬럼 */
+  sortColumn?: string;
+  /** 정렬 방향 */
+  sortDirection?: 'asc' | 'desc';
+  /** 소프트 삭제 여부 (delete_yn 컬럼 사용) */
+  softDelete: boolean;
+  /** 감사 컬럼 자동 관리 (created_at, updated_at 등) */
+  auditColumns: boolean;
+  /** 행 선택 모드 */
+  rowSelection: 'single' | 'multiple';
+  /** 페이지네이션 사용 여부 */
+  pagination: boolean;
+  /** 페이지 크기 */
+  pageSize?: number;
+}
+
+/**
+ * CRUD 파싱 데이터 (ParsedData 확장)
+ */
+export interface CrudParsedData extends ParsedData {
+  screenType: ScreenType.SIMPLE_GRID_CRUD | ScreenType.COMPLEX_GRID_CRUD;
+  /** CRUD 설정 */
+  crudConfig: CrudConfig;
+  /** CRUD 컬럼 정의 */
+  crudColumns: CrudColumnDef[];
+}
+
+/**
+ * CRUD 작업 타입
+ */
+export type CrudOperation = 'create' | 'read' | 'update' | 'delete';
+
+/**
+ * 행 상태 (변경 추적용)
+ */
+export type RowStatus = 'unchanged' | 'added' | 'modified' | 'deleted';
+
+/**
+ * CRUD 행 데이터 (프론트엔드용)
+ */
+export interface CrudRowData {
+  /** 행 상태 */
+  _status: RowStatus;
+  /** 원본 데이터 (수정 전) */
+  _original?: Record<string, any>;
+  /** 실제 데이터 */
+  [key: string]: any;
+}
+
+/**
+ * CRUD API 요청 타입
+ */
+export interface CrudSaveRequest {
+  /** 추가할 행 */
+  inserts: Record<string, any>[];
+  /** 수정할 행 */
+  updates: Record<string, any>[];
+  /** 삭제할 PK 목록 */
+  deletes: string[];
+}
+
+/**
+ * CRUD API 응답 타입
+ */
+export interface CrudSaveResponse {
+  success: boolean;
+  message?: string;
+  insertedCount?: number;
+  updatedCount?: number;
+  deletedCount?: number;
+  errors?: Array<{
+    operation: CrudOperation;
+    row: Record<string, any>;
+    error: string;
+  }>;
+}
+
+// ============================================================
+// CRUD Zod 스키마
+// ============================================================
+
+export const CrudColumnDefSchema = z.object({
+  headerName: z.string(),
+  field: z.string(),
+  width: z.number().default(100),
+  editorType: z.enum(['text', 'number', 'date', 'datetime', 'select', 'checkbox', 'textarea', 'readonly']).default('text'),
+  editable: z.boolean().default(true),
+  required: z.boolean().default(false),
+  defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
+  options: z.union([
+    z.array(z.object({ value: z.string(), label: z.string() })),
+    z.string()
+  ]).optional(),
+  align: z.enum(['left', 'center', 'right']).optional(),
+  maxLength: z.number().optional(),
+  minValue: z.number().optional(),
+  maxValue: z.number().optional(),
+  pattern: z.string().optional(),
+  hidden: z.boolean().optional(),
+});
+
+export const CrudConfigSchema = z.object({
+  primaryKey: z.string(),
+  autoGeneratePk: z.boolean().default(false),
+  pkPattern: z.string().optional(),
+  sortColumn: z.string().optional(),
+  sortDirection: z.enum(['asc', 'desc']).default('asc'),
+  softDelete: z.boolean().default(false),
+  auditColumns: z.boolean().default(true),
+  rowSelection: z.enum(['single', 'multiple']).default('multiple'),
+  pagination: z.boolean().default(false),
+  pageSize: z.number().optional(),
+});
+
+export const CrudSaveRequestSchema = z.object({
+  inserts: z.array(z.record(z.any())),
+  updates: z.array(z.record(z.any())),
+  deletes: z.array(z.string()),
+});

@@ -4,7 +4,15 @@
  */
 
 import * as XLSX from "xlsx";
-import { ScreenType, type ParsedData, type SearchCondition } from "./types";
+import { 
+  ScreenType, 
+  type ParsedData, 
+  type SearchCondition,
+  type CrudParsedData,
+  type CrudConfig,
+  type CrudColumnDef,
+  type CrudEditorType,
+} from "./types";
 
 // ============================================================
 // 옵션 매핑 (메타정보 시트의 '옵션' 필드 → 검색조건)
@@ -62,6 +70,17 @@ export interface MetaInfo {
   tableName: string;
   options: string;
   screenType?: string;
+  // CRUD 관련 추가 필드
+  primaryKey?: string;
+  autoGeneratePk?: boolean;
+  pkPattern?: string;
+  sortColumn?: string;
+  sortDirection?: 'asc' | 'desc';
+  softDelete?: boolean;
+  auditColumns?: boolean;
+  rowSelection?: 'single' | 'multiple';
+  pagination?: boolean;
+  pageSize?: number;
 }
 
 export function parseMetaSheet(workbook: XLSX.WorkBook): MetaInfo {
@@ -78,6 +97,18 @@ export function parseMetaSheet(workbook: XLSX.WorkBook): MetaInfo {
   let options = "";
   let screenType = "";
   
+  // CRUD 설정
+  let primaryKey = "";
+  let autoGeneratePk = false;
+  let pkPattern = "";
+  let sortColumn = "";
+  let sortDirection: 'asc' | 'desc' = 'asc';
+  let softDelete = false;
+  let auditColumns = true;
+  let rowSelection: 'single' | 'multiple' = 'multiple';
+  let pagination = false;
+  let pageSize = 50;
+  
   for (const row of metaData) {
     const key = row[0]?.toString().trim() || "";
     const value = row[1]?.toString().trim() || "";
@@ -87,9 +118,25 @@ export function parseMetaSheet(workbook: XLSX.WorkBook): MetaInfo {
     if (key === "테이블명" || key === "사용테이블") tableName = value;
     if (key === "옵션") options = value;
     if (key === "화면유형" || key === "화면타입") screenType = value;
+    
+    // CRUD 설정 파싱
+    if (key === "PK컬럼" || key === "기본키") primaryKey = value;
+    if (key === "PK자동생성") autoGeneratePk = value.toLowerCase() === 'y' || value.toLowerCase() === 'yes';
+    if (key === "PK패턴") pkPattern = value;
+    if (key === "정렬컬럼") sortColumn = value;
+    if (key === "정렬방향") sortDirection = value.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    if (key === "소프트삭제") softDelete = value.toLowerCase() === 'y' || value.toLowerCase() === 'yes';
+    if (key === "감사컬럼") auditColumns = value.toLowerCase() !== 'n' && value.toLowerCase() !== 'no';
+    if (key === "행선택") rowSelection = value === 'single' ? 'single' : 'multiple';
+    if (key === "페이징" || key === "페이지네이션") pagination = value.toLowerCase() === 'y' || value.toLowerCase() === 'yes';
+    if (key === "페이지크기") pageSize = parseInt(value, 10) || 50;
   }
   
-  return { screenName, screenNameEn, tableName, options, screenType };
+  return { 
+    screenName, screenNameEn, tableName, options, screenType,
+    primaryKey, autoGeneratePk, pkPattern, sortColumn, sortDirection,
+    softDelete, auditColumns, rowSelection, pagination, pageSize
+  };
 }
 
 // ============================================================
@@ -261,4 +308,197 @@ export function generateWarnings(
   }
   
   return warnings;
+}
+
+// ============================================================
+// CRUD 컬럼 시트 파싱 (CRUD 전용)
+// ============================================================
+
+/**
+ * 에디터 타입 매핑
+ */
+const EDITOR_TYPE_MAPPING: Record<string, CrudEditorType> = {
+  '텍스트': 'text',
+  'text': 'text',
+  '숫자': 'number',
+  'number': 'number',
+  '날짜': 'date',
+  'date': 'date',
+  '날짜시간': 'datetime',
+  'datetime': 'datetime',
+  '선택': 'select',
+  'select': 'select',
+  '콤보': 'select',
+  '체크박스': 'checkbox',
+  'checkbox': 'checkbox',
+  '여러줄': 'textarea',
+  'textarea': 'textarea',
+  '읽기전용': 'readonly',
+  'readonly': 'readonly',
+};
+
+/**
+ * CRUD 그리드컬럼 시트 파싱
+ * 
+ * 예상되는 Excel 구조:
+ * | 컬럼명(한글) | DB컬럼명 | 너비 | 편집타입 | 편집가능 | 필수 | 기본값 | 옵션 | 정렬 | 최대길이 | 숨김 |
+ * | 거래처코드   | cust_cd  | 100  | 텍스트   | Y        | Y    |        |      | left |  20      | N    |
+ */
+export function parseCrudGridSheet(workbook: XLSX.WorkBook): CrudColumnDef[] {
+  const gridSheet = workbook.Sheets["그리드컬럼"];
+  if (!gridSheet) {
+    return [];
+  }
+  
+  const gridData = XLSX.utils.sheet_to_json<Record<string, string>>(gridSheet, { defval: "" });
+  
+  const columns: CrudColumnDef[] = [];
+  
+  for (const row of gridData) {
+    // 컬럼명이 없으면 스킵
+    const headerName = row['컬럼명(한글)'] || row['컬럼명'] || row['헤더명'] || '';
+    if (!headerName.trim()) continue;
+    
+    const field = row['DB컬럼명'] || row['필드명'] || row['field'] || headerName;
+    const widthStr = row['너비'] || row['width'] || '100';
+    const editorTypeStr = row['편집타입'] || row['편집기'] || row['editorType'] || '텍스트';
+    const editableStr = row['편집가능'] || row['editable'] || 'Y';
+    const requiredStr = row['필수'] || row['required'] || 'N';
+    const defaultValue = row['기본값'] || row['default'] || '';
+    const optionsStr = row['옵션'] || row['options'] || '';
+    const alignStr = row['정렬'] || row['align'] || '';
+    const maxLengthStr = row['최대길이'] || row['maxLength'] || '';
+    const hiddenStr = row['숨김'] || row['hidden'] || 'N';
+    
+    const column: CrudColumnDef = {
+      headerName: headerName.trim(),
+      field: field.trim(),
+      width: parseInt(widthStr, 10) || 100,
+      editorType: EDITOR_TYPE_MAPPING[editorTypeStr.toLowerCase()] || 'text',
+      editable: editableStr.toUpperCase() === 'Y' || editableStr.toLowerCase() === 'yes',
+      required: requiredStr.toUpperCase() === 'Y' || requiredStr.toLowerCase() === 'yes',
+      hidden: hiddenStr.toUpperCase() === 'Y' || hiddenStr.toLowerCase() === 'yes',
+    };
+    
+    // 기본값 (타입에 따라 변환)
+    if (defaultValue) {
+      if (column.editorType === 'number') {
+        column.defaultValue = parseFloat(defaultValue) || 0;
+      } else if (column.editorType === 'checkbox') {
+        column.defaultValue = defaultValue.toUpperCase() === 'Y' || defaultValue.toLowerCase() === 'true';
+      } else {
+        column.defaultValue = defaultValue;
+      }
+    }
+    
+    // 옵션 (select 타입인 경우)
+    if (optionsStr && column.editorType === 'select') {
+      // "값1:라벨1,값2:라벨2" 형식 또는 API 경로
+      if (optionsStr.startsWith('/') || optionsStr.startsWith('api.')) {
+        column.options = optionsStr;
+      } else {
+        column.options = optionsStr.split(',').map(opt => {
+          const [value, label] = opt.split(':');
+          return { value: value?.trim() ?? '', label: label?.trim() ?? value?.trim() ?? '' };
+        });
+      }
+    }
+    
+    // 정렬
+    if (alignStr) {
+      const align = alignStr.toLowerCase();
+      if (align === 'left' || align === 'center' || align === 'right') {
+        column.align = align;
+      }
+    }
+    
+    // 최대길이
+    if (maxLengthStr) {
+      column.maxLength = parseInt(maxLengthStr, 10) || undefined;
+    }
+    
+    columns.push(column);
+  }
+  
+  return columns;
+}
+
+// ============================================================
+// CRUD 설정 변환
+// ============================================================
+
+/**
+ * MetaInfo에서 CrudConfig 추출
+ */
+export function extractCrudConfig(meta: MetaInfo): CrudConfig {
+  return {
+    primaryKey: meta.primaryKey || 'id',
+    autoGeneratePk: meta.autoGeneratePk ?? false,
+    pkPattern: meta.pkPattern,
+    sortColumn: meta.sortColumn,
+    sortDirection: meta.sortDirection ?? 'asc',
+    softDelete: meta.softDelete ?? false,
+    auditColumns: meta.auditColumns ?? true,
+    rowSelection: meta.rowSelection ?? 'multiple',
+    pagination: meta.pagination ?? false,
+    pageSize: meta.pageSize,
+  };
+}
+
+// ============================================================
+// CRUD 데이터 파싱 (전체)
+// ============================================================
+
+/**
+ * Excel에서 CRUD 화면 데이터 파싱
+ */
+export function parseCrudExcel(workbook: XLSX.WorkBook): CrudParsedData | null {
+  const meta = parseMetaSheet(workbook);
+  
+  // CRUD 화면 유형인지 확인
+  const screenTypeStr = meta.screenType?.toLowerCase() ?? '';
+  const isCrud = screenTypeStr.includes('crud') || 
+                 screenTypeStr === 'simplegridcrud' || 
+                 screenTypeStr === 'complexgridcrud' ||
+                 screenTypeStr === '기준정보' ||
+                 screenTypeStr === '마스터';
+  
+  if (!isCrud) {
+    return null;
+  }
+  
+  // CRUD 컬럼 파싱
+  const crudColumns = parseCrudGridSheet(workbook);
+  if (crudColumns.length === 0) {
+    return null;
+  }
+  
+  // CRUD 설정 추출
+  const crudConfig = extractCrudConfig(meta);
+  
+  // 검색 조건 파싱
+  const searchConditions = parseSearchConditions(meta.options);
+  
+  // 화면 유형 결정
+  const screenType = screenTypeStr.includes('complex') 
+    ? ScreenType.COMPLEX_GRID_CRUD 
+    : ScreenType.SIMPLE_GRID_CRUD;
+  
+  return {
+    screenName: meta.screenName,
+    screenNameEn: meta.screenNameEn,
+    tableName: meta.tableName,
+    screenType,
+    searchConditions,
+    gridColumns: {
+      row1: [],
+      row2: crudColumns.map(c => c.headerName),
+      row3: crudColumns.map(c => c.field),
+      merges: [],
+      summaryRows: [],
+      sampleData: [],
+    },
+    crudConfig,
+    crudColumns,
+  };
 }
