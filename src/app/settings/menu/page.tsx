@@ -46,6 +46,16 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
+// 화면 메타데이터 타입
+interface ScreenMetadata {
+  screenId?: string;
+  screenName?: string;
+  screenNameEn?: string;
+  tableName?: string;
+  status?: string;
+  createdAt?: string;
+}
+
 // 화면생성기의 메뉴 트리 아이템 컴포넌트 (편집 가능)
 function MenuTreeItem({
   item,
@@ -269,10 +279,11 @@ export default function MenuManagementPage() {
     
     setIsPublishing(true);
     try {
+      const metadata = screenDetail?.metadata as ScreenMetadata | undefined;
       const result = await publishMutation.mutateAsync({
         screenId: selectedScreen,
         parentMenuId: selectedMenuId,
-        menuName: screenDetail?.metadata?.screenName || selectedScreen,
+        menuName: metadata?.screenName || selectedScreen,
       });
       
       if (result.success) {
@@ -595,10 +606,10 @@ export default function MenuManagementPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="font-medium text-sm text-[#161616]">
-                        {screenDetail.metadata?.screenName}
+                        {(screenDetail.metadata as ScreenMetadata)?.screenName}
                       </h2>
                       <p className="text-xs text-[#525252]">
-                        테이블: {screenDetail.metadata?.tableName || '-'}
+                        테이블: {(screenDetail.metadata as ScreenMetadata)?.tableName || '-'}
                       </p>
                     </div>
                   </div>

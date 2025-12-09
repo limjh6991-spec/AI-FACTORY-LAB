@@ -3,7 +3,7 @@ import { productRouter } from "~/server/api/routers/product";
 import { excelRouter } from "~/server/api/routers/excel";
 import { screen982157Router } from "~/server/api/routers/screen982157";
 import { menuRouter } from "~/server/api/routers/menu";
-import { screenGeneratorRouter } from "~/server/api/routers/screenGenerator";
+import { screenGeneratorRouter } from "~/server/api/routers/screenGenerator";  // 리팩토링된 모듈
 import { optionsRouter } from "~/server/api/routers/options";
 import { biMasterRouter } from "~/server/api/routers/biMaster";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";

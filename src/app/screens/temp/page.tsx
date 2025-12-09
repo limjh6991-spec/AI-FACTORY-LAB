@@ -31,6 +31,16 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
+// 화면 메타데이터 타입
+interface ScreenMetadata {
+  screenId?: string;
+  screenName?: string;
+  screenNameEn?: string;
+  tableName?: string;
+  status?: string;
+  createdAt?: string;
+}
+
 export default function TempScreensPage() {
   const [selectedScreen, setSelectedScreen] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -85,10 +95,11 @@ export default function TempScreensPage() {
     
     setIsPublishing(true);
     try {
+      const metadata = screenDetail?.metadata as { screenName?: string } | undefined;
       const result = await publishMutation.mutateAsync({
         screenId: selectedScreen,
         parentMenuId: selectedMenuId,
-        menuName: screenDetail?.metadata?.screenName || selectedScreen,
+        menuName: metadata?.screenName || selectedScreen,
       });
       
       if (result.success) {
@@ -277,10 +288,10 @@ export default function TempScreensPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="font-medium text-sm text-[#161616]">
-                      {screenDetail.metadata?.screenName}
+                      {(screenDetail.metadata as ScreenMetadata)?.screenName}
                     </h2>
                     <p className="text-xs text-[#525252]">
-                      테이블: {screenDetail.metadata?.tableName || '-'}
+                      테이블: {(screenDetail.metadata as ScreenMetadata)?.tableName || '-'}
                     </p>
                   </div>
                   <div className="flex gap-2">
