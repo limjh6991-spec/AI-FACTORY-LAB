@@ -135,19 +135,55 @@ export const generatePreviewTemplate = publicProcedure
 /**
  * CRUD 화면 미리보기 생성
  * - 템플릿 기반 컴포넌트 + API 코드 생성
+ * - parsedData 또는 screenId/screenName/tableName으로 생성 가능
  */
 export const generateCrudPreview = publicProcedure
   .input(z.object({
-    parsedData: z.any(), // CrudParsedData
+    parsedData: z.any().optional(), // CrudParsedData (선택)
     screenId: z.string().optional(),
+    screenName: z.string().optional(),
+    tableName: z.string().optional(),
   }))
   .mutation(async ({ input }) => {
     try {
-      const parsedData = input.parsedData as CrudParsedData;
+      let parsedData: CrudParsedData;
       
-      // screenId 설정
-      if (input.screenId) {
-        parsedData.screenId = input.screenId;
+      // parsedData가 없으면 기본값으로 생성
+      if (input.parsedData) {
+        parsedData = input.parsedData as CrudParsedData;
+        if (input.screenId) {
+          parsedData.screenId = input.screenId;
+        }
+      } else if (input.screenId && input.screenName && input.tableName) {
+        // 간편 모드: screenId, screenName, tableName만으로 생성
+        parsedData = {
+          screenId: input.screenId,
+          screenName: input.screenName,
+          tableName: input.tableName,
+          screenType: ScreenType.SIMPLE_GRID_CRUD,
+          searchConditions: [],
+          gridColumns: {
+            row1: [],
+            row2: [],
+            row3: [],
+            merges: [],
+            summaryRows: [],
+          },
+          crudConfig: {
+            primaryKey: 'id',
+            autoGeneratePk: false,
+            softDelete: false,
+            auditColumns: true,
+            rowSelection: 'multiple',
+            pagination: false,
+          },
+          crudColumns: [], // DB에서 자동 추론
+        };
+      } else {
+        return {
+          success: false,
+          error: 'parsedData 또는 (screenId, screenName, tableName)을 입력해주세요.',
+        };
       }
       
       // 화면 유형 확인

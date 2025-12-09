@@ -56,7 +56,10 @@ interface ValidationResult {
 // Main Component
 // ============================================================
 export default function ScreenGeneratorPage() {
-  // State
+  // State - Mode selection
+  const [generatorMode, setGeneratorMode] = useState<"simple" | "excel">("simple");
+  
+  // State - Excel mode
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [validation, setValidation] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -70,6 +73,14 @@ export default function ScreenGeneratorPage() {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [previewTab, setPreviewTab] = useState<"grid" | "sql">("grid");
+  
+  // State - Simple (CRUD) mode
+  const [selectedTable, setSelectedTable] = useState<string>("");
+  const [crudScreenName, setCrudScreenName] = useState<string>("");
+  const [crudScreenId, setCrudScreenId] = useState<string>("");
+  const [searchFields, setSearchFields] = useState<string[]>([]);
+  const [isGeneratingCrud, setIsGeneratingCrud] = useState(false);
+  const [crudPreviewCode, setCrudPreviewCode] = useState<string>("");
 
   // API
   const validateMutation = api.screenGenerator.validateTemplate.useMutation();
@@ -77,6 +88,9 @@ export default function ScreenGeneratorPage() {
   const queryMutation = api.screenGenerator.generateQuery.useMutation();
   const saveTempMutation = api.screenGenerator.saveTempScreen.useMutation();
   const reactMutation = api.screenGenerator.generateReactComponent.useMutation();
+  
+  // API - CRUD mode
+  const crudPreviewMutation = api.screenGenerator.generateCrudPreview.useMutation();
 
   // State for React component
   const [generatedReact, setGeneratedReact] = useState<string | null>(null);
@@ -390,7 +404,11 @@ export default function ScreenGeneratorPage() {
       <div className="flex items-center justify-between shrink-0">
         <div>
           <h1 className="text-xl font-semibold text-[#161616]">화면 생성기</h1>
-          <p className="text-sm text-[#525252]">Excel 파일을 업로드하여 화면을 자동으로 생성합니다</p>
+          <p className="text-sm text-[#525252]">
+            {generatorMode === "simple" 
+              ? "테이블 정보로 기준정보 관리 화면을 생성합니다"
+              : "Excel 파일을 업로드하여 화면을 자동으로 생성합니다"}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-[#525252]">진행률:</span>
@@ -403,9 +421,228 @@ export default function ScreenGeneratorPage() {
           <span className="text-sm font-medium text-[#161616]">{progress}%</span>
         </div>
       </div>
+      
+      {/* 모드 선택 탭 */}
+      <div className="flex gap-1 p-1 bg-[#e0e0e0] rounded-lg w-fit shrink-0">
+        <button
+          onClick={() => setGeneratorMode("simple")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-all",
+            generatorMode === "simple"
+              ? "bg-white text-[#0f62fe] shadow-sm"
+              : "text-[#525252] hover:text-[#161616]"
+          )}
+        >
+          🗂️ 간편 모드
+        </button>
+        <button
+          onClick={() => setGeneratorMode("excel")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-all",
+            generatorMode === "excel"
+              ? "bg-white text-[#0f62fe] shadow-sm"
+              : "text-[#525252] hover:text-[#161616]"
+          )}
+        >
+          📊 Excel 모드
+        </button>
+      </div>
 
-      {/* Main Content - 2열 레이아웃: 좌측 Excel | 우측 미리보기 */}
-      <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+      {/* Main Content - 모드별 분기 */}
+      {generatorMode === "simple" ? (
+        /* ========== 간편 모드 (CRUD) ========== */
+        <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+          {/* 좌측: 입력 폼 */}
+          <div className="w-[400px] shrink-0 flex flex-col min-h-0">
+            <div className="bg-white border border-[#e0e0e0] flex flex-col flex-1 min-h-0">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+                <FolderTree className="h-4 w-4 text-[#0f62fe]" />
+                <span className="font-medium text-sm text-[#161616]">기준정보 화면 설정</span>
+              </div>
+              
+              <div className="flex-1 p-4 overflow-y-auto">
+                <div className="space-y-4">
+                  {/* 화면 ID */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#161616] mb-1">
+                      화면 ID <span className="text-[#da1e28]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={crudScreenId}
+                      onChange={(e) => setCrudScreenId(e.target.value.toUpperCase())}
+                      placeholder="예: SC001"
+                      className="w-full h-10 px-3 border border-[#8d8d8d] text-sm focus:border-[#0f62fe] focus:outline-none"
+                    />
+                    <p className="text-xs text-[#525252] mt-1">화면 식별자 (예: SC001, SC002)</p>
+                  </div>
+                  
+                  {/* 화면명 */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#161616] mb-1">
+                      화면명 <span className="text-[#da1e28]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={crudScreenName}
+                      onChange={(e) => setCrudScreenName(e.target.value)}
+                      placeholder="예: 거래처관리"
+                      className="w-full h-10 px-3 border border-[#8d8d8d] text-sm focus:border-[#0f62fe] focus:outline-none"
+                    />
+                  </div>
+                  
+                  {/* 테이블명 */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#161616] mb-1">
+                      테이블명 <span className="text-[#da1e28]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTable}
+                      onChange={(e) => setSelectedTable(e.target.value.toLowerCase())}
+                      placeholder="예: tb_customer"
+                      className="w-full h-10 px-3 border border-[#8d8d8d] text-sm focus:border-[#0f62fe] focus:outline-none"
+                    />
+                    <p className="text-xs text-[#525252] mt-1">DB 테이블명 (예: tb_customer, tb_item)</p>
+                  </div>
+                  
+                  {/* 안내 박스 */}
+                  <div className="p-3 bg-[#e8f1ff] border border-[#0f62fe]/20 rounded">
+                    <p className="text-xs text-[#0f62fe]">
+                      💡 테이블 컬럼은 자동으로 분석되어 그리드에 표시됩니다.<br/>
+                      기본키 컬럼은 신규 행에서만 편집 가능합니다.
+                    </p>
+                  </div>
+                  
+                  {/* 생성 버튼 */}
+                  <button
+                    onClick={async () => {
+                      if (!crudScreenId || !crudScreenName || !selectedTable) {
+                        alert("화면 ID, 화면명, 테이블명을 모두 입력해주세요.");
+                        return;
+                      }
+                      setIsGeneratingCrud(true);
+                      setProgress(20);
+                      addLog("info", "CRUD", `${crudScreenName} 화면 생성 시작...`);
+                      
+                      try {
+                        const result = await crudPreviewMutation.mutateAsync({
+                          screenId: crudScreenId,
+                          screenName: crudScreenName,
+                          tableName: selectedTable,
+                        });
+                        
+                        if (result.success && result.component) {
+                          setCrudPreviewCode(result.component.code || "");
+                          setProgress(100);
+                          addLog("success", "CRUD", `화면 생성 완료!`);
+                          if (result.component.filePath) {
+                            addLog("info", "CRUD", `컴포넌트: ${result.component.filePath}`);
+                          }
+                          if (result.api?.routerPath) {
+                            addLog("info", "CRUD", `API: ${result.api.routerPath}`);
+                          }
+                        } else {
+                          addLog("error", "CRUD", result.error || "생성 실패");
+                        }
+                      } catch (error) {
+                        addLog("error", "CRUD", `오류: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
+                      } finally {
+                        setIsGeneratingCrud(false);
+                      }
+                    }}
+                    disabled={isGeneratingCrud || !crudScreenId || !crudScreenName || !selectedTable}
+                    className="w-full h-10 bg-[#0f62fe] text-white text-sm font-medium hover:bg-[#0353e9] transition-colors disabled:bg-[#c6c6c6] disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isGeneratingCrud ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        생성 중...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        화면 생성
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* 우측: 미리보기/로그 */}
+          <div className="flex-1 flex flex-col gap-4 min-h-0">
+            {/* 코드 미리보기 */}
+            <div className="flex-1 bg-white border border-[#e0e0e0] flex flex-col min-h-0">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-[#0f62fe]" />
+                  <span className="font-medium text-sm text-[#161616]">생성된 코드</span>
+                </div>
+                {crudPreviewCode && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(crudPreviewCode);
+                      addLog("info", "복사", "코드가 클립보드에 복사되었습니다.");
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-[#0f62fe] hover:bg-[#e8f1ff]"
+                  >
+                    <Copy className="h-3 w-3" />
+                    복사
+                  </button>
+                )}
+              </div>
+              <div className="flex-1 overflow-auto p-4 bg-[#161616]">
+                {crudPreviewCode ? (
+                  <pre className="text-xs text-[#f4f4f4] font-mono whitespace-pre-wrap">
+                    {crudPreviewCode}
+                  </pre>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-[#525252] text-sm">
+                    화면을 생성하면 코드가 표시됩니다
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* 로그 */}
+            <div className="h-48 bg-white border border-[#e0e0e0] flex flex-col shrink-0">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+                <div className="flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-[#525252]" />
+                  <span className="font-medium text-sm text-[#161616]">로그</span>
+                </div>
+                <button onClick={clearLogs} className="text-xs text-[#525252] hover:text-[#161616]">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 font-mono text-xs bg-[#f4f4f4]">
+                {logs.length === 0 ? (
+                  <span className="text-[#8d8d8d]">로그가 여기에 표시됩니다...</span>
+                ) : (
+                  logs.map((log) => (
+                    <div key={log.id} className="flex gap-2">
+                      <span className="text-[#8d8d8d]">{log.timestamp.toLocaleTimeString()}</span>
+                      <span className={cn(
+                        log.level === "success" && "text-[#24a148]",
+                        log.level === "error" && "text-[#da1e28]",
+                        log.level === "warning" && "text-[#f1c21b]",
+                        log.level === "info" && "text-[#0f62fe]"
+                      )}>
+                        [{log.step}]
+                      </span>
+                      <span className="text-[#161616]">{log.message}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ========== Excel 모드 ========== */
+        <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
         {/* 좌측: Excel 파일 처리 */}
         <div className="w-[400px] shrink-0 flex flex-col min-h-0">
           <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col flex-1 min-h-0">
@@ -691,7 +928,8 @@ export default function ScreenGeneratorPage() {
             )}
           </div>
         </div>
-      </div>{/* Main Content 끝 */}
+      </div>
+      )}  {/* 모드 분기 끝 */}
 
       {/* 하단: 로그 & 결과 */}
       <div className="bg-white border border-[#e0e0e0] rounded-none flex flex-col h-[180px] shrink-0">
