@@ -35,8 +35,6 @@ export default function ExcelMode() {
   const [previewMode, setPreviewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [generatedQuery, setGeneratedQuery] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
   const [previewHtml, setPreviewHtml] = useState("");
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -87,8 +85,6 @@ export default function ExcelMode() {
     if (!uploadedFile) return;
     
     setIsValidating(true);
-    setCurrentStep(1);
-    setProgress(10);
     addLog("info", "검증", "Excel 파일 검증 시작...");
     
     try {
@@ -112,7 +108,6 @@ export default function ExcelMode() {
         errors: result.errors,
         parsedData: result.parsedData,
       });
-      setProgress(20);
       
       if (result.isValid) {
         addLog("success", "검증", `검증 완료: ${result.columns}개 컬럼`);
@@ -130,8 +125,6 @@ export default function ExcelMode() {
     if (!validation?.parsedData) return;
     
     setIsGeneratingPreview(true);
-    setCurrentStep(2);
-    setProgress(30);
     addLog("info", "미리보기", "AG Grid 컴포넌트 생성 중...");
     
     try {
@@ -142,7 +135,6 @@ export default function ExcelMode() {
       
       if (result.success && (result.componentCode || result.preview)) {
         setGeneratedReact(result.componentCode || result.preview || "");
-        setProgress(50);
         addLog("success", "미리보기", "컴포넌트 생성 완료");
       } else {
         addLog("error", "미리보기", result.error || "생성 실패");
@@ -160,8 +152,6 @@ export default function ExcelMode() {
       return;
     }
     
-    setCurrentStep(3);
-    setProgress(60);
     addLog("info", "쿼리", `SQL 쿼리 생성 중... (테이블: ${validation.tableName})`);
     
     try {
@@ -172,7 +162,6 @@ export default function ExcelMode() {
       
       if (result.success && result.sql) {
         setGeneratedQuery(result.sql);
-        setProgress(70);
         addLog("success", "쿼리", "쿼리 생성 완료");
       } else {
         addLog("error", "쿼리", result.error || "쿼리 생성 실패");
@@ -200,7 +189,6 @@ export default function ExcelMode() {
       });
       
       if (result.success) {
-        setProgress(80);
         setTempScreenId(result.screenId || null);
         addLog("success", "저장", `저장 완료: ${result.screenId}`);
       } else {
@@ -222,15 +210,6 @@ export default function ExcelMode() {
 
   return (
     <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
-      {/* 진행률 */}
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="text-sm text-[#525252]">진행률:</span>
-        <div className="w-48 h-2 bg-[#e0e0e0] rounded-full overflow-hidden">
-          <div className="h-full bg-[#0f62fe] transition-all" style={{ width: `${progress}%` }} />
-        </div>
-        <span className="text-sm font-medium">{progress}%</span>
-      </div>
-
       <div className="flex-1 flex gap-4 min-h-0">
         {/* 좌측: Excel 파일 업로드 */}
         <div className="w-[400px] shrink-0 flex flex-col min-h-0">
@@ -393,6 +372,35 @@ export default function ExcelMode() {
                 쿼리
               </button>
             </div>
+            {/* 저장 버튼 */}
+            <div className="flex gap-2 px-3 py-2 border-t border-[#e0e0e0]">
+              <button
+                onClick={handleSave}
+                disabled={!validation?.isValid || isSaving}
+                className={cn(
+                  "flex-1 h-8 px-3 text-sm font-medium flex items-center justify-center gap-1 transition-colors",
+                  validation?.isValid
+                    ? "bg-[#6929c4] text-white hover:bg-[#491d8b]"
+                    : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed"
+                )}
+              >
+                {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
+                <FileDown className="h-3 w-3" />
+                저장
+              </button>
+              <a
+                href="/settings/menu"
+                className={cn(
+                  "flex-1 h-8 px-3 text-sm font-medium flex items-center justify-center gap-1 transition-colors",
+                  tempScreenId
+                    ? "bg-[#0f62fe] text-white hover:bg-[#0043ce]"
+                    : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed pointer-events-none"
+                )}
+              >
+                <FolderTree className="h-3 w-3" />
+                메뉴
+              </a>
+            </div>
           </div>
         </div>
 
@@ -480,92 +488,6 @@ export default function ExcelMode() {
                 )}
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* 하단: 로그 & 저장 */}
-      <div className="bg-white border border-[#e0e0e0] flex flex-col h-[180px] shrink-0">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#e0e0e0] bg-[#f4f4f4]">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm text-[#161616]">로그</span>
-            <span className="text-xs text-[#525252]">({logs.length}건)</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {generatedQuery && (
-              <button onClick={copyQuery} className="p-1.5 hover:bg-[#e0e0e0] rounded" title="쿼리 복사">
-                <Copy className="h-4 w-4 text-[#525252]" />
-              </button>
-            )}
-            <button onClick={clearLogs} className="p-1.5 hover:bg-[#e0e0e0] rounded" title="로그 삭제">
-              <Trash2 className="h-3 w-3 text-[#525252]" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-2 font-mono text-xs bg-[#f4f4f4]">
-          {logs.length === 0 ? (
-            <span className="text-[#8d8d8d]">작업을 시작하면 로그가 표시됩니다...</span>
-          ) : (
-            logs.map((log) => (
-              <div key={log.id} className="flex gap-2 mb-1">
-                <span className="text-[#8d8d8d]">{log.timestamp.toLocaleTimeString()}</span>
-                <span className={cn(
-                  log.level === "success" && "text-[#24a148]",
-                  log.level === "error" && "text-[#da1e28]",
-                  log.level === "warning" && "text-[#f1c21b]",
-                  log.level === "info" && "text-[#0f62fe]"
-                )}>
-                  [{log.step}]
-                </span>
-                <span className="text-[#161616]">{log.message}</span>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* 하단 버튼 */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-[#e0e0e0]">
-          <div className="flex items-center gap-2">
-            {[1, 2, 3].map((step) => (
-              <div
-                key={step}
-                className={cn(
-                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium",
-                  currentStep >= step ? "bg-[#0f62fe] text-white" : "bg-[#e0e0e0] text-[#8d8d8d]"
-                )}
-              >
-                {step}
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              disabled={!validation?.isValid || isSaving}
-              className={cn(
-                "h-8 px-4 text-sm font-medium flex items-center gap-2 transition-colors",
-                validation?.isValid
-                  ? "bg-[#6929c4] text-white hover:bg-[#491d8b]"
-                  : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed"
-              )}
-            >
-              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-              <FileDown className="h-4 w-4" />
-              임시 저장
-            </button>
-            <a
-              href="/settings/menu"
-              className={cn(
-                "h-8 px-4 text-sm font-medium flex items-center gap-2 transition-colors",
-                tempScreenId
-                  ? "bg-[#0f62fe] text-white hover:bg-[#0043ce]"
-                  : "bg-[#e0e0e0] text-[#8d8d8d] cursor-not-allowed pointer-events-none"
-              )}
-            >
-              <FolderTree className="h-4 w-4" />
-              메뉴 관리
-            </a>
           </div>
         </div>
       </div>

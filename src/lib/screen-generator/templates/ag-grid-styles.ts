@@ -3,46 +3,25 @@
  */
 
 /**
- * AG Grid 스타일 코드 (JSX global style)
+ * AG Grid 스타일 객체 (인라인 스타일)
+ * - styled-jsx 대신 CSS 변수를 인라인으로 적용
  * - 메뉴 hover 색상과 일치하는 헤더 (#dbeafe)
- * - 그룹 헤더 그라데이션 적용
  */
-export const AG_GRID_STYLES = `
-{/* AG Grid 커스텀 스타일 */}
-<style jsx global>{\`
-  .ag-theme-alpine {
-    --ag-header-background-color: #dbeafe;
-    --ag-header-foreground-color: #1e3a5f;
-    --ag-row-hover-color: #eff6ff;
-    --ag-selected-row-background-color: #dbeafe;
-    --ag-border-color: #e5e7eb;
-    --ag-font-family: inherit;
-    --ag-font-size: 14px;
-  }
-  .ag-theme-alpine .ag-header-group-cell {
-    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
-    font-weight: 600;
-    color: #1e40af;
-  }
-  .ag-theme-alpine .ag-header-cell {
-    background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #1e3a5f;
-    font-weight: 500;
-  }
-  .ag-theme-alpine .ag-header-cell-text {
-    font-size: 14px;
-  }
-  .ag-theme-alpine .ag-cell {
-    font-size: 14px;
-  }
-  .ag-row-total {
-    background-color: #f8fafc !important;
-    font-weight: 600;
-    border-top: 2px solid #93c5fd;
-    border-bottom: 2px solid #93c5fd;
-  }
-\`}</style>
-`;
+export const AG_GRID_STYLES = ``;
+
+/**
+ * AG Grid 컨테이너에 적용할 인라인 스타일 객체
+ * - CSS 변수를 통해 AG Grid 테마 커스터마이징
+ */
+export const AG_GRID_STYLE_OBJECT = `{
+    '--ag-header-background-color': '#dbeafe',
+    '--ag-header-foreground-color': '#1e3a5f',
+    '--ag-row-hover-color': '#eff6ff',
+    '--ag-selected-row-background-color': '#dbeafe',
+    '--ag-border-color': '#e5e7eb',
+    '--ag-font-family': 'inherit',
+    '--ag-font-size': '14px',
+  }`;
 
 /**
  * 순수 CSS 형태의 AG Grid 스타일

@@ -6,6 +6,8 @@
  * - AG Grid 인라인 편집
  * - 변경 추적 및 일괄 저장
  * 
+ * 표준 화면: /master/dept (부서관리)
+ * 
  * @module screenGenerator/templates/simpleGridCrud
  */
 
@@ -49,8 +51,10 @@ function isCrudParsedData(data: ParsedData): data is CrudParsedData {
  * 기준정보(마스터 데이터) 관리 화면을 생성합니다.
  * - 거래처관리, 품목관리, 창고관리 등
  * - 조회/추가/수정/삭제 기능
- * - AG Grid Enterprise 인라인 편집
+ * - AG Grid Community 인라인 편집
  * - 일괄 저장 (변경사항 추적)
+ * 
+ * 표준 화면 참조: /master/dept/page.tsx
  */
 export class SimpleGridCrudTemplate extends BaseTemplate implements ICrudTemplate {
   protected readonly screenType = ScreenType.SIMPLE_GRID_CRUD;
@@ -77,9 +81,7 @@ export class SimpleGridCrudTemplate extends BaseTemplate implements ICrudTemplat
     const componentName = this.getComponentName(screenId, screenName);
 
     try {
-      const imports = this.generateComponentImports();
-      const body = this.generateComponentBody(componentName, data);
-      const code = this.wrapComponent(componentName, imports, body);
+      const code = this.generateFullComponent(componentName, data);
 
       return {
         success: true,
@@ -96,32 +98,37 @@ export class SimpleGridCrudTemplate extends BaseTemplate implements ICrudTemplat
   }
 
   /**
-   * Import 문 생성
+   * 전체 컴포넌트 코드 생성 (/master/dept 표준 기준)
    */
-  private generateComponentImports(): string {
-    return `import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+  private generateFullComponent(componentName: string, data: CrudParsedData): string {
+    const { crudConfig, crudColumns } = data;
+    const routerName = this.getRouterName(data.screenId ?? 'SC000');
+    const pkField = crudConfig.primaryKey;
+    const tableName = data.tableName ?? 'unknown';
+
+    // 인터페이스명 (예: DeptData)
+    const interfaceName = `${this.toPascalCase(tableName)}Data`;
+
+    return `'use client';
+
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import type { ColDef, CellValueChangedEvent, IRowNode } from 'ag-grid-community';
 import { Plus, Save, Trash2, RotateCcw, Download } from 'lucide-react';
 import { api } from '~/trpc/react';
+import {
+  BiSiteSelect,
+  BiScenarioSelect,
+  BiYearMonthPicker,
+} from '~/components/master';
 
 // AG Grid 모듈 등록
-ModuleRegistry.registerModules([AllCommunityModule]);`;
-  }
+ModuleRegistry.registerModules([AllCommunityModule]);
 
-  /**
-   * 컴포넌트 본문 생성 (/master/dept 스타일)
-   */
-  private generateComponentBody(componentName: string, data: CrudParsedData): string {
-    const { crudConfig, crudColumns } = data;
-    const routerName = this.getRouterName(data.screenId ?? 'SC000');
-    const pkField = crudConfig.primaryKey;
-
-    return `
 // 데이터 타입
-interface RowData {
-  ${this.generateRowDataFields(crudColumns)}
+interface ${interfaceName} {
+${this.generateInterfaceFields(crudColumns, crudConfig)}
   _isNew?: boolean;
   _isModified?: boolean;
   _isDeleted?: boolean;
@@ -130,19 +137,42 @@ interface RowData {
 export default function ${componentName}() {
   const gridRef = useRef<AgGridReact>(null);
   
+  // 검색 조건 (입력용)
+  const [site, setSite] = useState<string>('SITE_01');
+  const [yyyymm, setYyyyMm] = useState<string>(() => {
+    const now = new Date();
+    return \`\${now.getFullYear()}\${String(now.getMonth() + 1).padStart(2, '0')}\`;
+  });
+  const [scenario, setScenario] = useState<string>('ACTUAL');
+  
+  // 검색 조건 (조회용 - 검색 버튼 클릭 시 반영)
+  const [searchParams, setSearchParams] = useState<{
+    site: string;
+    yyyymm: string;
+    scenario: string;
+  } | null>(null);
+  
   // 그리드 데이터
-  const [rowData, setRowData] = useState<RowData[]>([]);
+  const [rowData, setRowData] = useState<${interfaceName}[]>([]);
   const [modifiedRows, setModifiedRows] = useState<Set<string>>(new Set());
   const [deletedRows, setDeletedRows] = useState<Set<string>>(new Set());
-
-  // API 호출
-  const { data, isLoading, refetch } = api.${routerName}.getAll.useQuery();
+  
+  // API 호출 - searchParams가 설정된 경우에만 조회
+  const { data, isLoading, refetch } = api.${routerName}.getAll.useQuery(
+    { 
+      site: searchParams?.site ?? '', 
+      yyyymm: searchParams?.yyyymm ?? '', 
+      scenario: searchParams?.scenario ?? '' 
+    },
+    { enabled: !!searchParams }
+  );
+  
   const saveMutation = api.${routerName}.save.useMutation();
 
   // 데이터 로드
   useEffect(() => {
     if (data) {
-      setRowData(data as RowData[]);
+      setRowData(data as ${interfaceName}[]);
       setModifiedRows(new Set());
       setDeletedRows(new Set());
     }
@@ -157,7 +187,7 @@ export default function ${componentName}() {
       pinned: 'left',
       lockPosition: true,
     },
-${this.generateAgGridColumnDefs(crudColumns)}
+${this.generateAgGridColumnDefs(crudColumns, pkField)}
   ], []);
 
   // 기본 컬럼 설정
@@ -174,17 +204,23 @@ ${this.generateAgGridColumnDefs(crudColumns)}
       data._isModified = true;
     }
     setModifiedRows(prev => new Set(prev).add(data.${pkField}));
+    // 그리드 새로고침
     event.api.refreshCells({ rowNodes: [event.node!], force: true });
   }, []);
 
   // 행 추가
   const handleAddRow = useCallback(() => {
-    const newRow: RowData = {
-      ${this.generateDefaultValues(crudColumns, crudConfig)}
+    if (!searchParams) {
+      alert('먼저 검색을 수행해주세요.');
+      return;
+    }
+    
+    const newRow: ${interfaceName} = {
+${this.generateNewRowDefaults(crudColumns, crudConfig)}
       _isNew: true,
     };
     setRowData(prev => [newRow, ...prev]);
-  }, []);
+  }, [searchParams]);
 
   // 선택된 행 삭제
   const handleDeleteSelected = useCallback(() => {
@@ -205,6 +241,7 @@ ${this.generateAgGridColumnDefs(crudColumns)}
       }
     });
 
+    // 새 행은 바로 제거, 기존 행은 삭제 표시
     setRowData(prev => prev.filter(row => {
       const isSelected = selectedNodes.some((n: IRowNode) => n.data.${pkField} === row.${pkField});
       if (isSelected && row._isNew) return false;
@@ -216,9 +253,18 @@ ${this.generateAgGridColumnDefs(crudColumns)}
 
   // 저장
   const handleSave = useCallback(async () => {
+    if (!searchParams) {
+      alert('먼저 검색을 수행해주세요.');
+      return;
+    }
+    
     try {
-      const inserts = rowData.filter(r => r._isNew).map(({ _isNew, _isModified, _isDeleted, ...data }) => data);
-      const updates = rowData.filter(r => r._isModified && !r._isNew).map(({ _isNew, _isModified, _isDeleted, ...data }) => data);
+      const inserts = rowData
+        .filter(r => r._isNew)
+        .map(({ _isNew, _isModified, _isDeleted, ...rest }) => rest);
+      const updates = rowData
+        .filter(r => r._isModified && !r._isNew)
+        .map(({ _isNew, _isModified, _isDeleted, ...rest }) => rest);
       const deletes = Array.from(deletedRows);
 
       await saveMutation.mutateAsync({ inserts, updates, deletes });
@@ -228,25 +274,36 @@ ${this.generateAgGridColumnDefs(crudColumns)}
       console.error('저장 오류:', error);
       alert('저장 중 오류가 발생했습니다.');
     }
-  }, [rowData, deletedRows, saveMutation, refetch]);
+  }, [rowData, deletedRows, searchParams, saveMutation, refetch]);
+
+  // 검색
+  const handleSearch = useCallback(() => {
+    if (!site || !yyyymm) {
+      alert('사업장과 년월을 선택해주세요.');
+      return;
+    }
+    setSearchParams({ site, yyyymm, scenario });
+  }, [site, yyyymm, scenario]);
 
   // 초기화
   const handleReset = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    if (searchParams) {
+      refetch();
+    }
+  }, [searchParams, refetch]);
 
   // 엑셀 다운로드
   const handleExcelExport = useCallback(() => {
     gridRef.current?.api.exportDataAsCsv({
-      fileName: '${data.screenName}.csv',
+      fileName: \`${data.screenName}_\${yyyymm}.csv\`,
     });
-  }, []);
+  }, [yyyymm]);
 
   const hasChanges = modifiedRows.size > 0 || deletedRows.size > 0 || rowData.some(r => r._isNew);
 
   return (
     <>
-      {/* AG Grid 커스텀 스타일 */}
+      {/* AG Grid 커스텀 스타일 - IBM Carbon Design */}
       <style jsx global>{\`
         .ag-theme-alpine {
           --ag-header-background-color: #dbeafe;
@@ -257,10 +314,21 @@ ${this.generateAgGridColumnDefs(crudColumns)}
           --ag-font-family: inherit;
           --ag-font-size: 14px;
         }
+        .ag-theme-alpine .ag-header-group-cell {
+          background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+          font-weight: 600;
+          color: #1e40af;
+        }
         .ag-theme-alpine .ag-header-cell {
           background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
           color: #1e3a5f;
           font-weight: 500;
+        }
+        .ag-theme-alpine .ag-header-cell-text {
+          font-size: 14px;
+        }
+        .ag-theme-alpine .ag-cell {
+          font-size: 14px;
         }
         .ag-theme-alpine .ag-row-selected {
           background-color: #dbeafe !important;
@@ -272,6 +340,39 @@ ${this.generateAgGridColumnDefs(crudColumns)}
         <h1 className="text-lg font-semibold mb-3 text-[#161616]">
           ${data.screenName}
         </h1>
+
+        {/* 조회조건 */}
+        <div className="flex items-end gap-4 mb-3 p-3 bg-[#f4f4f4] border border-[#e0e0e0]">
+          <BiSiteSelect
+            label="사업장"
+            value={site}
+            onChange={(value) => setSite(value)}
+          />
+          <BiYearMonthPicker
+            label="년월"
+            value={yyyymm}
+            onChange={(value) => setYyyyMm(value)}
+          />
+          <BiScenarioSelect
+            label="시나리오"
+            value={scenario}
+            onChange={(value) => setScenario(value)}
+          />
+          <div className="flex gap-2 ml-auto">
+            <button
+              onClick={handleSearch}
+              className="h-9 px-4 bg-[#0f62fe] text-white text-sm hover:bg-[#0353e9] transition-colors"
+            >
+              검색
+            </button>
+            <button
+              onClick={handleReset}
+              className="h-9 px-4 bg-[#e0e0e0] text-[#161616] text-sm hover:bg-[#c6c6c6] transition-colors"
+            >
+              초기화
+            </button>
+          </div>
+        </div>
 
         {/* 툴바 */}
         <div className="flex items-center gap-2 mb-2">
@@ -296,13 +397,6 @@ ${this.generateAgGridColumnDefs(crudColumns)}
           >
             <Trash2 className="w-4 h-4" />
             삭제
-          </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1 h-8 px-3 bg-[#e0e0e0] text-[#161616] text-sm hover:bg-[#c6c6c6] transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
-            초기화
           </button>
           <div className="ml-auto">
             <button
@@ -352,25 +446,39 @@ ${this.generateAgGridColumnDefs(crudColumns)}
       </div>
     </>
   );
-}`;
+}
+`;
   }
 
   /**
-   * RowData 필드 타입 생성
+   * 인터페이스 필드 생성
    */
-  private generateRowDataFields(columns: CrudColumnDef[]): string {
+  private generateInterfaceFields(columns: CrudColumnDef[], config: CrudConfig): string {
     return columns.map(col => {
       const tsType = this.getTypeScriptType(col.editorType);
-      const optional = col.required ? '' : '?';
-      return `${col.field}${optional}: ${tsType};`;
-    }).join('\n  ');
+      const optional = col.required ? '' : ' | null';
+      return `  ${col.field}: ${tsType}${optional};`;
+    }).join('\n');
   }
 
   /**
-   * 기본값 생성 코드
+   * 새 행 기본값 생성
    */
-  private generateDefaultValues(columns: CrudColumnDef[], config: CrudConfig): string {
-    return columns.map(col => {
+  private generateNewRowDefaults(columns: CrudColumnDef[], config: CrudConfig): string {
+    const lines: string[] = [];
+    
+    // searchParams 기반 기본값
+    lines.push(`      plant_site_code: searchParams.site,`);
+    lines.push(`      yyyymm: searchParams.yyyymm,`);
+    lines.push(`      scenario_code: searchParams.scenario,`);
+    
+    // 컬럼별 기본값
+    columns.forEach(col => {
+      // searchParams 관련 필드는 위에서 처리함
+      if (['plant_site_code', 'yyyymm', 'scenario_code'].includes(col.field)) {
+        return;
+      }
+      
       let defaultValue: string;
       
       if (col.defaultValue !== undefined) {
@@ -381,30 +489,37 @@ ${this.generateAgGridColumnDefs(crudColumns)}
         defaultValue = this.getDefaultValueByType(col.editorType);
       }
 
-      return `${col.field}: ${defaultValue},`;
-    }).join('\n  ');
+      // PK 필드는 NEW_timestamp 형태로
+      if (col.field === config.primaryKey) {
+        lines.push(`      ${col.field}: \`NEW_\${Date.now()}\`,`);
+      } else {
+        lines.push(`      ${col.field}: ${defaultValue},`);
+      }
+    });
+
+    return lines.join('\n');
   }
 
   /**
    * AG Grid 컬럼 정의 생성 (/master/dept 스타일)
    */
-  private generateAgGridColumnDefs(columns: CrudColumnDef[]): string {
+  private generateAgGridColumnDefs(columns: CrudColumnDef[], pkField: string): string {
     return columns.map(col => {
       const parts: string[] = [];
       
-      parts.push(`headerName: '${col.headerName}'`);
-      parts.push(`field: '${col.field}'`);
-      parts.push(`width: ${col.width}`);
+      parts.push(`      headerName: '${col.headerName}'`);
+      parts.push(`      field: '${col.field}'`);
+      parts.push(`      width: ${col.width}`);
       
-      // 편집 가능 여부 (신규 행만 편집 가능한 PK 컬럼 등)
-      if (!col.editable) {
-        parts.push(`editable: (params) => params.data?._isNew === true`);
+      // PK 컬럼은 신규 행만 편집 가능
+      if (col.field === pkField || !col.editable) {
+        parts.push(`      editable: (params) => params.data?._isNew === true`);
       } else {
-        parts.push(`editable: true`);
+        parts.push(`      editable: true`);
       }
       
       // 셀 스타일 (신규: 연초록, 수정: 연주황)
-      parts.push(`cellStyle: (params) => {
+      parts.push(`      cellStyle: (params) => {
         if (params.data?._isNew) return { backgroundColor: '#e8f5e9' };
         if (params.data?._isModified) return { backgroundColor: '#fff3e0' };
         return null;
@@ -413,16 +528,34 @@ ${this.generateAgGridColumnDefs(crudColumns)}
       // 셀 에디터 타입
       const cellEditor = this.getCellEditor(col);
       if (cellEditor) {
-        parts.push(cellEditor);
+        parts.push(`      ${cellEditor}`);
+      }
+
+      // 셀 렌더러 (체크박스 등)
+      const cellRenderer = this.getCellRenderer(col);
+      if (cellRenderer) {
+        parts.push(`      ${cellRenderer}`);
       }
 
       // 숨김
       if (col.hidden) {
-        parts.push(`hide: true`);
+        parts.push(`      hide: true`);
       }
 
-      return `    {\n      ${parts.join(',\n      ')},\n    },`;
+      return `    {\n${parts.join(',\n')},\n    },`;
     }).join('\n');
+  }
+
+  /**
+   * 셀 렌더러 생성
+   */
+  private getCellRenderer(col: CrudColumnDef): string | null {
+    if (col.editorType === 'checkbox') {
+      return `cellRenderer: (params: { value: boolean | null }) => {
+        return params.value ? '예' : '아니오';
+      }`;
+    }
+    return null;
   }
 
   /**
@@ -436,7 +569,7 @@ ${this.generateAgGridColumnDefs(crudColumns)}
         return 'boolean';
       case 'date':
       case 'datetime':
-        return 'string | Date';
+        return 'string';
       default:
         return 'string';
     }
@@ -467,12 +600,14 @@ ${this.generateAgGridColumnDefs(crudColumns)}
         return `cellEditor: 'agDateStringCellEditor'`;
       case 'select':
         if (Array.isArray(col.options)) {
-          const values = col.options.map(o => `'${o.value}'`).join(', ');
-          return `cellEditor: 'agSelectCellEditor', cellEditorParams: { values: [${values}] }`;
+          const values = col.options.map(o => 
+            typeof o === 'object' ? `'${o.value}'` : `'${o}'`
+          ).join(', ');
+          return `cellEditor: 'agSelectCellEditor',\n      cellEditorParams: { values: [${values}] }`;
         }
         return null;
       case 'checkbox':
-        return `cellRenderer: 'agCheckboxCellRenderer', cellEditor: 'agCheckboxCellEditor'`;
+        return `cellEditor: 'agSelectCellEditor',\n      cellEditorParams: { values: [true, false] }`;
       case 'textarea':
         return `cellEditor: 'agLargeTextCellEditor'`;
       default:
@@ -484,7 +619,7 @@ ${this.generateAgGridColumnDefs(crudColumns)}
    * 라우터 이름 생성
    */
   private getRouterName(screenId: string): string {
-    return `screen${screenId}`;
+    return `screen${screenId.replace(/[^a-zA-Z0-9]/g, '')}`;
   }
 
   // ============================================================
@@ -545,6 +680,7 @@ ${this.generateAgGridColumnDefs(crudColumns)}
     columns: CrudColumnDef[]
   ): string {
     const pkField = config.primaryKey;
+    const prismaModelName = this.toCamelCase(tableName);
 
     return `/**
  * ${routerName} - 자동 생성된 CRUD API
@@ -556,11 +692,19 @@ import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { db } from '~/server/db';
 
-// 입력 스키마
-const rowSchema = z.object({
-  ${this.generateZodSchema(columns)}
+// 조회 조건 스키마
+const searchParamsSchema = z.object({
+  site: z.string(),
+  yyyymm: z.string(),
+  scenario: z.string(),
 });
 
+// 행 데이터 스키마
+const rowSchema = z.object({
+${this.generateZodSchema(columns)}
+});
+
+// 저장 입력 스키마
 const saveInputSchema = z.object({
   inserts: z.array(rowSchema),
   updates: z.array(rowSchema),
@@ -569,19 +713,26 @@ const saveInputSchema = z.object({
 
 export const ${routerName}Router = createTRPCRouter({
   // 전체 조회
-  getAll: publicProcedure.query(async () => {
-    const result = await db.${this.toCamelCase(tableName)}.findMany({
-      ${config.softDelete ? `where: { deleteYn: 'N' },` : ''}
-      orderBy: { ${config.sortColumn ?? pkField}: '${config.sortDirection ?? 'asc'}' },
-    });
-    return result;
-  }),
+  getAll: publicProcedure
+    .input(searchParamsSchema)
+    .query(async ({ input }) => {
+      const result = await db.${prismaModelName}.findMany({
+        where: {
+          plant_site_code: input.site,
+          yyyymm: input.yyyymm,
+          scenario_code: input.scenario,
+          ${config.softDelete ? `delete_yn: 'N',` : ''}
+        },
+        orderBy: { ${config.sortColumn ?? pkField}: '${config.sortDirection ?? 'asc'}' },
+      });
+      return result;
+    }),
 
   // 단건 조회
   getById: publicProcedure
     .input(z.string())
     .query(async ({ input }) => {
-      const result = await db.${this.toCamelCase(tableName)}.findUnique({
+      const result = await db.${prismaModelName}.findUnique({
         where: { ${pkField}: input },
       });
       return result;
@@ -597,21 +748,21 @@ export const ${routerName}Router = createTRPCRouter({
       await db.$transaction(async (tx) => {
         // Insert
         if (inserts.length > 0) {
-          await tx.${this.toCamelCase(tableName)}.createMany({
+          await tx.${prismaModelName}.createMany({
             data: inserts.map(row => ({
               ...row,
-              ${config.auditColumns ? `createdAt: new Date(),\n              updatedAt: new Date(),` : ''}
+              ${config.auditColumns ? `created_at: new Date(),\n              updated_at: new Date(),` : ''}
             })),
           });
         }
 
         // Update
         for (const row of updates) {
-          await tx.${this.toCamelCase(tableName)}.update({
+          await tx.${prismaModelName}.update({
             where: { ${pkField}: row.${pkField} },
             data: {
               ...row,
-              ${config.auditColumns ? `updatedAt: new Date(),` : ''}
+              ${config.auditColumns ? `updated_at: new Date(),` : ''}
             },
           });
         }
@@ -619,11 +770,11 @@ export const ${routerName}Router = createTRPCRouter({
         // Delete (soft delete or hard delete)
         if (deletes.length > 0) {
           ${config.softDelete 
-            ? `await tx.${this.toCamelCase(tableName)}.updateMany({
+            ? `await tx.${prismaModelName}.updateMany({
             where: { ${pkField}: { in: deletes } },
-            data: { deleteYn: 'Y', updatedAt: new Date() },
+            data: { delete_yn: 'Y', updated_at: new Date() },
           });`
-            : `await tx.${this.toCamelCase(tableName)}.deleteMany({
+            : `await tx.${prismaModelName}.deleteMany({
             where: { ${pkField}: { in: deletes } },
           });`
           }
@@ -657,22 +808,22 @@ export const ${routerName}Router = createTRPCRouter({
           break;
         case 'date':
         case 'datetime':
-          zodType = 'z.union([z.string(), z.date()])';
+          zodType = 'z.string()';
           break;
         default:
           zodType = 'z.string()';
       }
 
       if (!col.required) {
-        zodType += '.optional()';
+        zodType += '.nullable().optional()';
       }
 
       if (col.maxLength && col.editorType === 'text') {
-        zodType = `z.string().max(${col.maxLength})${col.required ? '' : '.optional()'}`;
+        zodType = `z.string().max(${col.maxLength})${col.required ? '' : '.nullable().optional()'}`;
       }
 
-      return `${col.field}: ${zodType},`;
-    }).join('\n  ');
+      return `  ${col.field}: ${zodType},`;
+    }).join('\n');
   }
 
   // ============================================================

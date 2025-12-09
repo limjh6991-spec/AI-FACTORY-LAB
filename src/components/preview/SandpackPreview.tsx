@@ -60,6 +60,34 @@ function convertTypeScriptToJavaScript(code: string): string {
   // 1. "use client" 제거
   jsCode = jsCode.replace(/["']use client["'];?\s*/g, "");
   
+  // 1-1. ~/trpc/react import 제거 (Sandpack에서 사용 불가)
+  jsCode = jsCode.replace(/import\s*\{\s*api\s*\}\s*from\s*["']~\/trpc\/react["'];?\s*\n?/g, "");
+  
+  // 1-2. api 사용 부분을 mock 데이터로 대체
+  // api.XXX.getAll.useQuery() 패턴을 mock으로 대체 (다양한 형태 처리)
+  jsCode = jsCode.replace(
+    /const\s+\{\s*data\s*,\s*isLoading\s*,\s*refetch\s*\}\s*=\s*api\.[a-zA-Z0-9_]+\.getAll\.useQuery\([^)]*\);?/g,
+    "const { data, isLoading, refetch } = { data: [], isLoading: false, refetch: () => {} };"
+  );
+  
+  // api.XXX.save.useMutation() 패턴을 mock으로 대체 (인자 유무 상관없이)
+  jsCode = jsCode.replace(
+    /const\s+saveMutation\s*=\s*api\.[a-zA-Z0-9_]+\.save\.useMutation\([^)]*\);?/g,
+    "const saveMutation = { mutateAsync: async () => ({ success: true }), isPending: false };"
+  );
+  
+  // 일반적인 api.XXX.YYY.useQuery() 패턴도 처리
+  jsCode = jsCode.replace(
+    /api\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.useQuery\([^)]*\)/g,
+    "{ data: [], isLoading: false, refetch: () => {} }"
+  );
+  
+  // 일반적인 api.XXX.YYY.useMutation() 패턴도 처리
+  jsCode = jsCode.replace(
+    /api\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.useMutation\([^)]*\)/g,
+    "{ mutateAsync: async () => ({ success: true }), isPending: false }"
+  );
+  
   // 2. import type 구문 제거
   jsCode = jsCode.replace(/import\s+type\s+.*?from\s+['"].*?['"];?\s*/g, "");
   
@@ -665,6 +693,7 @@ label {
   const dependencies: Record<string, string> = {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
   };
 
   if (hasAgGrid) {

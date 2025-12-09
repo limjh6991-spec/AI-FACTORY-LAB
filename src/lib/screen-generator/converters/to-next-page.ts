@@ -4,7 +4,6 @@
  */
 
 import { capitalize } from '../utils/helpers';
-import { AG_GRID_STYLES } from '../templates/ag-grid-styles';
 import type { UsedOption } from '../types';
 
 /**
@@ -280,19 +279,13 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
   );
 
   // ========================================
-  // 8. AG Grid 스타일 추가
+  // 8. AG Grid 스타일 추가 (인라인 CSS 변수)
   // ========================================
-  if (cleanedCode.includes('return (')) {
-    cleanedCode = cleanedCode.replace(
-      'return (',
-      `return (
-    <>${AG_GRID_STYLES}`
-    );
-    const lastReturnEnd = cleanedCode.lastIndexOf(');');
-    if (lastReturnEnd > 0) {
-      cleanedCode = cleanedCode.slice(0, lastReturnEnd) + '</>);' + cleanedCode.slice(lastReturnEnd + 2);
-    }
-  }
+  // ag-theme-alpine div에 CSS 변수 스타일 추가
+  cleanedCode = cleanedCode.replace(
+    /className="ag-theme-alpine"\s+style=\{\{([^}]*)\}\}/g,
+    `className="ag-theme-alpine" style={{$1, '--ag-header-background-color': '#dbeafe', '--ag-header-foreground-color': '#1e3a5f', '--ag-row-hover-color': '#eff6ff', '--ag-selected-row-background-color': '#dbeafe', '--ag-border-color': '#e5e7eb', '--ag-font-family': 'inherit', '--ag-font-size': '14px' }}`
+  );
 
   return imports + cleanedCode;
 }
