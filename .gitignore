@@ -51,3 +51,4 @@ yarn-error.log*
 
 # system logs
 /system_log/*.log
+logs/

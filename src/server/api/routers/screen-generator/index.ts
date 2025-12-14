@@ -22,6 +22,7 @@ import {
   generatePreview,
   generatePreviewTemplate,
   generateCrudPreview,
+  generateRealGridPreview,
   generateQuery,
   getTableList,
   getTableColumns,
@@ -40,59 +41,62 @@ export const screenGeneratorRouter = createTRPCRouter({
   // ============================================================
   // 검증 (Validation)
   // ============================================================
-  
+
   /** Excel 템플릿 검증 */
   validateTemplate,
-  
+
   // ============================================================
   // 미리보기 (Preview)
   // ============================================================
-  
+
   /** Claude API + 템플릿 기반 미리보기 생성 */
   generatePreview,
-  
+
   /** 템플릿 기반 미리보기 생성 (Claude API 없이) */
   generatePreviewTemplate,
-  
+
   /** CRUD 화면 미리보기 생성 */
   generateCrudPreview,
-  
+
+  /** RealGrid CRUD 화면 미리보기 생성 */
+  generateRealGridPreview,
+
   // ============================================================
   // 쿼리 (Query)
   // ============================================================
-  
+
   /** SQL 쿼리 자동 생성 */
   generateQuery,
-  
+
   /** DB 테이블 목록 조회 */
   getTableList,
-  
+
   /** 테이블 컬럼 정보 조회 */
   getTableColumns,
-  
+
   // ============================================================
   // 임시화면 관리 (Temp Screen)
   // ============================================================
-  
+
   /** 임시화면 저장 */
   saveTempScreen,
-  
+
   /** 임시화면 목록 조회 */
   getTempScreenList,
-  
+
   /** 임시화면 상세 조회 */
   getTempScreen,
-  
+
   /** 임시화면 삭제 */
   deleteTempScreen,
-  
+
   // ============================================================
   // 발행 (Publish)
   // ============================================================
-  
+
   /** 임시화면을 정식 화면으로 발행 */
   publishScreen,
-  
+
   /** React 컴포넌트 생성 */
   generateReactComponent,
 });

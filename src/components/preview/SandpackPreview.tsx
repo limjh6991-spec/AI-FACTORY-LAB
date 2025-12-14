@@ -15,6 +15,12 @@ interface SandpackPreviewProps {
   code: string;
   className?: string;
   showEditor?: boolean;
+  /** 추가 파일 (RealGrid mock 등) */
+  additionalFiles?: Record<string, string>;
+  /** 추가 의존성 */
+  additionalDependencies?: Record<string, string>;
+  /** import 변환 맵 (예: { 'realgrid': './RealGridMock' }) */
+  importReplacements?: Record<string, string>;
 }
 
 // TypeScript 문법을 JavaScript로 변환
@@ -23,10 +29,10 @@ function convertTypeScriptToJavaScript(code: string): string {
 
   // ⚠️ 이미 순수 JavaScript인 경우 변환 스킵 (Block-based Architecture에서 생성된 코드)
   if (jsCode.includes('// ============================================================') &&
-      jsCode.includes('// Inline BlockRenderer') &&
-      !jsCode.includes(': any') &&
-      !jsCode.includes('interface ') &&
-      !jsCode.includes('type ')) {
+    jsCode.includes('// Inline BlockRenderer') &&
+    !jsCode.includes(': any') &&
+    !jsCode.includes('interface ') &&
+    !jsCode.includes('type ')) {
     console.log('[SandpackPreview] 순수 JavaScript 감지 - 변환 스킵');
     return jsCode.trim();
   }
@@ -37,14 +43,14 @@ function convertTypeScriptToJavaScript(code: string): string {
 
   // 0-1. 첫 줄이 언어 이름만 있는 경우 제거
   jsCode = jsCode.replace(/^(?:javascript|jsx|js|tsx|typescript)\s*\n/i, "");
-  
+
   // 0-2. 잘못된 style 패턴 수정 (핵심!)
   // fontFamily, -apple-system, BlinkMacSystemFont, sans-serif' 같은 잘못된 패턴
   jsCode = jsCode.replace(
     /fontFamily,\s*-apple-system,\s*BlinkMacSystemFont,\s*(?:')?sans-serif(?:')?/g,
     "fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'"
   );
-  
+
   // 0-3. LEGACY 코드 호환성 패치 (DISABLED)
   // 새로운 템플릿(SimpleGridCrudTemplate)은 항상 올바른 코드를 생성하므로
   // 클라이언트 측 수정은 불필요하며, 오히려 정상 코드를 파괴할 위험이 있음
@@ -52,38 +58,38 @@ function convertTypeScriptToJavaScript(code: string): string {
 
   // 1. "use client" 제거
   jsCode = jsCode.replace(/["']use client["'];?\s*/g, "");
-  
+
   // 1-1. ~/trpc/react import 제거 (Sandpack에서 사용 불가)
   jsCode = jsCode.replace(/import\s*\{\s*api\s*\}\s*from\s*["']~\/trpc\/react["'];?\s*\n?/g, "");
-  
+
   // 1-2. api 사용 부분을 mock 데이터로 대체
   // api.XXX.getAll.useQuery() 패턴을 mock으로 대체 (다양한 형태 처리)
   jsCode = jsCode.replace(
     /const\s+\{\s*data\s*,\s*isLoading\s*,\s*refetch\s*\}\s*=\s*api\.[a-zA-Z0-9_]+\.getAll\.useQuery\([^)]*\);?/g,
     "const { data, isLoading, refetch } = { data: [], isLoading: false, refetch: () => {} };"
   );
-  
+
   // api.XXX.save.useMutation() 패턴을 mock으로 대체 (인자 유무 상관없이)
   jsCode = jsCode.replace(
     /const\s+saveMutation\s*=\s*api\.[a-zA-Z0-9_]+\.save\.useMutation\([^)]*\);?/g,
     "const saveMutation = { mutateAsync: async () => ({ success: true }), isPending: false };"
   );
-  
+
   // 일반적인 api.XXX.YYY.useQuery() 패턴도 처리
   jsCode = jsCode.replace(
     /api\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.useQuery\([^)]*\)/g,
     "{ data: [], isLoading: false, refetch: () => {} }"
   );
-  
+
   // 일반적인 api.XXX.YYY.useMutation() 패턴도 처리
   jsCode = jsCode.replace(
     /api\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\.useMutation\([^)]*\)/g,
     "{ mutateAsync: async () => ({ success: true }), isPending: false }"
   );
-  
+
   // 2. import type 구문 제거
   jsCode = jsCode.replace(/import\s+type\s+.*?from\s+['"].*?['"];?\s*/g, "");
-  
+
   // 3. import { type ... } 에서 type 제거
   jsCode = jsCode.replace(/import\s*\{([^}]*)\}/g, (match, imports) => {
     const cleanedImports = imports
@@ -93,21 +99,21 @@ function convertTypeScriptToJavaScript(code: string): string {
       .join(", ");
     return `import { ${cleanedImports} }`;
   });
-  
+
   // 4. ColDef, ColGroupDef 등 타입 import 제거
   jsCode = jsCode.replace(/,?\s*ColDef\s*/g, "");
   jsCode = jsCode.replace(/,?\s*ColGroupDef\s*/g, "");
   jsCode = jsCode.replace(/import\s*\{\s*\}\s*from\s*['"]ag-grid-community['"];?\s*/g, "");
-  
+
   // 5. useState<Type>() → useState()
   jsCode = jsCode.replace(/useState<[^>]+>/g, "useState");
-  
+
   // 6. useRef<Type>() → useRef()
   jsCode = jsCode.replace(/useRef<[^>]+>/g, "useRef");
-  
+
   // 7. useCallback<Type>() → useCallback()
   jsCode = jsCode.replace(/useCallback<[^>]+>/g, "useCallback");
-  
+
   // 8. 함수 파라미터 타입 제거: (param: Type) → (param)
   jsCode = jsCode.replace(/\(([^)]*)\)\s*(?::\s*[^{=]+)?\s*(?=[{=])/g, (match, params) => {
     const cleanedParams = params
@@ -123,7 +129,7 @@ function convertTypeScriptToJavaScript(code: string): string {
       .join(", ");
     return `(${cleanedParams})`;
   });
-  
+
   // 9. 화살표 함수 파라미터 타입 제거: (param: Type) => → (param) =>
   jsCode = jsCode.replace(/\(([^)]*)\)\s*:\s*[^=]+\s*=>/g, (match, params) => {
     const cleanedParams = params
@@ -138,7 +144,7 @@ function convertTypeScriptToJavaScript(code: string): string {
       .join(", ");
     return `(${cleanedParams}) =>`;
   });
-  
+
   // 10. const name: Type = → const name = (더 안전한 방식)
   // 특정 패턴만 처리: const varName: TypeName = 또는 const varName: TypeName[] =
   jsCode = jsCode.replace(/const\s+(\w+)\s*:\s*([A-Z]\w*(?:\[\])?)\s*=/g, (match, varName, typeName) => {
@@ -146,74 +152,74 @@ function convertTypeScriptToJavaScript(code: string): string {
     return `const ${varName} =`;
   });
   jsCode = jsCode.replace(/let\s+(\w+)\s*:\s*([A-Z]\w*(?:\[\])?)\s*=/g, "let $1 =");
-  
+
   // 11. interface, type 선언 제거
   jsCode = jsCode.replace(/interface\s+\w+\s*\{[^}]*\}\s*/g, "");
   jsCode = jsCode.replace(/type\s+\w+\s*=\s*[^;]+;\s*/g, "");
-  
+
   // 12. as Type 캐스팅 제거
   jsCode = jsCode.replace(/\s+as\s+\w+(\[\])?/g, "");
-  
+
   // 13. <Type> 캐스팅 제거 (JSX와 구분 필요)
   jsCode = jsCode.replace(/(?<!<\w+)\s*<(?!\/|[a-z]|Ag|div|span|button|input|h1|h2|p|form|label)([A-Z]\w*(?:\[\])?)>/g, "");
-  
+
   // 14. React.FC, React.ReactNode 등 제거
   jsCode = jsCode.replace(/:\s*React\.\w+(?:<[^>]+>)?/g, "");
-  
+
   // 15. 빈 import 정리
   jsCode = jsCode.replace(/import\s*\{\s*\}\s*from\s*['"][^'"]+['"];?\s*/g, "");
-  
+
   // 16. 연속된 빈 줄 정리
   jsCode = jsCode.replace(/\n{3,}/g, "\n\n");
-  
+
   // 17. 빈 또는 불완전한 valueFormatter 제거
   // valueFormatter: (params) =>  , 같은 패턴 제거
   jsCode = jsCode.replace(/valueFormatter:\s*\([^)]*\)\s*=>\s*,/g, "");
   jsCode = jsCode.replace(/valueGetter:\s*\([^)]*\)\s*=>\s*,/g, "");
-  
+
   // 18. toLocaleString(){ 패턴을 완전한 함수로 수정
   jsCode = jsCode.replace(
     /valueFormatter:\s*\((\w+)\)\s*=>\s*(\w+(?:\.\w+)*)\s*\?\s*(\w+(?:\.\w+)*)\.toLocaleString\(\)\s*\{/g,
     "valueFormatter: ($1) => $2 ? $3.toLocaleString() : '',"
   );
-  
+
   // 19. 일반적인 toLocaleString(){ 수정
   jsCode = jsCode.replace(/\.toLocaleString\(\)\s*\{/g, ".toLocaleString(),");
   jsCode = jsCode.replace(/\.toFixed\(\d*\)\s*\{/g, (match) => match.replace("{", ","));
-  
+
   // 20. 잘못된 화살표 함수 패턴 수정 (expr { headerName 형태)
   jsCode = jsCode.replace(
     /valueFormatter:\s*\((\w+)\)\s*=>\s*([^,{}\n]+?)\s*\{\s*\n\s*(headerName|field|width):/g,
     "valueFormatter: ($1) => $2,\n          $3:"
   );
-  
+
   // 21. 연속된 속성에서 쉼표 누락 수정
   jsCode = jsCode.replace(/(['"}\d])\s*\n\s*(headerName|field|width|cellStyle|valueFormatter|valueGetter|children):/g, "$1,\n          $2:");
-  
+
   // 22. 빈 valueFormatter 라인 제거 (최종 정리)
   jsCode = jsCode.replace(/,?\s*valueFormatter:\s*\([^)]*\)\s*=>\s*,?\s*\n/g, "\n");
-  
+
   // 23. const default= 같은 잘못된 예약어 변수명 수정
   jsCode = jsCode.replace(/const\s+default\s*=/g, "const defaultColDef =");
   jsCode = jsCode.replace(/const\s+column\s*=/g, "const columnDefs =");
   jsCode = jsCode.replace(/const\s+row\s*=/g, "const rowData =");
   jsCode = jsCode.replace(/const\s+pinned\s*=/g, "const pinnedBottomRowData =");
-  
+
   // 24. JSX 속성명 복구 (AG Grid 관련)
   jsCode = jsCode.replace(/default=\{default\}/g, "defaultColDef={defaultColDef}");
   jsCode = jsCode.replace(/column=\{column\}/g, "columnDefs={columnDefs}");
   jsCode = jsCode.replace(/row=\{row\}/g, "rowData={rowData}");
   jsCode = jsCode.replace(/pinned=\{pinned\}/g, "pinnedBottomRowData={pinnedBottomRowData}");
-  
+
   // 25. default={ 만 있는 경우도 복구
   jsCode = jsCode.replace(/\sdefault=\{/g, " defaultColDef={");
   jsCode = jsCode.replace(/\scolumn=\{/g, " columnDefs={");
   jsCode = jsCode.replace(/\srow=\{(?!Data)/g, " rowData={");
-  
+
   // 26. style 객체 끝에 누락된 괄호 수정
   // style={{ ... 로 시작하는데 닫히지 않은 경우
   jsCode = jsCode.replace(/style=\{\{\s*([^}]+)\s*\n\s*export/g, "style={{ $1 }}\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport");
-  
+
   // 27. 중복된 export default 제거
   const exportMatches = jsCode.match(/export\s+default/g);
   if (exportMatches && exportMatches.length > 1) {
@@ -224,7 +230,7 @@ function convertTypeScriptToJavaScript(code: string): string {
       return count === exportMatches.length ? match : "";
     });
   }
-  
+
   // 28. 잘못된 style 객체 패턴 추가 수정
   // style={{ fontSize, fontWeight, marginBottom, ... }} 같이 콜론 없는 패턴
   jsCode = jsCode.replace(
@@ -238,7 +244,7 @@ function convertTypeScriptToJavaScript(code: string): string {
       return match;
     }
   );
-  
+
   // 29. 완전히 망가진 return 문 감지 및 기본값으로 대체
   // return (<div style={{ 가 비정상적인 경우
   const returnMatch = jsCode.match(/return\s*\(\s*<div\s+style=\{\{([^}]*)\}\}/);
@@ -254,15 +260,15 @@ function convertTypeScriptToJavaScript(code: string): string {
       );
     }
   }
-  
+
   // 30. JSX 속성이 함수 호출처럼 보이는 패턴 수정
   // minWidth)=> 같은 잘못된 패턴 제거
   jsCode = jsCode.replace(/\w+\)\s*=>\s*setYearMonth\([^)]*\)\}/g, "");
   jsCode = jsCode.replace(/minWidth\)\s*=>/g, "");
-  
+
   // 31. 불완전하게 끝나는 style 객체 수정
   jsCode = jsCode.replace(/style=\{\{\s*\n\s*width:\s*\d+,'/g, "style={{ width: 150 }}");
-  
+
   return jsCode.trim();
 }
 
@@ -271,7 +277,7 @@ function validateBasicSyntax(code: string): { valid: boolean; error?: string } {
   let braceCount = 0;
   let bracketCount = 0;
   let parenCount = 0;
-  
+
   for (let i = 0; i < code.length; i++) {
     const char = code[i];
     switch (char) {
@@ -282,16 +288,16 @@ function validateBasicSyntax(code: string): { valid: boolean; error?: string } {
       case '(': parenCount++; break;
       case ')': parenCount--; break;
     }
-    
+
     if (braceCount < 0 || bracketCount < 0 || parenCount < 0) {
       return { valid: false, error: `Unmatched closing bracket at position ${i}` };
     }
   }
-  
+
   if (braceCount !== 0) return { valid: false, error: `Unmatched braces: ${braceCount}` };
   if (bracketCount !== 0) return { valid: false, error: `Unmatched brackets: ${bracketCount}` };
   if (parenCount !== 0) return { valid: false, error: `Unmatched parentheses: ${parenCount}` };
-  
+
   return { valid: true };
 }
 
@@ -299,32 +305,32 @@ function validateBasicSyntax(code: string): { valid: boolean; error?: string } {
 function generateSandpackFiles(code: string) {
   console.log("[SandpackPreview] 원본 코드 길이:", code.length);
   console.log("[SandpackPreview] 원본 코드 시작:", code.substring(0, 200));
-  
+
   // TypeScript → JavaScript 변환
   let cleanedCode = convertTypeScriptToJavaScript(code);
-  
+
   console.log("[SandpackPreview] 변환 후 코드 길이:", cleanedCode.length);
   console.log("[SandpackPreview] AgGridReact 포함:", cleanedCode.includes("AgGridReact"));
   console.log("[SandpackPreview] columnDefs 포함:", cleanedCode.includes("columnDefs"));
   console.log("[SandpackPreview] return 포함:", cleanedCode.includes("return"));
-  
+
   // 기본 문법 검증
   const validation = validateBasicSyntax(cleanedCode);
   if (!validation.valid) {
     console.warn("[SandpackPreview] Code validation warning:", validation.error);
   }
-  
+
   // AG Grid import 확인
   const hasAgGrid = cleanedCode.includes("ag-grid-react") || cleanedCode.includes("AgGridReact");
-  
+
   // 코드에서 컴포넌트 이름 추출 (한글 포함)
   const componentMatch = cleanedCode.match(/(?:export\s+default\s+)?function\s+([\w\uAC00-\uD7AF]+)/);
   let originalComponentName = componentMatch?.[1] ?? "GeneratedScreen";
-  
+
   // 한글 컴포넌트 이름을 영문으로 변환
   const hasKoreanName = /[\uAC00-\uD7AF]/.test(originalComponentName);
   const componentName = "GeneratedScreen"; // 항상 영문 이름 사용
-  
+
   // 코드 내 한글 컴포넌트 이름을 영문으로 교체
   if (hasKoreanName && originalComponentName !== componentName) {
     console.log("[SandpackPreview] 한글 컴포넌트 이름 변환:", originalComponentName, "→", componentName);
@@ -337,10 +343,10 @@ function generateSandpackFiles(code: string) {
       `export default ${componentName}`
     );
   }
-  
+
   // export default 처리 - 이미 있으면 그대로 두고, 없으면 추가
   const hasExportDefault = cleanedCode.includes("export default");
-  
+
   if (!hasExportDefault) {
     // export default function Name 형태가 아닌 경우, 맨 끝에 export 추가
     if (!cleanedCode.match(/export\s+default\s+function/)) {
@@ -692,7 +698,7 @@ label {
   if (hasAgGrid) {
     dependencies["ag-grid-react"] = "^31.0.0";
     dependencies["ag-grid-community"] = "^31.0.0";
-    
+
     // AG Grid 스타일 import 추가
     files["/index.js"] = `
 import { StrictMode } from "react";
@@ -731,7 +737,7 @@ root.render(
 // 새로고침 버튼 컴포넌트
 function RefreshButton() {
   const { sandpack } = useSandpack();
-  
+
   return (
     <button
       onClick={() => sandpack.runSandpack()}
@@ -743,10 +749,13 @@ function RefreshButton() {
   );
 }
 
-export default function SandpackPreview({ 
-  code, 
+export default function SandpackPreview({
+  code,
   className,
-  showEditor: initialShowEditor = true  // 기본적으로 에디터 표시
+  showEditor: initialShowEditor = true,  // 기본적으로 에디터 표시
+  additionalFiles = {},
+  additionalDependencies = {},
+  importReplacements = {},
 }: SandpackPreviewProps) {
   const [showEditor, setShowEditor] = useState(initialShowEditor);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -776,20 +785,31 @@ export default function SandpackPreview({
   }
 
   console.log("[SandpackPreview] code prop 길이:", code.length);
-  
-  const { files, dependencies } = generateSandpackFiles(code);
-  
+
+  // import 경로 변환 적용
+  let processedCode = code;
+  for (const [from, to] of Object.entries(importReplacements)) {
+    const regex = new RegExp(`from\\s+['"]${from}['"]`, 'g');
+    processedCode = processedCode.replace(regex, `from '${to}'`);
+  }
+
+  const { files, dependencies } = generateSandpackFiles(processedCode);
+
+  // 추가 파일 병합
+  const mergedFiles = { ...files, ...additionalFiles };
+  const mergedDependencies = { ...dependencies, ...additionalDependencies };
+
   // 코드 변경 시 Sandpack이 다시 마운트되도록 key 생성
   const sandpackKey = `sandpack-${code.length}-${code.substring(0, 50).replace(/\s/g, "")}`;
 
   return (
-    <div 
+    <div
       className={cn(
         "flex flex-col bg-white w-full h-full",
         isFullscreen && "fixed inset-0 z-50",
         className
       )}
-      style={{ 
+      style={{
         height: isFullscreen ? '100vh' : '100%',
         minHeight: isFullscreen ? undefined : '400px',
       }}
@@ -829,9 +849,9 @@ export default function SandpackPreview({
         <SandpackProvider
           key={sandpackKey}
           template="react"
-          files={files}
+          files={mergedFiles}
           customSetup={{
-            dependencies,
+            dependencies: mergedDependencies,
           }}
           options={{
             externalResources: [
@@ -859,20 +879,20 @@ export default function SandpackPreview({
             },
           }}
           // Provider 자체가 높이를 100% 차지하도록 스타일 지정
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column' 
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           <SandpackLayout
             // Layout도 높이 100% 및 flex 상속
-            style={{ 
-              flex: 1, 
-              height: '100%', 
-              minHeight: 0, 
-              border: 'none', 
+            style={{
+              flex: 1,
+              height: '100%',
+              minHeight: 0,
+              border: 'none',
               borderRadius: 0,
               display: 'flex',
               overflow: 'auto'  // 스크롤 추가
@@ -884,7 +904,7 @@ export default function SandpackPreview({
                 showLineNumbers
                 showInlineErrors
                 wrapContent
-                style={{ 
+                style={{
                   height: "100%",
                   minWidth: "400px",
                   overflow: "auto",  // 코드 에디터 스크롤
@@ -895,9 +915,9 @@ export default function SandpackPreview({
             <SandpackPreviewPane
               showOpenInCodeSandbox={false}
               showRefreshButton={true}
-              style={{ 
-                flex: 1, 
-                height: '100%', 
+              style={{
+                flex: 1,
+                height: '100%',
                 minHeight: 0,
                 overflow: 'auto'  // 미리보기 스크롤
               }}

@@ -1,7 +1,9 @@
 import "~/styles/globals.css";
+import "realgrid/dist/realgrid-style.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Sidebar } from "~/components/Sidebar";
@@ -23,6 +25,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" className={`${geist.variable}`}>
+      <head>
+        <Script
+          src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="bg-neutral-gray-10">
         <TRPCReactProvider>
           <div className="flex min-h-screen">

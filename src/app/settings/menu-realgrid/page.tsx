@@ -1,0 +1,947 @@
+"use client";
+
+import { useState, useCallback, lazy, Suspense, useRef, useEffect } from "react";
+import { api } from "~/trpc/react";
+import {
+  Eye,
+  Trash2,
+  FolderTree,
+  FileCode,
+  Database,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  Play,
+  RefreshCw,
+  X,
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  Plus,
+  Settings,
+  Search,
+  FileSpreadsheet,
+  Shield,
+  Edit3,
+  FilePlus,
+  FolderPlus,
+} from "lucide-react";
+import { cn } from "~/lib/utils";
+import Link from "next/link";
+
+// Sandpack은 클라이언트에서만 로드
+const SandpackPreview = lazy(() => import("~/components/preview/SandpackPreview"));
+
+// RealGrid Mock for Sandpack Preview
+const REALGRID_MOCK_CODE = `
+export const ValueType = { TEXT: 'text', NUMBER: 'number', DATE: 'date', BOOLEAN: 'boolean' };
+export class LocalDataProvider {
+  constructor() { this._data = []; this._fields = []; }
+  setFields(f) { this._fields = f; }
+  setRows(r) { this._data = r || []; }
+  getRows() { return this._data; }
+  clearRows() { this._data = []; }
+  dispose() { this._data = []; this._fields = []; }
+  destroy() { this.dispose(); }
+}
+export class GridView {
+  constructor(c) { this._container = c; this._columns = []; this._dataProvider = null; }
+  setDataSource(p) { this._dataProvider = p; this._render(); }
+  setColumns(c) { this._columns = c; this._render(); }
+  setDisplayOptions() {}
+  setEditOptions() {}
+  setHeader() {}
+  setStateBar() {}
+  setCheckBar() {}
+  setIndicator() {}
+  setFooter() {}
+  dispose() { if(this._container) this._container.innerHTML = ''; }
+  destroy() { this.dispose(); }
+  _render() {
+    if (!this._container || !this._dataProvider) return;
+    const data = this._dataProvider.getRows();
+    const cols = this._columns;
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr>';
+    cols.forEach(c => html += '<th style="background:#dbeafe;padding:12px 8px;text-align:left;border-bottom:2px solid #93c5fd">' + (c.header?.text||c.name||c.fieldName) + '</th>');
+    html += '</tr></thead><tbody>';
+    if (data.length === 0) {
+      html += '<tr><td colspan="'+cols.length+'" style="text-align:center;padding:40px;color:#8d8d8d">데이터가 없습니다</td></tr>';
+    } else {
+      data.forEach((row, i) => {
+        html += '<tr style="background:'+(i%2===0?'#fff':'#f9fafb')+'">';
+        cols.forEach(c => html += '<td style="padding:10px 8px;border-bottom:1px solid #e5e7eb">'+(row[c.fieldName]??'')+'</td>');
+        html += '</tr>';
+      });
+    }
+    html += '</tbody></table>';
+    this._container.innerHTML = '<div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:#fff">' + html + '</div>';
+  }
+}
+export default { GridView, LocalDataProvider, ValueType };
+`;
+
+// 메뉴 타입
+interface MenuItem {
+  menuId: string;
+  menuName: string;
+  menuLevel?: number;
+  parentMenuId?: string | null;
+  parentId?: string | null;
+  menuPath?: string | null;
+  menuIcon?: string | null;
+  sortOrder?: number;
+  children?: MenuItem[];
+}
+
+// 화면 메타데이터 타입
+interface ScreenMetadata {
+  screenId?: string;
+  screenName?: string;
+  screenNameEn?: string;
+  tableName?: string;
+  status?: string;
+  createdAt?: string;
+}
+
+// 화면생성기의 메뉴 트리 아이템 컴포넌트 (편집 가능)
+function MenuTreeItem({
+  item,
+  depth = 0,
+  selectedId,
+  onSelect,
+  onRename,
+}: {
+  item: MenuItem & { children?: MenuItem[] };
+  depth?: number;
+  selectedId: string | null;
+  onSelect: (item: MenuItem) => void;
+  onRename?: (menuId: string, newName: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(depth < 2);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(item.menuName);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasChildren = item.children && item.children.length > 0;
+  const isSelected = selectedId === item.menuId;
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditName(item.menuName);
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    if (editName.trim() && editName !== item.menuName && onRename) {
+      onRename(item.menuId, editName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+      setEditName(item.menuName);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <div
+        className={cn(
+          "flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer text-sm transition-colors",
+          isSelected
+            ? "bg-[#0f62fe] text-white"
+            : "hover:bg-[#e0e0e0] text-[#161616]"
+        )}
+        style={{ paddingLeft: `${8 + depth * 16}px` }}
+        onClick={() => {
+          if (hasChildren) setIsOpen(!isOpen);
+          onSelect(item);
+        }}
+        onDoubleClick={handleDoubleClick}
+      >
+        {hasChildren ? (
+          isOpen ? (
+            <ChevronDown className="h-4 w-4 shrink-0" />
+          ) : (
+            <ChevronRight className="h-4 w-4 shrink-0" />
+          )
+        ) : (
+          <span className="w-4" />
+        )}
+        <Folder className="h-4 w-4 shrink-0 opacity-60" />
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 px-1 py-0.5 text-sm bg-white text-[#161616] border border-[#0f62fe] rounded outline-none"
+          />
+        ) : (
+          <span className="truncate flex-1">{item.menuName}</span>
+        )}
+      </div>
+      {hasChildren && isOpen && (
+        <div>
+          {item.children!.map((child) => (
+            <MenuTreeItem
+              key={child.menuId}
+              item={child}
+              depth={depth + 1}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              onRename={onRename}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function MenuManagementPage() {
+  // 탭 상태
+  const [activeTab, setActiveTab] = useState<"menu" | "permission">("menu");
+
+  // 임시화면 관리 상태
+  const [selectedScreen, setSelectedScreen] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+  const [previewActiveTab, setPreviewActiveTab] = useState<"preview" | "sql" | "react">("preview");
+
+  // 메뉴 추가 모달 상태
+  const [showAddMenuModal, setShowAddMenuModal] = useState(false);
+  const [addMenuType, setAddMenuType] = useState<"empty" | "screen">("empty");
+  const [newMenuName, setNewMenuName] = useState("");
+
+  // 메뉴 위치 선택 상태
+  const [menuSearch, setMenuSearch] = useState("");
+
+  // API
+  const { data: screenList, isLoading, refetch } = api.screenGenerator.getTempScreenList.useQuery();
+  const { data: menuTree, refetch: refetchMenu } = api.menu.getMenuTree.useQuery();
+  const { data: screenDetail } = api.screenGenerator.getTempScreen.useQuery(
+    { screenId: selectedScreen || "" },
+    { enabled: !!selectedScreen }
+  );
+  const deleteMutation = api.screenGenerator.deleteTempScreen.useMutation();
+  const publishMutation = api.screenGenerator.publishScreen.useMutation();
+  const deleteMenuMutation = api.menu.deleteMenu.useMutation();
+
+  // 메뉴 토글
+  const toggleMenu = (menuId: string) => {
+    setExpandedMenus(prev => {
+      const next = new Set(prev);
+      if (next.has(menuId)) {
+        next.delete(menuId);
+      } else {
+        next.add(menuId);
+      }
+      return next;
+    });
+  };
+
+  const handleDelete = async (screenId: string) => {
+    if (!confirm(`'${screenId}' 화면을 삭제하시겠습니까?`)) return;
+
+    try {
+      await deleteMutation.mutateAsync({ screenId });
+      if (selectedScreen === screenId) {
+        setSelectedScreen(null);
+      }
+      refetch();
+    } catch (error) {
+      alert("삭제 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
+    }
+  };
+
+  // 메뉴 삭제 핸들러
+  const handleDeleteMenu = async () => {
+    if (!selectedMenuId) {
+      alert("삭제할 메뉴를 선택해주세요.");
+      return;
+    }
+
+    // 선택된 메뉴 정보 찾기
+    const findMenu = (menus: typeof menuTree, id: string): MenuItem | null => {
+      if (!menus) return null;
+      for (const menu of menus) {
+        if (menu.menuId === id) return menu;
+        if (menu.children) {
+          const found = findMenu(menu.children as typeof menuTree, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const selectedMenu = findMenu(menuTree, selectedMenuId);
+    const hasChildren = selectedMenu?.children && selectedMenu.children.length > 0;
+
+    const confirmMessage = hasChildren
+      ? `'${selectedMenu?.menuName}' 메뉴와 하위 ${selectedMenu?.children?.length}개 메뉴를 모두 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`
+      : `'${selectedMenu?.menuName}' 메뉴를 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없습니다.`;
+
+    if (!confirm(confirmMessage)) return;
+
+    try {
+      const result = await deleteMenuMutation.mutateAsync({
+        menuId: selectedMenuId,
+        deleteChildren: true,
+      });
+
+      if (result.success) {
+        alert(`메뉴가 삭제되었습니다.${result.deletedChildCount ? `\n(하위 메뉴 ${result.deletedChildCount}개 포함)` : ''}`);
+        setSelectedMenuId(null);
+        refetchMenu();
+      } else {
+        alert("삭제 실패: " + result.error);
+      }
+    } catch (error) {
+      alert("삭제 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
+    }
+  };
+
+  // 메뉴 등록 핸들러
+  const handlePublish = async () => {
+    if (!selectedScreen || !selectedMenuId) {
+      alert("메뉴 위치를 선택해주세요.");
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const metadata = screenDetail?.metadata as ScreenMetadata | undefined;
+      const result = await publishMutation.mutateAsync({
+        screenId: selectedScreen,
+        parentMenuId: selectedMenuId,
+        menuName: metadata?.screenName || selectedScreen,
+      });
+
+      if (result.success) {
+        alert(`화면이 메뉴에 등록되었습니다!\n화면 ID: ${result.screenId}`);
+        setShowPublishModal(false);
+        setSelectedMenuId(null);
+        refetch();
+      } else {
+        alert("등록 실패: " + result.error);
+      }
+    } catch (error) {
+      alert("등록 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  // 재귀적으로 메뉴 트리 렌더링 (모달용)
+  const renderMenuTree = (menus: typeof menuTree, level = 0) => {
+    if (!menus) return null;
+
+    return menus.map((menu) => {
+      const hasChildren = menu.children && menu.children.length > 0;
+      const isExpanded = expandedMenus.has(menu.menuId);
+      const isSelected = selectedMenuId === menu.menuId;
+
+      return (
+        <div key={menu.menuId}>
+          <div
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#e8e8e8] transition-colors",
+              isSelected && "bg-[#d0e2ff] hover:bg-[#d0e2ff]"
+            )}
+            style={{ paddingLeft: `${12 + level * 16}px` }}
+            onClick={() => {
+              if (hasChildren) {
+                toggleMenu(menu.menuId);
+              }
+              setSelectedMenuId(menu.menuId);
+            }}
+          >
+            {hasChildren ? (
+              isExpanded ? (
+                <ChevronDown className="h-4 w-4 text-[#525252]" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-[#525252]" />
+              )
+            ) : (
+              <span className="w-4" />
+            )}
+            <Folder className="h-4 w-4 text-[#525252]" />
+            <span className="text-sm text-[#161616]">{menu.menuName}</span>
+          </div>
+          {hasChildren && isExpanded && renderMenuTree(menu.children, level + 1)}
+        </div>
+      );
+    });
+  };
+
+  // Filter menu by search
+  const filterMenu = (items: MenuItem[], search: string): MenuItem[] => {
+    if (!search) return items;
+    return items
+      .map((item) => ({
+        ...item,
+        children: item.children ? filterMenu(item.children, search) : [],
+      }))
+      .filter(
+        (item) =>
+          item.menuName.toLowerCase().includes(search.toLowerCase()) ||
+          (item.children && item.children.length > 0)
+      );
+  };
+
+  const filteredMenu = menuTree ? filterMenu(menuTree as MenuItem[], menuSearch) : [];
+
+  return (
+    <div className="h-[calc(100vh-56px)] bg-[#f4f4f4] p-4">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-xl font-semibold text-[#161616]">메뉴 관리 (RealGrid)</h1>
+          <p className="text-sm text-[#525252]">
+            RealGrid 화면용 메뉴 관리
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => refetch()}
+            className="h-8 px-3 bg-[#393939] text-white text-sm flex items-center gap-2 hover:bg-[#525252]"
+          >
+            <RefreshCw className="h-4 w-4" />
+            새로고침
+          </button>
+          <Link
+            href="/settings/screen-generator-realgrid"
+            className="h-8 px-3 bg-[#0f62fe] text-white text-sm flex items-center gap-2 hover:bg-[#0043ce]"
+          >
+            <Play className="h-4 w-4" />
+            RealGrid 화면 생성기
+          </Link>
+        </div>
+      </div>
+
+      {/* 탭 */}
+      <div className="flex border-b border-[#e0e0e0] bg-white mb-4">
+        {[
+          { id: "menu" as const, label: "메뉴관리", icon: FolderTree },
+          { id: "permission" as const, label: "권한관리", icon: Shield },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "px-4 py-3 text-sm flex items-center gap-2 border-b-2 transition-colors",
+              activeTab === tab.id
+                ? "text-[#161616] border-[#0f62fe] bg-[#e8e8e8]"
+                : "text-[#525252] border-transparent hover:bg-[#f4f4f4]"
+            )}
+          >
+            <tab.icon className="h-4 w-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 메뉴관리 탭 */}
+      {activeTab === "menu" && (
+        <div className="flex gap-4 h-[calc(100vh-200px)]">
+          {/* 좌측: 메뉴 */}
+          <div className="w-64 bg-white border border-[#e0e0e0] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+              <div className="flex items-center gap-2">
+                <FolderTree className="h-4 w-4 text-[#0f62fe]" />
+                <span className="font-medium text-sm text-[#161616]">메뉴</span>
+              </div>
+              {/* 메뉴 추가 버튼 */}
+              <button
+                onClick={() => setShowAddMenuModal(true)}
+                className="h-7 px-2 bg-[#0f62fe] text-white text-xs flex items-center gap-1 hover:bg-[#0043ce] rounded"
+                title="메뉴 추가"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                추가
+              </button>
+            </div>
+
+            {/* 검색 */}
+            <div className="px-3 py-2 border-b border-[#e0e0e0]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8d8d8d]" />
+                <input
+                  type="text"
+                  placeholder="메뉴 검색..."
+                  value={menuSearch}
+                  onChange={(e) => setMenuSearch(e.target.value)}
+                  className="w-full h-8 pl-9 pr-3 text-sm bg-[#f4f4f4] border-0 border-b border-[#8d8d8d] focus:border-b-2 focus:border-[#0f62fe] outline-none"
+                />
+              </div>
+            </div>
+
+            {/* 메뉴 트리 */}
+            <div className="flex-1 overflow-y-auto p-2">
+              {menuTree ? (
+                filteredMenu.map((item) => (
+                  <MenuTreeItem
+                    key={item.menuId}
+                    item={item}
+                    selectedId={selectedMenuId}
+                    onSelect={(menu) => setSelectedMenuId(menu.menuId)}
+                    onRename={(menuId, newName) => {
+                      // TODO: 메뉴명 변경 API 호출
+                      console.log("메뉴명 변경:", menuId, newName);
+                      alert(`메뉴명 변경 기능은 API 연동 후 동작합니다.\n${menuId} → ${newName}`);
+                    }}
+                  />
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-5 w-5 animate-spin text-[#0f62fe]" />
+                </div>
+              )}
+            </div>
+
+            {/* 선택된 메뉴 + 삭제 버튼 */}
+            {selectedMenuId && (
+              <div className="px-3 py-2 border-t border-[#e0e0e0] bg-[#e8f1ff]">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#525252]">선택된 메뉴:</p>
+                    <p className="text-sm font-medium text-[#0f62fe] truncate">{selectedMenuId}</p>
+                  </div>
+                  <button
+                    onClick={handleDeleteMenu}
+                    className="ml-2 p-1.5 text-[#da1e28] hover:bg-[#fff1f1] rounded transition-colors"
+                    title="메뉴 삭제"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 중앙: 임시화면 목록 */}
+          <div className="w-80 bg-white border border-[#e0e0e0] flex flex-col">
+            <div className="px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+              <span className="font-medium text-sm text-[#161616]">
+                임시화면 목록 ({screenList?.screens?.length || 0})
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-32 text-[#525252]">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  로딩 중...
+                </div>
+              ) : screenList?.screens?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-[#525252]">
+                  <AlertTriangle className="h-8 w-8 mb-2 text-[#8d8d8d]" />
+                  <p className="text-sm">임시화면이 없습니다</p>
+                  <Link
+                    href="/settings/screen-generator"
+                    className="text-sm text-[#0f62fe] hover:underline mt-2"
+                  >
+                    화면 생성하기 →
+                  </Link>
+                </div>
+              ) : (
+                screenList?.screens?.map((screen) => (
+                  <div
+                    key={screen.screenId}
+                    className={cn(
+                      "px-4 py-3 border-b border-[#e0e0e0] cursor-pointer transition-colors",
+                      selectedScreen === screen.screenId
+                        ? "bg-[#e8e8e8]"
+                        : "hover:bg-[#f4f4f4]"
+                    )}
+                    onClick={() => setSelectedScreen(screen.screenId)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm text-[#161616]">
+                        {screen.screenName}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(screen.screenId);
+                        }}
+                        className="p-1 hover:bg-[#da1e28] hover:text-white rounded transition-colors text-[#525252]"
+                        title="삭제"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-[#525252]">
+                      <Clock className="h-3 w-3" />
+                      {new Date(screen.createdAt).toLocaleString("ko-KR")}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {screen.hasHtml && (
+                        <span className="text-xs px-1.5 py-0.5 bg-[#d0e2ff] text-[#0043ce] rounded">
+                          HTML
+                        </span>
+                      )}
+                      {screen.hasReact && (
+                        <span className="text-xs px-1.5 py-0.5 bg-[#a7f0ba] text-[#0e6027] rounded">
+                          React
+                        </span>
+                      )}
+                      {screen.hasSql && (
+                        <span className="text-xs px-1.5 py-0.5 bg-[#ffd6e8] text-[#9f1853] rounded">
+                          SQL
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 메뉴 등록 버튼 */}
+            {selectedScreen && selectedMenuId && (
+              <div className="px-4 py-3 border-t border-[#e0e0e0] bg-[#f4f4f4]">
+                <button
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="w-full h-8 px-3 bg-[#24a148] text-white text-sm flex items-center justify-center gap-2 hover:bg-[#198038]"
+                >
+                  {isPublishing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  선택한 메뉴에 등록
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 우측: 상세/미리보기 */}
+          <div className="flex-1 bg-white border border-[#e0e0e0] flex flex-col">
+            {!selectedScreen ? (
+              <div className="flex-1 flex items-center justify-center text-[#525252]">
+                <div className="text-center">
+                  <Eye className="h-12 w-12 mx-auto mb-2 text-[#8d8d8d]" />
+                  <p>좌측에서 화면을 선택하세요</p>
+                </div>
+              </div>
+            ) : !screenDetail?.success ? (
+              <div className="flex-1 flex items-center justify-center text-[#525252]">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                로딩 중...
+              </div>
+            ) : (
+              <>
+                {/* 상세 헤더 */}
+                <div className="px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-medium text-sm text-[#161616]">
+                        {(screenDetail.metadata as ScreenMetadata)?.screenName}
+                      </h2>
+                      <p className="text-xs text-[#525252]">
+                        테이블: {(screenDetail.metadata as ScreenMetadata)?.tableName || '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 탭 */}
+                <div className="flex border-b border-[#e0e0e0]">
+                  {[
+                    { id: "preview" as const, label: "미리보기", icon: Eye, disabled: !screenDetail.reactContent },
+                    { id: "sql" as const, label: "SQL", icon: Database, disabled: !screenDetail.sqlQuery },
+                    { id: "react" as const, label: "React", icon: FileCode, disabled: !screenDetail.reactContent },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      disabled={tab.disabled}
+                      onClick={() => !tab.disabled && setPreviewActiveTab(tab.id)}
+                      className={cn(
+                        "px-4 py-2 text-sm flex items-center gap-2 border-b-2 transition-colors",
+                        tab.disabled
+                          ? "text-[#c6c6c6] cursor-not-allowed border-transparent"
+                          : previewActiveTab === tab.id
+                            ? "text-[#161616] border-[#0f62fe] bg-[#e8e8e8]"
+                            : "text-[#525252] border-transparent hover:bg-[#f4f4f4]"
+                      )}
+                    >
+                      <tab.icon className="h-4 w-4" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 콘텐츠 */}
+                <div className="flex-1 overflow-hidden bg-[#f4f4f4]">
+                  {/* AG Grid 실시간 미리보기 (Sandpack) */}
+                  {previewActiveTab === "preview" && screenDetail.reactContent && (
+                    <Suspense fallback={
+                      <div className="h-full flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-[#0f62fe]" />
+                        <span className="ml-2 text-[#525252]">Sandpack 로딩 중...</span>
+                      </div>
+                    }>
+                      <SandpackPreview
+                        code={screenDetail.reactContent}
+                        className="h-full"
+                        showEditor={false}
+                        additionalFiles={{
+                          "/realgrid.js": REALGRID_MOCK_CODE,
+                          "/components/options.js": `
+// Options Mock for Sandpack Preview
+export const SiteSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '사업장'}</label>
+    <select value={value} onChange={(e) => onChange?.(e.target.value)} style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }}>
+      <option value="">선택</option>
+      <option value="1000">본사</option>
+      <option value="2000">공장</option>
+    </select>
+  </div>
+);
+export const YearMonthPicker = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '년월'}</label>
+    <input type="month" value={value} onChange={(e) => onChange?.(e.target.value)} style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const YearPicker = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '년도'}</label>
+    <input type="number" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="YYYY" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const CustomerSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '거래처'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="거래처 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const MaterialSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '자재'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="자재 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const ModelSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '모델'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="모델 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const AccountSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '계정'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="계정 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const ExpenSelSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '경비항목'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="경비항목 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const DepartmentSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '부서'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="부서 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+export const SelCodeSelect = ({ value, onChange, label }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <label style={{ fontSize: 12, color: '#525252' }}>{label || '선택코드'}</label>
+    <input type="text" value={value} onChange={(e) => onChange?.(e.target.value)} placeholder="코드 검색" style={{ height: 32, padding: '0 8px', border: '1px solid #e0e0e0' }} />
+  </div>
+);
+`,
+                          "/realgrid-style.css": `/* RealGrid Style Mock - Sandpack Preview */`,
+                        }}
+                        importReplacements={{
+                          "realgrid": "./realgrid",
+                          "realgrid/dist/realgrid-style.css": "./realgrid-style.css",
+                          "~/components/options": "./components/options",
+                        }}
+                      />
+                    </Suspense>
+                  )}
+                  {previewActiveTab === "preview" && !screenDetail.reactContent && (
+                    <div className="flex items-center justify-center h-full text-[#8d8d8d]">
+                      <div className="text-center">
+                        <Eye className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                        <p>React 코드가 없습니다</p>
+                        <p className="text-xs mt-1">화면 생성기에서 미리보기를 생성해주세요</p>
+                      </div>
+                    </div>
+                  )}
+                  {previewActiveTab === "sql" && screenDetail.sqlQuery && (
+                    <div className="bg-white p-4 border border-[#e0e0e0] h-full overflow-auto m-4">
+                      <pre className="text-sm text-[#161616] whitespace-pre-wrap font-mono">
+                        {screenDetail.sqlQuery}
+                      </pre>
+                    </div>
+                  )}
+                  {previewActiveTab === "react" && screenDetail.reactContent && (
+                    <div className="bg-white p-4 border border-[#e0e0e0] h-full overflow-auto m-4">
+                      <pre className="text-sm text-[#161616] whitespace-pre-wrap font-mono">
+                        {screenDetail.reactContent}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 권한관리 탭 */}
+      {activeTab === "permission" && (
+        <div className="bg-white border border-[#e0e0e0] p-8 h-[calc(100vh-200px)] flex items-center justify-center">
+          <div className="text-center text-[#525252]">
+            <Shield className="h-16 w-16 mx-auto mb-4 text-[#8d8d8d]" />
+            <h3 className="text-lg font-medium text-[#161616] mb-2">권한 관리</h3>
+            <p className="text-sm">사용자/그룹별 메뉴 접근 권한 관리 기능이 추가될 예정입니다</p>
+          </div>
+        </div>
+      )}
+
+      {/* 메뉴 추가 모달 */}
+      {showAddMenuModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white w-[400px] shadow-xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e0e0e0] bg-[#f4f4f4]">
+              <h3 className="font-medium text-[#161616]">메뉴 추가</h3>
+              <button
+                onClick={() => {
+                  setShowAddMenuModal(false);
+                  setNewMenuName("");
+                }}
+                className="p-1 hover:bg-[#e0e0e0] rounded"
+              >
+                <X className="h-4 w-4 text-[#525252]" />
+              </button>
+            </div>
+
+            <div className="p-4">
+              {/* 추가 위치 */}
+              {selectedMenuId ? (
+                <div className="mb-4 p-3 bg-[#e8f1ff] rounded">
+                  <p className="text-xs text-[#525252]">추가 위치 (상위 메뉴)</p>
+                  <p className="text-sm font-medium text-[#0f62fe]">{selectedMenuId}</p>
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-[#fff1f1] rounded">
+                  <p className="text-xs text-[#da1e28]">좌측에서 상위 메뉴를 먼저 선택해주세요</p>
+                </div>
+              )}
+
+              {/* 추가 유형 선택 */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-[#161616] mb-2">추가 유형</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setAddMenuType("empty")}
+                    className={cn(
+                      "flex-1 h-10 px-3 text-sm flex items-center justify-center gap-2 border rounded transition-colors",
+                      addMenuType === "empty"
+                        ? "bg-[#0f62fe] text-white border-[#0f62fe]"
+                        : "bg-white text-[#161616] border-[#e0e0e0] hover:bg-[#f4f4f4]"
+                    )}
+                  >
+                    <FolderPlus className="h-4 w-4" />
+                    빈 메뉴
+                  </button>
+                  <button
+                    onClick={() => setAddMenuType("screen")}
+                    className={cn(
+                      "flex-1 h-10 px-3 text-sm flex items-center justify-center gap-2 border rounded transition-colors",
+                      addMenuType === "screen"
+                        ? "bg-[#0f62fe] text-white border-[#0f62fe]"
+                        : "bg-white text-[#161616] border-[#e0e0e0] hover:bg-[#f4f4f4]"
+                    )}
+                  >
+                    <FilePlus className="h-4 w-4" />
+                    임시화면 등록
+                  </button>
+                </div>
+              </div>
+
+              {/* 빈 메뉴 추가 */}
+              {addMenuType === "empty" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#161616] mb-1">
+                    메뉴명 <span className="text-[#da1e28]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="메뉴명 입력 (예: 화면작업중)"
+                    value={newMenuName}
+                    onChange={(e) => setNewMenuName(e.target.value)}
+                    className="w-full h-10 px-3 text-sm bg-white border border-[#8d8d8d] focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe] outline-none"
+                  />
+                  <p className="text-xs text-[#525252] mt-1">작업 중인 화면의 placeholder로 사용할 수 있습니다.</p>
+                </div>
+              )}
+
+              {/* 임시화면 등록 */}
+              {addMenuType === "screen" && (
+                <div className="mb-4">
+                  <p className="text-sm text-[#525252]">
+                    중앙의 임시화면 목록에서 등록할 화면을 선택한 후
+                    <span className="text-[#24a148] font-medium"> "선택한 메뉴에 등록"</span> 버튼을 사용하세요.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex justify-end gap-2 px-4 py-3 border-t border-[#e0e0e0] bg-[#f4f4f4]">
+              <button
+                onClick={() => {
+                  setShowAddMenuModal(false);
+                  setNewMenuName("");
+                }}
+                className="h-8 px-4 text-sm text-[#161616] bg-white border border-[#e0e0e0] hover:bg-[#f4f4f4]"
+              >
+                취소
+              </button>
+              {addMenuType === "empty" && (
+                <button
+                  disabled={!selectedMenuId || !newMenuName.trim()}
+                  onClick={() => {
+                    // TODO: 빈 메뉴 추가 API 호출
+                    console.log("빈 메뉴 추가:", selectedMenuId, newMenuName);
+                    alert(`메뉴 추가 기능은 API 연동 후 동작합니다.\n상위: ${selectedMenuId}\n메뉴명: ${newMenuName}`);
+                    setShowAddMenuModal(false);
+                    setNewMenuName("");
+                  }}
+                  className="h-8 px-4 text-sm text-white bg-[#0f62fe] hover:bg-[#0043ce] disabled:bg-[#c6c6c6] disabled:cursor-not-allowed"
+                >
+                  추가
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

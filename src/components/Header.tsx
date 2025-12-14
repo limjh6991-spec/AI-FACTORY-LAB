@@ -50,7 +50,7 @@ interface BreadcrumbItem {
 export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   // 상태 관리
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,14 +60,14 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
   const [sitemapOpen, setSitemapOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  
+
   // refs
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // 메뉴 데이터 조회
   const { data: menuData } = api.menu.getMenuTree.useQuery();
-  
+
   // 알림 데이터 (임시)
   const notifications = [
     { id: 1, title: "시스템 업데이트", message: "새로운 버전이 배포되었습니다.", time: "10분 전", read: false },
@@ -79,9 +79,9 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
   // ===== 1. 현재 화면 경로 표시 (브레드크럼) =====
   const getBreadcrumbs = useCallback((): BreadcrumbItem[] => {
     const crumbs: BreadcrumbItem[] = [{ name: "홈", path: "/" }];
-    
+
     if (!menuData || pathname === "/") return crumbs;
-    
+
     // 메뉴 트리를 평탄화
     const flattenMenu = (items: any[]): MenuItem[] => {
       let result: MenuItem[] = [];
@@ -93,18 +93,20 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
       }
       return result;
     };
-    
+
     const allMenus = flattenMenu(menuData);
-    
-    // 현재 경로에 해당하는 메뉴 찾기
-    const currentMenu = allMenus.find(m => m.menuPath === pathname);
-    
+
+    // 현재 경로에 해당하는 메뉴 찾기 (대소문자 비구분)
+    const currentMenu = allMenus.find(m =>
+      m.menuPath?.toLowerCase() === pathname.toLowerCase()
+    );
+
     if (currentMenu) {
       // 부모 메뉴들 찾기
       const findParents = (menu: MenuItem, menus: MenuItem[]): BreadcrumbItem[] => {
         const parents: BreadcrumbItem[] = [];
         let current = menu;
-        
+
         while (current.parentId) {
           const parent = menus.find(m => m.id === current.parentId);
           if (parent) {
@@ -116,7 +118,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
         }
         return parents;
       };
-      
+
       const parents = findParents(currentMenu, allMenus);
       crumbs.push(...parents);
       crumbs.push({ name: currentMenu.menuName, path: currentMenu.menuPath });
@@ -130,7 +132,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
         "menu": "메뉴 관리",
         "dashboard": "대시보드",
       };
-      
+
       let currentPath = "";
       for (const part of pathParts) {
         currentPath += `/${part}`;
@@ -140,7 +142,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
         });
       }
     }
-    
+
     return crumbs;
   }, [pathname, menuData]);
 
@@ -149,12 +151,12 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
   // ===== 2. 검색 기능 =====
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
+
     if (!query.trim() || !menuData) {
       setSearchResults([]);
       return;
     }
-    
+
     // 메뉴 트리 평탄화
     const flattenMenu = (items: any[]): MenuItem[] => {
       let result: MenuItem[] = [];
@@ -166,15 +168,15 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
       }
       return result;
     };
-    
+
     const allMenus = flattenMenu(menuData);
-    
+
     // 검색어로 필터링
-    const results = allMenus.filter(menu => 
+    const results = allMenus.filter(menu =>
       menu.menuName.toLowerCase().includes(query.toLowerCase()) ||
       (menu.menuPath && menu.menuPath.toLowerCase().includes(query.toLowerCase()))
     ).slice(0, 8); // 최대 8개
-    
+
     setSearchResults(results);
   }, [menuData]);
 
@@ -192,7 +194,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
         setSearchResults([]);
       }
     };
-    
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -216,35 +218,35 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
         }
       }
     };
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [searchOpen, searchResults.length]);
 
   // ===== 5. 설정 옵션 =====
   const settingsOptions = [
-    { 
-      id: "theme", 
-      label: "테마", 
+    {
+      id: "theme",
+      label: "테마",
       icon: darkMode ? Moon : Sun,
       action: () => setDarkMode(!darkMode),
       value: darkMode ? "다크" : "라이트"
     },
-    { 
-      id: "menu", 
-      label: "메뉴 관리", 
+    {
+      id: "menu",
+      label: "메뉴 관리",
       icon: LayoutGrid,
       action: () => router.push("/settings/menu"),
     },
-    { 
-      id: "screen-gen", 
-      label: "화면 생성기", 
+    {
+      id: "screen-gen",
+      label: "화면 생성기",
       icon: Monitor,
       action: () => router.push("/settings/screen-generator"),
     },
-    { 
-      id: "db-meta", 
-      label: "DB 메타데이터", 
+    {
+      id: "db-meta",
+      label: "DB 메타데이터",
       icon: Database,
       action: () => router.push("/settings/db-metadata"),
     },
@@ -271,7 +273,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
               {index === breadcrumbs.length - 1 ? (
                 <span className="text-slate-800 font-medium">{crumb.name}</span>
               ) : (
-                <Link 
+                <Link
                   href={crumb.path || "/"}
                   className="text-slate-500 hover:text-blue-600 transition-colors"
                 >
@@ -305,7 +307,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
           <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs text-slate-400 bg-slate-100 border border-slate-200 rounded">
             ⌘K
           </kbd>
-          
+
           {/* 검색 결과 드롭다운 */}
           {searchOpen && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-50">
@@ -343,7 +345,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
 
         {/* ===== 3. 알림 (공지) ===== */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => {
               setNotificationOpen(!notificationOpen);
               setProfileOpen(false);
@@ -362,7 +364,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
               </span>
             )}
           </button>
-          
+
           {/* 알림 드롭다운 */}
           {notificationOpen && (
             <>
@@ -374,7 +376,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.map((notif) => (
-                    <div 
+                    <div
                       key={notif.id}
                       className={cn(
                         "px-4 py-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer",
@@ -407,7 +409,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
 
         {/* ===== 4. 사이트맵 ===== */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => {
               setSitemapOpen(!sitemapOpen);
               setNotificationOpen(false);
@@ -422,7 +424,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
           >
             <LayoutGrid className="h-5 w-5" />
           </button>
-          
+
           {/* 사이트맵 드롭다운 */}
           {sitemapOpen && (
             <>
@@ -460,7 +462,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
 
         {/* ===== 5. 설정 ===== */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => {
               setSettingsOpen(!settingsOpen);
               setNotificationOpen(false);
@@ -475,7 +477,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
           >
             <Settings className="h-5 w-5" />
           </button>
-          
+
           {/* 설정 드롭다운 */}
           {settingsOpen && (
             <>
@@ -550,8 +552,8 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
           {/* 드롭다운 메뉴 */}
           {profileOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-40" 
+              <div
+                className="fixed inset-0 z-40"
                 onClick={() => setProfileOpen(false)}
               />
               <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
@@ -571,7 +573,7 @@ export function Header({ className, sidebarCollapsed = false }: HeaderProps) {
                     <Settings className="h-4 w-4" />
                     <span>계정 설정</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setDarkMode(!darkMode)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   >

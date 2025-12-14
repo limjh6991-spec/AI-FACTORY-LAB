@@ -11,11 +11,13 @@ import { z } from "zod";
 
 /**
  * 화면 유형 enum
- * - SIMPLE_GRID: 단순 조회 화면
- * - SIMPLE_GRID_CRUD: 단순 CRUD 화면 (기준정보 관리)
- * - COMPLEX_GRID: 복잡 조회 화면 (그룹헤더, 마스터-디테일)
- * - COMPLEX_GRID_CRUD: 복잡 CRUD 화면
- * - GRID_WITH_CHART: CRUD + 차트 화면
+ * - SIMPLE_GRID: 단순 조회 화면 (AG Grid)
+ * - SIMPLE_GRID_CRUD: 단순 CRUD 화면 (AG Grid)
+ * - COMPLEX_GRID: 복잡 조회 화면 (AG Grid)
+ * - COMPLEX_GRID_CRUD: 복잡 CRUD 화면 (AG Grid)
+ * - GRID_WITH_CHART: CRUD + 차트 화면 (AG Grid)
+ * - REALGRID_SIMPLE: 단순 조회 화면 (RealGrid)
+ * - REALGRID_CRUD: 단순 CRUD 화면 (RealGrid)
  */
 export enum ScreenType {
   SIMPLE_GRID = 'simpleGrid',
@@ -23,6 +25,9 @@ export enum ScreenType {
   COMPLEX_GRID = 'complexGrid',
   COMPLEX_GRID_CRUD = 'complexGridCrud',
   GRID_WITH_CHART = 'gridWithChart',
+  // RealGrid 유형
+  REALGRID_SIMPLE = 'realgridSimple',
+  REALGRID_CRUD = 'realgridCrud',
 }
 
 /**
@@ -81,6 +86,25 @@ export const SCREEN_TYPE_FEATURES: Record<ScreenType, {
     hasTree: true,
     hasChart: true,
     description: 'CRUD + 차트 화면',
+  },
+  // RealGrid 유형
+  [ScreenType.REALGRID_SIMPLE]: {
+    hasRead: true,
+    hasCrud: false,
+    hasGroupHeader: true,
+    hasMasterDetail: false,
+    hasTree: false,
+    hasChart: false,
+    description: '단순 조회 화면 (RealGrid)',
+  },
+  [ScreenType.REALGRID_CRUD]: {
+    hasRead: true,
+    hasCrud: true,
+    hasGroupHeader: true,
+    hasMasterDetail: false,
+    hasTree: false,
+    hasChart: false,
+    description: '단순 CRUD 화면 (RealGrid)',
   },
 };
 
@@ -237,7 +261,7 @@ export interface QueryGenerationResult {
 /**
  * CRUD 컬럼 편집 타입
  */
-export type CrudEditorType = 
+export type CrudEditorType =
   | 'text'       // 일반 텍스트
   | 'number'     // 숫자
   | 'date'       // 날짜
@@ -313,7 +337,7 @@ export interface CrudConfig {
  * CRUD 파싱 데이터 (ParsedData 확장)
  */
 export interface CrudParsedData extends ParsedData {
-  screenType: ScreenType.SIMPLE_GRID_CRUD | ScreenType.COMPLEX_GRID_CRUD;
+  screenType: ScreenType.SIMPLE_GRID_CRUD | ScreenType.COMPLEX_GRID_CRUD | ScreenType.REALGRID_CRUD;
   /** CRUD 설정 */
   crudConfig: CrudConfig;
   /** CRUD 컬럼 정의 */
