@@ -13,7 +13,7 @@ import {
   getAnthropicApiKey,
   convertToNextPage,
   buildReactComponentPrompt,
-} from "~/lib/screen-generator";
+} from "../_shared/legacy";
 import {
   ensureDir,
   readJsonFile,

@@ -12,12 +12,12 @@ import {
   createDefaultGridData,
   generateHtmlFromTemplate,
   buildJsonDataPrompt,
-} from "~/lib/screen-generator";
+} from "../_shared/legacy";
 import { 
   ScreenType,
   type CrudParsedData,
 } from "../_shared/types";
-import { SimpleGridCrudTemplate } from "../templates/simpleGridCrud";
+import { SimpleGridCrudTemplate } from "../templates/simple-grid-crud";
 
 /**
  * Claude API로 미리보기 생성
@@ -134,7 +134,7 @@ export const generatePreviewTemplate = publicProcedure
 
 /**
  * CRUD 화면 미리보기 생성
- * - 템플릿 기반 컴포넌트 + API 코드 생성
+ * - SimpleGridCrudTemplate 사용 (실제 컬럼 데이터 사용)
  * - parsedData 또는 screenId/screenName/tableName으로 생성 가능
  */
 export const generateCrudPreview = publicProcedure
@@ -143,11 +143,13 @@ export const generateCrudPreview = publicProcedure
     screenId: z.string().optional(),
     screenName: z.string().optional(),
     tableName: z.string().optional(),
+    searchConditions: z.array(z.any()).optional(), // 검색 조건
+    crudColumns: z.array(z.any()).optional(), // CRUD 컬럼
   }))
   .mutation(async ({ input }) => {
     try {
       let parsedData: CrudParsedData;
-      
+
       // parsedData가 없으면 기본값으로 생성
       if (input.parsedData) {
         parsedData = input.parsedData as CrudParsedData;
@@ -155,13 +157,13 @@ export const generateCrudPreview = publicProcedure
           parsedData.screenId = input.screenId;
         }
       } else if (input.screenId && input.screenName && input.tableName) {
-        // 간편 모드: screenId, screenName, tableName만으로 생성
+        // 간편 모드: screenId, screenName, tableName으로 생성
         parsedData = {
           screenId: input.screenId,
           screenName: input.screenName,
           tableName: input.tableName,
           screenType: ScreenType.SIMPLE_GRID_CRUD,
-          searchConditions: [],
+          searchConditions: input.searchConditions || [],
           gridColumns: {
             row1: [],
             row2: [],
@@ -177,7 +179,7 @@ export const generateCrudPreview = publicProcedure
             rowSelection: 'multiple',
             pagination: false,
           },
-          crudColumns: [], // DB에서 자동 추론
+          crudColumns: input.crudColumns || [],
         };
       } else {
         return {
@@ -185,30 +187,24 @@ export const generateCrudPreview = publicProcedure
           error: 'parsedData 또는 (screenId, screenName, tableName)을 입력해주세요.',
         };
       }
-      
-      // 화면 유형 확인
-      const screenType = parsedData.screenType;
-      if (screenType !== ScreenType.SIMPLE_GRID_CRUD && 
-          screenType !== ScreenType.COMPLEX_GRID_CRUD) {
+
+      // SimpleGridCrudTemplate 사용 (실제 데이터 기반)
+      const template = new SimpleGridCrudTemplate();
+      const result = await template.generateComponent(parsedData);
+
+      if (!result.success) {
         return {
           success: false,
-          error: 'CRUD 화면 유형이 아닙니다.',
+          error: result.error || '컴포넌트 생성 실패',
         };
       }
-      
-      // 템플릿 인스턴스 생성
-      const template = new SimpleGridCrudTemplate();
-      
-      // 전체 화면 생성 (컴포넌트 + API)
-      const result = await template.generateScreen(parsedData);
-      
+
       return {
-        success: result.success,
-        component: result.component,
-        api: result.api,
-        warnings: result.warnings,
-        generationTime: result.generationTime,
-        error: result.success ? undefined : '화면 생성에 실패했습니다.',
+        success: true,
+        component: result.code,
+        api: '', // 간편모드에서는 API 코드 생략 (미리보기 전용)
+        warnings: [],
+        generationTime: new Date().toISOString(),
       };
     } catch (error) {
       return {

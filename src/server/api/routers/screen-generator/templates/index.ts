@@ -16,7 +16,7 @@ export {
 } from './base';
 
 // Templates
-export { SimpleGridCrudTemplate } from './simpleGridCrud';
+export { SimpleGridCrudTemplate } from './simple-grid-crud';
 
 // Future templates (예정)
 // export { SimpleGridTemplate } from './simpleGrid';
@@ -26,7 +26,7 @@ export { SimpleGridCrudTemplate } from './simpleGridCrud';
 
 import { ScreenType } from '../_shared/types';
 import { BaseTemplate } from './base';
-import { SimpleGridCrudTemplate } from './simpleGridCrud';
+import { SimpleGridCrudTemplate } from './simple-grid-crud';
 
 /**
  * 화면 유형에 따른 템플릿 인스턴스 반환

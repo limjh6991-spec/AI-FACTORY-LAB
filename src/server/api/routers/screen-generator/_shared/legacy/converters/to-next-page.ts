@@ -11,7 +11,7 @@ import type { UsedOption } from '../types';
  */
 function detectUsedOptions(componentCode: string): UsedOption[] {
   const usedOptions: UsedOption[] = [];
-  
+
   // 년월 감지
   if (componentCode.match(/년월|기간|type="month"/i)) {
     usedOptions.push({ type: 'YearMonthPicker', label: '년월', stateVar: 'yearMonth', paramName: 'yearMonth' });
@@ -44,7 +44,7 @@ function detectUsedOptions(componentCode: string): UsedOption[] {
   if (componentCode.match(/계정/i)) {
     usedOptions.push({ type: 'AccountSelect', label: '계정', stateVar: 'accountCode', paramName: 'accountCode' });
   }
-  
+
   return usedOptions;
 }
 
@@ -73,11 +73,11 @@ function generateParamBuilderCode(usedOptions: UsedOption[], screenId: string): 
   if (usedOptions.length === 0) {
     return `const url = '/api/screens/${screenId.toLowerCase()}/data';`;
   }
-  
+
   const paramAppends = usedOptions
     .map(opt => `if (${opt.stateVar}) params.append('${opt.paramName}', ${opt.stateVar});`)
     .join('\n      ');
-  
+
   return `const params = new URLSearchParams();
       ${paramAppends}
       const queryString = params.toString();
@@ -103,11 +103,11 @@ function generateOptionComponentsJsx(usedOptions: UsedOption[]): string {
 function generateImports(): string {
   return `'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import type { ColDef, ColGroupDef, RowClassParams } from 'ag-grid-community';
-import { Search, RotateCcw, Download, Loader2 } from 'lucide-react';
+import { Search, RotateCcw, Download, Loader2, Plus, Save, Trash2 } from 'lucide-react';
 // 공통 옵션 컴포넌트
 import {
   SiteSelect,
@@ -156,7 +156,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
     .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '')
     .replace(/['"]use client['"];?\s*/g, '')
     .trim();
-  
+
   // 컴포넌트명을 영문으로 변환
   const safeComponentName = `Screen${screenId.replace('SC', '')}`;
   cleanedCode = cleanedCode.replace(
@@ -171,7 +171,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
     /const\s+sampleData\s*=\s*\[[\s\S]*?\];/,
     '// 샘플 데이터는 제거됨 - API에서 조회'
   );
-  
+
   // useState(sampleData) → 상태 및 API 호출 코드
   cleanedCode = cleanedCode.replace(
     /const\s*\[\s*rowData\s*,\s*setRowData\s*\]\s*=\s*useState\s*\(\s*sampleData\s*\)/,
@@ -203,7 +203,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])`
   );
-  
+
   // ========================================
   // 5. handleSearch 수정
   // ========================================
@@ -232,7 +232,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
   $1`
     );
   }
-  
+
   // handleReset 수정
   cleanedCode = cleanedCode.replace(
     /const\s+handleReset\s*=\s*\(\)\s*=>\s*\{[\s\S]*?setRowData\s*\(\s*sampleData\s*\);?\s*\};?/,
@@ -258,7 +258,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
     /<div style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*gap:\s*4\s*\}\}>\s*<label[^>]*>(년월|기간)[^<]*<\/label>\s*<input\s+type="month"[\s\S]*?<\/div>/g,
     ''
   );
-  
+
   // 남아있는 인라인 select 제거
   cleanedCode = cleanedCode.replace(
     /<div style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*gap:\s*4\s*\}\}>\s*<label[^>]*>(자재|품목|품번|거래처|고객|부서|팀|사업장|모델)[^<]*<\/label>\s*<select[\s\S]*?<\/select>\s*<\/div>/g,
@@ -272,7 +272,7 @@ export function convertToNextPage(componentCode: string, screenId: string, scree
     /className="ag-theme-alpine"\s+style=\{\{\s*width:\s*['"]100%['"]\s*,\s*height:\s*\d+\s*,?\s*(minHeight:\s*\d+\s*,?)?\s*\}\}/g,
     'className="ag-theme-alpine" style={{ width: \'100%\', flex: 1, minHeight: 300 }}'
   );
-  
+
   cleanedCode = cleanedCode.replace(
     /style=\{\{\s*display:\s*['"]flex['"]\s*,\s*flexDirection:\s*['"]column['"]\s*,\s*height:\s*['"]100vh['"]/g,
     "style={{ display: 'flex', flexDirection: 'column', height: '100%'"

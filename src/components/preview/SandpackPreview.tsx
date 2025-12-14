@@ -20,11 +20,21 @@ interface SandpackPreviewProps {
 // TypeScript 문법을 JavaScript로 변환
 function convertTypeScriptToJavaScript(code: string): string {
   let jsCode = code;
-  
+
+  // ⚠️ 이미 순수 JavaScript인 경우 변환 스킵 (Block-based Architecture에서 생성된 코드)
+  if (jsCode.includes('// ============================================================') &&
+      jsCode.includes('// Inline BlockRenderer') &&
+      !jsCode.includes(': any') &&
+      !jsCode.includes('interface ') &&
+      !jsCode.includes('type ')) {
+    console.log('[SandpackPreview] 순수 JavaScript 감지 - 변환 스킵');
+    return jsCode.trim();
+  }
+
   // 0. 코드 블록 마커 제거 (Claude가 ```javascript 등으로 감싸는 경우)
   jsCode = jsCode.replace(/^```(?:javascript|jsx|js|tsx|typescript)?\s*\n?/gm, "");
   jsCode = jsCode.replace(/```\s*$/gm, "");
-  
+
   // 0-1. 첫 줄이 언어 이름만 있는 경우 제거
   jsCode = jsCode.replace(/^(?:javascript|jsx|js|tsx|typescript)\s*\n/i, "");
   
@@ -35,27 +45,10 @@ function convertTypeScriptToJavaScript(code: string): string {
     "fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'"
   );
   
-  // 0-3. 잘못된 style 객체 속성 (콜론 없이 쉼표로 나열된 경우)
-  // style={{ display, flexDirection, ... }} 패턴 감지 및 수정
-  jsCode = jsCode.replace(
-    /style=\{\{\s*display,\s*flexDirection,\s*height,\s*padding,\s*backgroundColor,\s*fontFamily[^}]*\}\}/g,
-    "style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16, backgroundColor: '#f4f4f4', fontFamily: 'sans-serif' }}"
-  );
-  
-  // 0-4. 불완전한 style 객체 수정 (속성명만 있고 값이 없는 경우)
-  jsCode = jsCode.replace(
-    /style=\{\{([^}]*?)(\w+),\s*(\w+),\s*(\w+)([^}]*)\}\}/g,
-    (match) => {
-      // 콜론(:)이 너무 적으면 잘못된 패턴으로 판단
-      const colonCount = (match.match(/:/g) || []).length;
-      const commaCount = (match.match(/,/g) || []).length;
-      if (colonCount < commaCount / 2) {
-        // 기본 스타일로 대체
-        return "style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16 }}";
-      }
-      return match;
-    }
-  );
+  // 0-3. LEGACY 코드 호환성 패치 (DISABLED)
+  // 새로운 템플릿(SimpleGridCrudTemplate)은 항상 올바른 코드를 생성하므로
+  // 클라이언트 측 수정은 불필요하며, 오히려 정상 코드를 파괴할 위험이 있음
+  // 이전 버전의 정규식이 중첩된 JSX를 잘못 매칭하여 에러를 발생시켰음
 
   // 1. "use client" 제거
   jsCode = jsCode.replace(/["']use client["'];?\s*/g, "");

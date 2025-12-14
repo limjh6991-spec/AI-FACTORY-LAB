@@ -14,35 +14,76 @@ import {
   Search,
   Plus,
   X,
+  Type,
+  Hash,
+  Calendar,
+  CalendarRange,
+  CalendarDays,
+  ChevronDown,
+  ListChecks,
+  CheckSquare,
+  // BiSelect 시리즈 아이콘
+  Building2,
+  FileStack,
+  Users,
+  DollarSign,
+  UserCircle,
+  Wallet,
+  Receipt,
+  Store,
+  Settings,
+  Package,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
+import {
+  SearchComponentType,
+  SEARCH_COMPONENT_CATALOG,
+  generateStateName,
+  generatePlaceholder,
+  type SearchComponentDef,
+} from "~/features/screen-generator/types/search-components";
 
 // Sandpack 지연 로드
 const SandpackPreview = lazy(() => import("~/components/preview/SandpackPreview"));
 
-// 검색 조건 타입
-const SEARCH_TYPES = [
-  { id: "yearMonth", label: "년월", component: "YearMonthPicker" },
-  { id: "date", label: "일자", component: "DatePicker" },
-  { id: "dateRange", label: "기간", component: "DateRangePicker" },
-  { id: "text", label: "텍스트", component: "TextInput" },
-  { id: "select", label: "선택", component: "Select" },
-  { id: "model", label: "모델", component: "ModelSelect" },
-  { id: "dept", label: "부서", component: "DeptSelect" },
-  { id: "customer", label: "거래처", component: "CustomerSelect" },
-];
+// 아이콘 매핑
+const iconMap: Record<string, any> = {
+  Type,
+  Hash,
+  Calendar,
+  CalendarRange,
+  CalendarDays,
+  ChevronDown,
+  ListChecks,
+  CheckSquare,
+  // BiSelect 시리즈
+  Building2,
+  FileStack,
+  Users,
+  DollarSign,
+  UserCircle,
+  Wallet,
+  Receipt,
+  Store,
+  Settings,
+  Package,
+};
 
-interface SearchCondition {
-  id: string;
+// 컬럼 정보 타입
+interface ColumnInfo {
+  field: string;
   type: string;
-  label: string;
+  isPk: boolean;
+  isNullable: boolean;
 }
 
 export default function SimpleMode() {
   // 입력 State
   const [screenName, setScreenName] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
-  const [searchConditions, setSearchConditions] = useState<SearchCondition[]>([]);
+  const [searchComponents, setSearchComponents] = useState<SearchComponentDef[]>([]);
+  const [tableColumns, setTableColumns] = useState<ColumnInfo[]>([]);
+  const [showComponentCatalog, setShowComponentCatalog] = useState(false);
 
   // 출력 State
   const [generatedReact, setGeneratedReact] = useState<string | null>(null);
@@ -54,29 +95,81 @@ export default function SimpleMode() {
   // 상태 플래그
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFetchingSchema, setIsFetchingSchema] = useState(false);
 
   // API
   const previewMutation = api.screenGenerator.generateCrudPreview.useMutation();
   const saveTempMutation = api.screenGenerator.saveTempScreen.useMutation();
+  const utils = api.useUtils();
 
-  // 검색 조건 추가
-  const addSearchCondition = useCallback((type: string) => {
-    const searchType = SEARCH_TYPES.find(t => t.id === type);
-    if (!searchType) return;
-    
-    setSearchConditions(prev => [
-      ...prev,
-      {
-        id: `${type}_${Date.now()}`,
-        type,
-        label: searchType.label,
+  // 테이블 스키마 조회
+  const fetchTableSchema = useCallback(async (tableName: string) => {
+    if (!tableName.trim()) {
+      setTableColumns([]);
+      return;
+    }
+
+    setIsFetchingSchema(true);
+    try {
+      // tRPC utils를 사용하여 직접 호출
+      const result = await utils.client.dbMeta.getTableSchema.query({ tableName });
+
+      if (result.success && result.columns) {
+        setTableColumns(result.columns);
+        console.log('[SimpleMode] 테이블 스키마 조회 성공:', result.columns);
+      } else {
+        console.error('[SimpleMode] 테이블 스키마 조회 실패:', result.error);
+        setTableColumns([]);
       }
-    ]);
+    } catch (error) {
+      console.error('[SimpleMode] 테이블 스키마 조회 오류:', error);
+      setTableColumns([]);
+    } finally {
+      setIsFetchingSchema(false);
+    }
+  }, [utils]);
+
+  // 테이블명 변경 핸들러
+  const handleTableNameChange = useCallback((value: string) => {
+    setSelectedTable(value);
   }, []);
 
-  // 검색 조건 삭제
-  const removeSearchCondition = useCallback((id: string) => {
-    setSearchConditions(prev => prev.filter(c => c.id !== id));
+  // 테이블명 입력 완료 (onBlur or Enter)
+  const handleTableNameComplete = useCallback(() => {
+    if (selectedTable.trim()) {
+      fetchTableSchema(selectedTable.trim());
+    }
+  }, [selectedTable, fetchTableSchema]);
+
+  // 검색 컴포넌트 추가
+  const addSearchComponent = useCallback((type: SearchComponentType) => {
+    const index = searchComponents.filter(c => c.type === type).length + 1;
+    const catalog = SEARCH_COMPONENT_CATALOG.find(c => c.type === type);
+
+    const newComponent: SearchComponentDef = {
+      id: `${type.toLowerCase()}-${index}`,
+      type,
+      label: catalog?.example || '검색조건',
+      name: generateStateName(type, index),
+      placeholder: generatePlaceholder(type, catalog?.example || '검색조건'),
+      required: false,
+      width: type === SearchComponentType.DATE_RANGE ? 6 : 3,
+    };
+
+    setSearchComponents(prev => [...prev, newComponent]);
+    setShowComponentCatalog(false);
+  }, [searchComponents]);
+
+  // 검색 컴포넌트 삭제
+  const removeSearchComponent = useCallback((id: string) => {
+    setSearchComponents(prev => prev.filter(c => c.id !== id));
+  }, []);
+
+  // 검색 컴포넌트 레이블 수정
+  const updateComponentLabel = useCallback((id: string, label: string) => {
+    setSearchComponents(prev =>
+      prev.map(c => c.id === id ? { ...c, label } : c)
+    );
   }, []);
 
   // 미리보기 생성
@@ -90,17 +183,39 @@ export default function SimpleMode() {
     try {
       // screenId는 테이블명 기반으로 자동 생성
       const autoScreenId = `SC_${selectedTable.trim().toUpperCase()}`;
-      
+
+      // searchComponents 변환
+      const searchConditionsData = searchComponents.map(comp => ({
+        field: comp.name,
+        label: comp.label,
+        type: comp.type,
+        required: comp.required || false,
+        placeholder: comp.placeholder,
+      }));
+
+      // crudColumns 변환 (tableColumns 사용)
+      const crudColumnsData = tableColumns.map(col => ({
+        field: col.field,
+        headerName: col.field,
+        width: 120,
+        editorType: col.type === 'integer' || col.type === 'numeric' ? 'number' : 'text',
+        editable: !col.isPk,
+        required: !col.isNullable,
+      }));
+
       const result = await previewMutation.mutateAsync({
         screenId: autoScreenId,
         screenName: screenName.trim(),
         tableName: selectedTable.trim(),
-      });
+        searchConditions: searchConditionsData,
+        crudColumns: crudColumnsData,
+      } as any);
 
       if (result.success && result.component) {
-        setGeneratedReact(result.component.code || null);
-        if (result.api?.routerCode) {
-          setGeneratedQuery(result.api.routerCode);
+        // API는 component를 문자열로 반환 (component.code가 아님)
+        setGeneratedReact(result.component || null);
+        if (result.api) {
+          setGeneratedQuery(result.api);
         }
       }
     } catch (error) {
@@ -108,7 +223,7 @@ export default function SimpleMode() {
     } finally {
       setIsGenerating(false);
     }
-  }, [screenName, selectedTable, previewMutation]);
+  }, [screenName, selectedTable, tableColumns, searchComponents, previewMutation]);
 
   // 임시 저장
   const handleSave = useCallback(async () => {
@@ -167,13 +282,32 @@ export default function SimpleMode() {
               <label className="block text-sm font-medium text-[#161616] mb-1">
                 테이블명 <span className="text-[#da1e28]">*</span>
               </label>
-              <input
-                type="text"
-                value={selectedTable}
-                onChange={(e) => setSelectedTable(e.target.value)}
-                placeholder="예: mst_dept"
-                className="w-full h-10 px-3 border border-[#8d8d8d] focus:outline-none focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe]"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={selectedTable}
+                  onChange={(e) => handleTableNameChange(e.target.value)}
+                  onBlur={handleTableNameComplete}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleTableNameComplete();
+                    }
+                  }}
+                  placeholder="예: mst_dept"
+                  className="w-full h-10 px-3 border border-[#8d8d8d] focus:outline-none focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe]"
+                />
+                {isFetchingSchema && (
+                  <div className="absolute right-2 top-2">
+                    <Loader2 className="h-5 w-5 text-[#0f62fe] animate-spin" />
+                  </div>
+                )}
+              </div>
+              {tableColumns.length > 0 && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ {tableColumns.length}개 컬럼 로드됨
+                </p>
+              )}
             </div>
 
             {/* 검색 조건 */}
@@ -181,39 +315,70 @@ export default function SimpleMode() {
               <div className="flex items-center gap-2 mb-2">
                 <Search className="h-4 w-4 text-[#525252]" />
                 <label className="text-sm font-medium text-[#161616]">검색 조건</label>
-                <span className="text-xs text-[#8d8d8d]">(선택 - 미지정시 테이블 키값)</span>
+                <span className="text-xs text-[#8d8d8d]">(선택)</span>
               </div>
-              
-              {/* 추가된 검색 조건 */}
-              {searchConditions.length > 0 && (
-                <div className="space-y-1 mb-2">
-                  {searchConditions.map((condition) => (
-                    <div key={condition.id} className="flex items-center justify-between bg-[#e8f1ff] px-2 py-1 rounded text-sm">
-                      <span className="text-[#0f62fe]">{condition.label}</span>
-                      <button
-                        onClick={() => removeSearchCondition(condition.id)}
-                        className="text-[#da1e28] hover:bg-[#fff1f1] p-0.5 rounded"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+
+              {/* 추가된 검색 컴포넌트 */}
+              {searchComponents.length > 0 && (
+                <div className="space-y-2 mb-2">
+                  {searchComponents.map((component) => {
+                    const catalog = SEARCH_COMPONENT_CATALOG.find(c => c.type === component.type);
+                    const Icon = iconMap[catalog?.icon || 'Type'];
+                    return (
+                      <div key={component.id} className="flex items-center gap-2 bg-[#e8f1ff] px-2 py-2 rounded">
+                        <Icon className="h-4 w-4 text-[#0f62fe] shrink-0" />
+                        <input
+                          type="text"
+                          value={component.label}
+                          onChange={(e) => updateComponentLabel(component.id, e.target.value)}
+                          className="flex-1 bg-transparent border-none outline-none text-sm text-[#0f62fe] font-medium"
+                          placeholder="레이블 입력"
+                        />
+                        <span className="text-xs text-[#525252] shrink-0">{catalog?.displayName}</span>
+                        <button
+                          onClick={() => removeSearchComponent(component.id)}
+                          className="text-[#da1e28] hover:bg-[#fff1f1] p-0.5 rounded shrink-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* 검색 조건 타입 선택 */}
-              <div className="flex flex-wrap gap-1">
-                {SEARCH_TYPES.map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => addSearchCondition(type.id)}
-                    className="px-2 py-1 text-xs bg-[#f4f4f4] hover:bg-[#e0e0e0] text-[#525252] rounded flex items-center gap-1"
-                  >
-                    <Plus className="h-3 w-3" />
-                    {type.label}
-                  </button>
-                ))}
-              </div>
+              {/* 컴포넌트 추가 버튼 */}
+              <button
+                onClick={() => setShowComponentCatalog(!showComponentCatalog)}
+                className="w-full h-8 px-3 text-sm flex items-center justify-center gap-2 bg-[#f4f4f4] hover:bg-[#e0e0e0] text-[#525252] border border-dashed border-[#8d8d8d] rounded transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                검색 컴포넌트 추가
+              </button>
+
+              {/* 컴포넌트 카탈로그 */}
+              {showComponentCatalog && (
+                <div className="mt-2 p-2 bg-white border border-[#e0e0e0] rounded shadow-lg max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-1">
+                    {SEARCH_COMPONENT_CATALOG.map((catalog) => {
+                      const Icon = iconMap[catalog.icon];
+                      return (
+                        <button
+                          key={catalog.type}
+                          onClick={() => addSearchComponent(catalog.type)}
+                          className="flex items-start gap-2 p-2 text-left hover:bg-[#f4f4f4] rounded transition-colors"
+                        >
+                          <Icon className="h-4 w-4 text-[#0f62fe] shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-[#161616]">{catalog.displayName}</div>
+                            <div className="text-xs text-[#525252] truncate">{catalog.description}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

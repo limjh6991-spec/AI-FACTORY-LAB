@@ -9,7 +9,7 @@ import {
   loadDbMetadata,
   findTableMeta,
   HEADER_TO_COLUMN_MAP,
-} from "~/lib/screen-generator";
+} from "../_shared/legacy";
 
 /**
  * SQL 쿼리 자동 생성

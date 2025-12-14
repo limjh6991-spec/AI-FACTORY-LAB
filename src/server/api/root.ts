@@ -3,9 +3,10 @@ import { productRouter } from "~/server/api/routers/product";
 import { excelRouter } from "~/server/api/routers/excel";
 import { screen982157Router } from "~/server/api/routers/screen982157";
 import { menuRouter } from "~/server/api/routers/menu";
-import { screenGeneratorRouter } from "~/server/api/routers/screenGenerator";  // 리팩토링된 모듈
+import { screenGeneratorRouter } from "~/server/api/routers/screen-generator";
 import { optionsRouter } from "~/server/api/routers/options";
 import { biMasterRouter } from "~/server/api/routers/biMaster";
+import { dbMetaRouter } from "~/server/api/routers/db-meta";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   screenGenerator: screenGeneratorRouter,
   options: optionsRouter,
   biMaster: biMasterRouter,
+  dbMeta: dbMetaRouter,
 });
 
 // export type definition of API
