@@ -1,6 +1,6 @@
 # 🏭 AI Factory Lab
 
-> **Excel 기반 자동 화면 생성 시스템**  
+> **RealGrid 기반 자동 화면 생성 시스템**  
 > RAG-Enhanced Pattern Learning + Hybrid LLM (Gemini → Ollama)
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -8,23 +8,23 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
 [![tRPC](https://img.shields.io/badge/tRPC-11.0-blue)](https://trpc.io)
 [![Design](https://img.shields.io/badge/Design-IBM%20Carbon-blue)](https://carbondesignsystem.com)
-[![Progress](https://img.shields.io/badge/Progress-40%25-green)](docs/archive/PROJECT_STATUS.md)
+[![Progress](https://img.shields.io/badge/Progress-70%25-green)](docs/PROJECT_STATUS_20251214.md)
 
 ---
 
 ## 🎯 프로젝트 개요
 
-**목표**: Excel 파일 업로드 → AI 분석 → Grid/Chart 자동 생성
+**목표**: DB 테이블 선택 → AI 분석 → RealGrid CRUD 화면 자동 생성
 
 **워크플로우**:
 ```
-Excel 업로드 → AI 분석 (RAG) → Grid/Chart 자동 생성 
-→ 임시 메뉴 생성 → 사용자 확인 → 프로덕션 배포
+DB 테이블 선택 → 컬럼/검색조건 설정 → RealGrid 화면 생성 
+→ 메뉴 등록 → 검색/수정/저장 기능 → 프로덕션 배포
 ```
 
-**현재 단계**: Week 2 완료 - IBM Carbon Design 적용
+**현재 단계**: Week 3 완료 - RealGrid 화면 생성기 핵심 기능 완료
 
-**전체 진행률**: 40% (Phase 0-2 진행 중)
+**전체 진행률**: 70% (핵심 CRUD 기능 완료)
 
 ---
 
@@ -75,7 +75,7 @@ npm run dev
 - **Styling**: Tailwind CSS v4
 - **UI**: shadcn/ui (Radix UI)
 - **🎨 Design System**: IBM Carbon Design System
-- **Grid**: TanStack Table v8
+- **📊 Grid**: RealGrid 2.0 (엔터프라이즈 그리드)
 - **Charts**: Recharts
 
 ### Backend
@@ -151,7 +151,7 @@ npx prisma generate   # Prisma Client 생성
 
 ## 🎯 현재 진행 현황
 
-### ✅ 완료 (40%)
+### ✅ 완료 (70%)
 - [x] Phase 0: Next.js 15 마이그레이션 (100%)
 - [x] Week 1: Gemini API + Vector DB 설정 (100%)
   - Chroma Vector DB 시스템 구축
@@ -161,25 +161,31 @@ npx prisma generate   # Prisma Client 생성
   - 사이드바/헤더 Light Blue 테마
   - Carbon 스타일 카드/테이블 컴포넌트
   - 메뉴 시스템 (tRPC + Prisma)
+- [x] Week 3: RealGrid 화면 생성기 핵심 기능 (100%)
+  - ✅ 검색 기능 (PostgreSQL 스키마 처리, 파라미터 표준화)
+  - ✅ 저장 API (INSERT/UPDATE/DELETE 트랜잭션)
+  - ✅ SQL 쿼리 생성기 (SelectQueryBuilder 클래스)
+  - ✅ 고아 화면 정리 및 메뉴 삭제 보완
+  - ✅ JSZip Mock (Sandpack 미리보기)
 
-### ⏳ 진행 중 (Week 3)
-- [ ] Excel 업로드 UI 구현
-- [ ] 기본 RAG 파이프라인 구축
-- [ ] 화면 자동 생성 시스템 연동
+### ⏳ 진행 중
+- [ ] 엑셀 내보내기 (JSZip 전역 로드)
+- [ ] 공통 옵션 컴포넌트 확장 (설비, 계정 등)
+- [ ] 템플릿 타입 오류 수정
 
 ### 📅 예정
-- Week 3-4: 고급 RAG + 검증 (12/16-12/23)
+- Week 4: 고급 RAG + 검증 (12/16-12/23)
 - Week 5-6: 로컬 모델 조사 (12/30-01/06)
 - Week 7-9: Hybrid 전환 (01/13-01/27)
 
-**상세 체크리스트**: [PROJECT_STATUS.md](docs/archive/PROJECT_STATUS.md)
+**상세 현황**: [PROJECT_STATUS_20251214.md](docs/PROJECT_STATUS_20251214.md)
 
 ---
 
 ## 📚 문서
 
 ### 시작하기
-- [프로젝트 상태](docs/archive/PROJECT_STATUS.md) - 상세 체크리스트
+- [프로젝트 상태](docs/PROJECT_STATUS_20251214.md) - 최신 진행 현황
 - [환경 설정](ENVIRONMENT.md) - 개발 환경 가이드
 - [빠른 시작](docs/QUICK_START.md) - 5분 빠른 시작
 
@@ -281,7 +287,7 @@ cat docs/archive/JARVIS_RECONNECT_PROMPT.md
 
 ---
 
-**Last Updated**: 2025년 12월 6일  
-**Version**: 1.1  
-**Status**: 🚀 Week 3 진행 중 (IBM Carbon Design 적용 완료)
+**Last Updated**: 2025년 12월 15일  
+**Version**: 2.0  
+**Status**: 🚀 Week 3 완료 (RealGrid 화면 생성기 핵심 기능 완료)
 

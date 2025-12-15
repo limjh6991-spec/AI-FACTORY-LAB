@@ -27,12 +27,12 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gridViewRef = useRef<GridView | null>(null);
   const dataProviderRef = useRef<LocalDataProvider | null>(null);
-  
+
   // 상태
   const [loading, setLoading] = useState(false);
   const [modifiedRows, setModifiedRows] = useState(new Set());
   const [deletedRows, setDeletedRows] = useState<any[]>([]);
-  
+
   const [searchYearMonth1, setSearchYearMonth1] = useState('');
   const [dept1, setDept1] = useState('');
 
@@ -51,159 +51,171 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
 
   // RealGrid 컬럼 정의
   const columns = [
-  {
-    "name": "plant_site_code",
-    "fieldName": "plant_site_code",
-    "header": {
-      "text": "plant_site_code"
+    {
+      "name": "plant_site_code",
+      "fieldName": "plant_site_code",
+      "header": {
+        "text": "plant_site_code"
+      },
+      "width": 120,
+      "editable": false,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": false,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "yyyymm",
-    "fieldName": "yyyymm",
-    "header": {
-      "text": "yyyymm"
+    {
+      "name": "yyyymm",
+      "fieldName": "yyyymm",
+      "header": {
+        "text": "yyyymm"
+      },
+      "width": 120,
+      "editable": false,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": false,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "scenario_code",
-    "fieldName": "scenario_code",
-    "header": {
-      "text": "scenario_code"
+    {
+      "name": "scenario_code",
+      "fieldName": "scenario_code",
+      "header": {
+        "text": "scenario_code"
+      },
+      "width": 120,
+      "editable": false,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": false,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "department_code",
-    "fieldName": "department_code",
-    "header": {
-      "text": "department_code"
+    {
+      "name": "department_code",
+      "fieldName": "department_code",
+      "header": {
+        "text": "department_code"
+      },
+      "width": 120,
+      "editable": false,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": false,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "department_name",
-    "fieldName": "department_name",
-    "header": {
-      "text": "department_name"
+    {
+      "name": "department_name",
+      "fieldName": "department_name",
+      "header": {
+        "text": "department_name"
+      },
+      "width": 120,
+      "editable": true,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": true,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "parent_department_code",
-    "fieldName": "parent_department_code",
-    "header": {
-      "text": "parent_department_code"
+    {
+      "name": "parent_department_code",
+      "fieldName": "parent_department_code",
+      "header": {
+        "text": "parent_department_code"
+      },
+      "width": 120,
+      "editable": true,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": true,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "cost_center_mapping_code",
-    "fieldName": "cost_center_mapping_code",
-    "header": {
-      "text": "cost_center_mapping_code"
+    {
+      "name": "cost_center_mapping_code",
+      "fieldName": "cost_center_mapping_code",
+      "header": {
+        "text": "cost_center_mapping_code"
+      },
+      "width": 120,
+      "editable": true,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": true,
-    "styles": {
-      "textAlignment": "center"
-    }
-  },
-  {
-    "name": "is_production_dept",
-    "fieldName": "is_production_dept",
-    "header": {
-      "text": "is_production_dept"
+    {
+      "name": "is_production_dept",
+      "fieldName": "is_production_dept",
+      "header": {
+        "text": "is_production_dept"
+      },
+      "width": 120,
+      "editable": true,
+      "styles": {
+        "textAlignment": "center"
+      }
     },
-    "width": 120,
-    "editable": true,
-    "styles": {
-      "textAlignment": "center"
+    {
+      "name": "use_yn",
+      "fieldName": "use_yn",
+      "header": {
+        "text": "use_yn"
+      },
+      "width": 120,
+      "editable": true,
+      "styles": {
+        "textAlignment": "center"
+      }
     }
-  },
-  {
-    "name": "use_yn",
-    "fieldName": "use_yn",
-    "header": {
-      "text": "use_yn"
-    },
-    "width": 120,
-    "editable": true,
-    "styles": {
-      "textAlignment": "center"
-    }
-  }
-];
+  ];
 
   // RealGrid 초기화
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     // 라이센스 설정
     const license = process.env.NEXT_PUBLIC_REALGRID_LICENSE;
     if (license) {
       RealGrid.setLicenseKey(license);
     }
-    
+
     // DataProvider & GridView 초기화
     const dataProvider = new LocalDataProvider(false);
     const gridView = new GridView(containerRef.current);
     gridView.setDataSource(dataProvider);
-    
+
     // 필드 & 컬럼 설정
     dataProvider.setFields(fields);
     gridView.setColumns(columns);
-    
+
     // 그리드 옵션
     gridView.setDisplayOptions({
       columnMovable: true,
       columnResizable: true,
-      rowHeight: 36,
+      rowHeight: 40,
     });
-    
+
     gridView.setHeader({ height: 40 });
-    gridView.setEditOptions({ editable: true, insertable: true, deletable: true });
+    gridView.setEditOptions({
+      editable: true,
+      insertable: true,
+      deletable: true,
+      // 셀 편집 활성화 옵션
+      readOnly: false,
+      updatable: true,            // 기존 데이터 수정 가능
+      editWhenFocused: true,      // 셀 포커스 시 편집 모드
+      editWhenClickFocused: true, // 선택된 셀 클릭 시 편집 모드
+      commitByCell: true,         // 셀 이동 시 자동 커밋
+      commitWhenLeave: true,      // 그리드 벗어날 때 커밋
+      commitWhenNoEdit: true,     // 편집 없이도 커밋
+    });
     gridView.setStateBar({ visible: true });
     gridView.setCheckBar({ visible: true });
-    
+
     // 참조 저장
     gridViewRef.current = gridView;
     dataProviderRef.current = dataProvider;
-    
+
     // 데이터 변경 이벤트
     dataProvider.onRowStateChanged = (provider, row) => {
       setModifiedRows(prev => new Set(prev).add(row));
     };
-    
+
     // 초기 데이터 로드
     fetchData();
-    
+
     return () => {
       gridView.destroy();
       dataProvider.destroy();
@@ -222,7 +234,7 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch');
       const result = await response.json();
-      
+
       if (dataProviderRef.current) {
         dataProviderRef.current.setRows(result.data || []);
       }
@@ -251,15 +263,15 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
   const handleAddRow = useCallback(() => {
     if (dataProviderRef.current) {
       const newRow = {
-      plant_site_code: '',
-      yyyymm: '',
-      scenario_code: '',
-      department_code: '',
-      department_name: '',
-      parent_department_code: '',
-      cost_center_mapping_code: '',
-      is_production_dept: '',
-      use_yn: '',        _isNew: true,
+        plant_site_code: '',
+        yyyymm: '',
+        scenario_code: '',
+        department_code: '',
+        department_name: '',
+        parent_department_code: '',
+        cost_center_mapping_code: '',
+        is_production_dept: '',
+        use_yn: '', _isNew: true,
       };
       dataProviderRef.current.insertRow(0, newRow);
     }
@@ -268,55 +280,55 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
   // 선택된 행 삭제
   const handleDeleteSelected = useCallback(() => {
     if (!gridViewRef.current || !dataProviderRef.current) return;
-    
+
     const checkedRows = gridViewRef.current.getCheckedRows();
     if (checkedRows.length === 0) {
       alert('삭제할 행을 선택해주세요.');
       return;
     }
-    
+
     if (!confirm(`선택된 ${checkedRows.length}개 행을 삭제하시겠습니까?`)) {
       return;
     }
-    
+
     // 삭제할 행의 데이터 저장 (PK 값 포함)
     const rowsToDelete = checkedRows.map(row => dataProviderRef.current?.getJsonRow(row)).filter(Boolean);
-    
+
     // 역순으로 삭제 (인덱스 유지)
     checkedRows.sort((a, b) => b - a).forEach(row => {
       if (dataProviderRef.current) {
         dataProviderRef.current.removeRow(row);
       }
     });
-    
+
     setDeletedRows(prev => [...prev, ...rowsToDelete]);
   }, []);
 
   // 저장
   const handleSave = useCallback(async () => {
     if (!dataProviderRef.current) return;
-    
+
     // 변경된 행들 수집
     const provider = dataProviderRef.current;
     const insertedRows = [];
     const updatedRows = [];
-    
+
     for (let i = 0; i < provider.getRowCount(); i++) {
       const state = provider.getRowState(i);
       const values = provider.getJsonRow(i);
-      
+
       if (state === 'created') {
         insertedRows.push(values);
       } else if (state === 'updated') {
         updatedRows.push(values);
       }
     }
-    
+
     if (insertedRows.length === 0 && updatedRows.length === 0 && deletedRows.length === 0) {
       alert('변경된 내용이 없습니다.');
       return;
     }
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/screens/sc_bi_dept_mst/data`, {
@@ -328,9 +340,9 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
           deleted: deletedRows,
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         alert(`저장 완료: 추가 ${result.insertedCount}건, 수정 ${result.updatedCount}건, 삭제 ${result.deletedCount}건`);
         setDeletedRows([]);
@@ -407,15 +419,12 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
           font-size: 14px !important;
         }
         
-        /* Body Cells */
         .realgrid-container .rg-data-cell {
           border-right: 1px solid #e0e0e0 !important;
           border-bottom: 1px solid #e0e0e0 !important;
           padding: 0 16px !important;
           font-size: 14px !important;
           color: #161616 !important;
-          height: 48px !important;
-          line-height: 48px !important;
         }
         
         /* Row Hover - Carbon hover color */
@@ -489,8 +498,8 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
           <Plus style={{ width: 16, height: 16 }} />
           행 추가
         </button>
-        <button 
-          onClick={handleSave} 
+        <button
+          onClick={handleSave}
           disabled={!hasChanges}
           style={hasChanges ? styles.btnSuccess : styles.btnDisabled}
         >
@@ -525,8 +534,8 @@ export default function SC_BI_DEPT_MSTDepartmentMasterScreen() {
 
       {/* RealGrid */}
       <div className="realgrid-container" style={styles.gridContainer}>
-        <div 
-          ref={containerRef} 
+        <div
+          ref={containerRef}
           style={{ width: '100%', height: '100%' }}
         />
       </div>

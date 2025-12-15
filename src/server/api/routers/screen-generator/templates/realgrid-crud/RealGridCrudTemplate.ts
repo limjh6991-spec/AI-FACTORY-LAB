@@ -11,33 +11,33 @@
  */
 
 import {
-    BaseTemplate,
-    type ComponentGenerationResult,
-    type ApiGenerationResult,
-    type ScreenGenerationResult,
-    type ICrudTemplate,
+  BaseTemplate,
+  type ComponentGenerationResult,
+  type ApiGenerationResult,
+  type ScreenGenerationResult,
+  type ICrudTemplate,
 } from '../base';
 
 import {
-    ScreenType,
-    type ParsedData,
-    type CrudParsedData,
-    type CrudColumnDef,
-    type CrudConfig,
+  ScreenType,
+  type ParsedData,
+  type CrudParsedData,
+  type CrudColumnDef,
+  type CrudConfig,
 } from '../../_shared/types';
 
 // 블록 기반 스키마 타입 import
 import type {
-    ScreenSchema,
-    Block,
-    SearchField,
-    GridColumn,
-    ToolbarButton,
+  ScreenSchema,
+  Block,
+  SearchField,
+  GridColumn,
+  ToolbarButton,
 } from '~/features/screen-generator/types/block-schema';
 
 import {
-    BlockType,
-    LayoutType,
+  BlockType,
+  LayoutType,
 } from '~/features/screen-generator/types/block-schema';
 
 // ============================================================
@@ -48,11 +48,11 @@ import {
  * ParsedData가 CrudParsedData인지 확인
  */
 function isCrudParsedData(data: ParsedData): data is CrudParsedData {
-    return (
-        data.screenType === ScreenType.SIMPLE_GRID_CRUD ||
-        data.screenType === ScreenType.COMPLEX_GRID_CRUD ||
-        data.screenType === ScreenType.REALGRID_CRUD
-    ) && 'crudConfig' in data && 'crudColumns' in data;
+  return (
+    data.screenType === ScreenType.SIMPLE_GRID_CRUD ||
+    data.screenType === ScreenType.COMPLEX_GRID_CRUD ||
+    data.screenType === ScreenType.REALGRID_CRUD
+  ) && 'crudConfig' in data && 'crudColumns' in data;
 }
 
 // ============================================================
@@ -66,132 +66,132 @@ function isCrudParsedData(data: ParsedData): data is CrudParsedData {
  * RealGrid 라이브러리를 사용하는 코드를 생성합니다.
  */
 export class RealGridCrudTemplate extends BaseTemplate implements ICrudTemplate {
-    protected readonly screenType = ScreenType.REALGRID_CRUD;
-    protected readonly description = '단순 CRUD 화면 (RealGrid)';
+  protected readonly screenType = ScreenType.REALGRID_CRUD;
+  protected readonly description = '단순 CRUD 화면 (RealGrid)';
 
-    // ============================================================
-    // 컴포넌트 생성
-    // ============================================================
+  // ============================================================
+  // 컴포넌트 생성
+  // ============================================================
 
-    /**
-     * CRUD 화면 컴포넌트 생성
-     */
-    async generateComponent(data: ParsedData): Promise<ComponentGenerationResult> {
-        // screenType을 RealGrid CRUD로 변경
-        const realGridData = { ...data, screenType: ScreenType.REALGRID_CRUD };
+  /**
+   * CRUD 화면 컴포넌트 생성
+   */
+  async generateComponent(data: ParsedData): Promise<ComponentGenerationResult> {
+    // screenType을 RealGrid CRUD로 변경
+    const realGridData = { ...data, screenType: ScreenType.REALGRID_CRUD };
 
-        // 타입 체크
-        if (!isCrudParsedData(realGridData)) {
-            return this.createErrorResult(
-                'Invalid data: CrudParsedData required',
-                data.screenId ?? 'unknown'
-            );
-        }
-
-        const screenId = data.screenId ?? 'SC000';
-        const componentName = this.getComponentName(screenId, data.screenName);
-
-        try {
-            // ScreenSchema 생성
-            const schema = this.generateScreenSchema(realGridData);
-
-            // RealGrid 컴포넌트 코드 생성
-            const code = this.generateComponentCode(componentName, schema);
-
-            return {
-                success: true,
-                filePath: this.getFilePath(screenId, true),
-                fileName: this.getFileName(screenId),
-                code,
-            };
-        } catch (error) {
-            return this.createErrorResult(
-                `Component generation failed: ${error instanceof Error ? error.message : String(error)}`,
-                screenId
-            );
-        }
+    // 타입 체크
+    if (!isCrudParsedData(realGridData)) {
+      return this.createErrorResult(
+        'Invalid data: CrudParsedData required',
+        data.screenId ?? 'unknown'
+      );
     }
 
-    /**
-     * RealGrid 컴포넌트 코드 생성
-     * 
-     * AG Grid와 달리 RealGrid는 DOM 기반 초기화가 필요합니다.
-     * - useRef로 컨테이너, gridView, dataProvider 관리
-     * - useEffect에서 RealGrid 초기화
-     * - DataProvider API를 사용한 CRUD 처리
-     */
-    generateComponentCode(componentName: string, schema: ScreenSchema): string {
-        const gridBlock = schema.blocks.find(b => b.type === BlockType.DATA_GRID);
-        const searchBlock = schema.blocks.find(b => b.type === BlockType.SEARCH_FORM);
+    const screenId = data.screenId ?? 'SC000';
+    const componentName = this.getComponentName(screenId, data.screenName);
 
-        const columns = gridBlock?.config?.columns || [];
-        const searchFields = searchBlock?.config?.fields || [];
-        const pkField = gridBlock?.config?.primaryKey || 'id';
+    try {
+      // ScreenSchema 생성
+      const schema = this.generateScreenSchema(realGridData);
+
+      // RealGrid 컴포넌트 코드 생성
+      const code = this.generateComponentCode(componentName, schema);
+
+      return {
+        success: true,
+        filePath: this.getFilePath(screenId, true),
+        fileName: this.getFileName(screenId),
+        code,
+      };
+    } catch (error) {
+      return this.createErrorResult(
+        `Component generation failed: ${error instanceof Error ? error.message : String(error)}`,
+        screenId
+      );
+    }
+  }
+
+  /**
+   * RealGrid 컴포넌트 코드 생성
+   * 
+   * AG Grid와 달리 RealGrid는 DOM 기반 초기화가 필요합니다.
+   * - useRef로 컨테이너, gridView, dataProvider 관리
+   * - useEffect에서 RealGrid 초기화
+   * - DataProvider API를 사용한 CRUD 처리
+   */
+  generateComponentCode(componentName: string, schema: ScreenSchema): string {
+    const gridBlock = schema.blocks.find(b => b.type === BlockType.DATA_GRID);
+    const searchBlock = schema.blocks.find(b => b.type === BlockType.SEARCH_FORM);
+
+    const columns = gridBlock?.config?.columns || [];
+    const searchFields = searchBlock?.config?.fields || [];
+    const pkField = gridBlock?.config?.primaryKey || 'id';
 
 
-        // Fields 정의 생성 (DataProvider용) - ValueType은 JSON.stringify하면 문자열이 되므로 수동 생성
-        const fieldsJson = `[
+    // Fields 정의 생성 (DataProvider용) - ValueType은 JSON.stringify하면 문자열이 되므로 수동 생성
+    const fieldsJson = `[
 ${columns.map((col: GridColumn) => `    { fieldName: "${col.field}", dataType: ${this.mapToRealGridDataType(col.type || 'text')} }`).join(',\n')}
   ]`;
 
-        // Columns 정의 생성 (GridView용)
-        const columnsJson = JSON.stringify(
-            columns.map((col: GridColumn) => ({
-                name: col.field,
-                fieldName: col.field,
-                header: { text: col.headerName },
-                width: col.width || 120,
-                editable: col.editable ?? true,
-                styles: { textAlignment: col.align || 'center' },
-            })),
-            null,
-            2
-        );
+    // Columns 정의 생성 (GridView용)
+    const columnsJson = JSON.stringify(
+      columns.map((col: GridColumn) => ({
+        name: col.field,
+        fieldName: col.field,
+        header: { text: col.headerName },
+        width: col.width || 120,
+        editable: col.editable ?? true,
+        styles: { textAlignment: col.align || 'center' },
+      })),
+      null,
+      2
+    );
 
-        // 검색 필드 state 생성
-        const searchStates = searchFields.map((field: any) =>
-            `  const [${field.name}, set${field.name.charAt(0).toUpperCase() + field.name.slice(1)}] = useState('');`
-        ).join('\n');
+    // 검색 필드 state 생성
+    const searchStates = searchFields.map((field: any) =>
+      `  const [${field.name}, set${field.name.charAt(0).toUpperCase() + field.name.slice(1)}] = useState('');`
+    ).join('\n');
 
-        // 검색 필드 렌더링 (공통 옵션 컴포넌트 사용)
-        const searchFieldsRender = searchFields.map((field: any) => {
-            const setter = `set${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`;
-            const fieldType = field.type || 'TEXT_INPUT';
+    // 검색 필드 렌더링 (공통 옵션 컴포넌트 사용)
+    const searchFieldsRender = searchFields.map((field: any) => {
+      const setter = `set${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`;
+      const fieldType = field.type || 'TEXT_INPUT';
 
-            switch (fieldType) {
-                case 'YEAR_MONTH':
-                case 'BI_YEAR_MONTH':
-                    return `        <YearMonthPicker
+      switch (fieldType) {
+        case 'YEAR_MONTH':
+        case 'BI_YEAR_MONTH':
+          return `        <YearMonthPicker
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_SITE':
-                    return `        <SiteSelect
+        case 'BI_SITE':
+          return `        <SiteSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_DEPT':
-                    return `        <DepartmentSelect
+        case 'BI_DEPT':
+          return `        <DepartmentSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_ACCOUNT':
-                    return `        <AccountSelect
+        case 'BI_ACCOUNT':
+          return `        <AccountSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_CUSTOMER':
-                    return `        <CustomerSelect
+        case 'BI_CUSTOMER':
+          return `        <CustomerSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_EQUIPMENT':
-                    return `        <div style={styles.searchField}>
+        case 'BI_EQUIPMENT':
+          return `        <div style={styles.searchField}>
           <label style={styles.label}>${field.label}</label>
           <input
             type="text"
@@ -201,20 +201,20 @@ ${columns.map((col: GridColumn) => `    { fieldName: "${col.field}", dataType: $
             placeholder="${field.placeholder || field.label}"
           />
         </div>`;
-                case 'BI_EXPENSE':
-                    return `        <ExpenSelSelect
+        case 'BI_EXPENSE':
+          return `        <ExpenSelSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                case 'BI_PRODUCT':
-                    return `        <MaterialSelect
+        case 'BI_PRODUCT':
+          return `        <MaterialSelect
           value={${field.name}}
           onChange={${setter}}
           label="${field.label}"
         />`;
-                default:
-                    return `        <div style={styles.searchField}>
+        default:
+          return `        <div style={styles.searchField}>
           <label style={styles.label}>${field.label}</label>
           <input
             type="text"
@@ -224,26 +224,26 @@ ${columns.map((col: GridColumn) => `    { fieldName: "${col.field}", dataType: $
             placeholder="${field.placeholder || field.label}"
           />
         </div>`;
-            }
-        }).join('\n');
+      }
+    }).join('\n');
 
-        // 새 행 템플릿 생성 (빈 columns 처리)
-        const newRowFields = columns.map((col: GridColumn) =>
-            `      ${col.field}: ''`
-        );
-        const newRowTemplate = newRowFields.length > 0
-            ? newRowFields.join(',\n') + ','
-            : '';
+    // 새 행 템플릿 생성 (빈 columns 처리)
+    const newRowFields = columns.map((col: GridColumn) =>
+      `      ${col.field}: ''`
+    );
+    const newRowTemplate = newRowFields.length > 0
+      ? newRowFields.join(',\n') + ','
+      : '';
 
-        const hasSearchFields = searchFields.length > 0;
+    const hasSearchFields = searchFields.length > 0;
 
-        // 공통 옵션 import 생성
-        const needsOptionImports = searchFields.some((f: any) => {
-            const type = f.type || 'TEXT_INPUT';
-            return ['YEAR_MONTH', 'BI_YEAR_MONTH', 'BI_SITE', 'BI_DEPT', 'BI_ACCOUNT', 'BI_CUSTOMER', 'BI_SCENARIO', 'BI_PRODUCT', 'DATE_PICKER'].includes(type);
-        });
+    // 공통 옵션 import 생성
+    const needsOptionImports = searchFields.some((f: any) => {
+      const type = f.type || 'TEXT_INPUT';
+      return ['YEAR_MONTH', 'BI_YEAR_MONTH', 'BI_SITE', 'BI_DEPT', 'BI_ACCOUNT', 'BI_CUSTOMER', 'BI_SCENARIO', 'BI_PRODUCT', 'DATE_PICKER'].includes(type);
+    });
 
-        const optionImports = needsOptionImports ? `
+    const optionImports = needsOptionImports ? `
 // 공통 옵션 컴포넌트
 import {
   SiteSelect,
@@ -257,7 +257,7 @@ import {
 } from '~/components/options';
 ` : '';
 
-        return `'use client';
+    return `'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import RealGrid, { GridView, LocalDataProvider, ValueType } from 'realgrid';
@@ -311,11 +311,23 @@ ${searchStates}
     gridView.setDisplayOptions({
       columnMovable: true,
       columnResizable: true,
-      rowHeight: 36,
+      rowHeight: 40,
     });
     
     gridView.setHeader({ height: 40 });
-    gridView.setEditOptions({ editable: true, insertable: true, deletable: true });
+    gridView.setEditOptions({
+      editable: true,
+      insertable: true,
+      deletable: true,
+      // 셀 편집 활성화 옵션
+      readOnly: false,
+      updatable: true,            // 기존 데이터 수정 가능
+      editWhenFocused: true,      // 셀 포커스 시 편집 모드
+      editWhenClickFocused: true, // 선택된 셀 클릭 시 편집 모드
+      commitByCell: true,         // 셀 이동 시 자동 커밋
+      commitWhenLeave: true,      // 그리드 벗어날 때 커밋
+      commitWhenNoEdit: true,     // 편집 없이도 커밋
+    });
     gridView.setStateBar({ visible: true });
     gridView.setCheckBar({ visible: true });
     
@@ -531,8 +543,6 @@ ${newRowTemplate}        _isNew: true,
           padding: 0 16px !important;
           font-size: 14px !important;
           color: #161616 !important;
-          height: 48px !important;
-          line-height: 48px !important;
         }
         
         /* Row Hover - Carbon hover color */
@@ -642,268 +652,268 @@ ${searchFieldsRender}
   );
 }
 `;
+  }
+
+  /**
+   * RealGrid DataType 매핑
+   */
+  private mapToRealGridDataType(type: string): string {
+    switch (type) {
+      case 'number':
+        return 'ValueType.NUMBER';
+      case 'date':
+      case 'datetime':
+        return 'ValueType.DATE';
+      case 'boolean':
+        return 'ValueType.BOOLEAN';
+      default:
+        return 'ValueType.TEXT';
+    }
+  }
+
+  // ============================================================
+  // ScreenSchema 생성 (SimpleGridCrudTemplate과 동일)
+  // ============================================================
+
+  /**
+   * ScreenSchema 생성 (Excel 데이터 → 블록 조립)
+   */
+  private generateScreenSchema(data: CrudParsedData): ScreenSchema {
+    const screenId = data.screenId ?? 'SC000';
+    const pkField = data.crudConfig?.primaryKey || 'id';
+
+    // 검색 필드 생성
+    const searchFields = this.generateSearchFields(data);
+
+    // 그리드 컬럼 생성
+    const gridColumns = this.generateGridColumns(data.crudColumns, pkField);
+
+    // 툴바 버튼 생성
+    const toolbarButtons = this.generateToolbarButtons();
+
+    // 블록 조립
+    const blocks: Block[] = [
+      // 페이지 헤더
+      {
+        id: `${screenId}_header`,
+        type: BlockType.PAGE_HEADER,
+        config: {
+          title: data.screenName,
+          subtitle: data.screenNameEn,
+        },
+      },
+      // 검색 폼
+      {
+        id: `${screenId}_search`,
+        type: BlockType.SEARCH_FORM,
+        config: {
+          fields: searchFields,
+          onSearch: 'handleSearch',
+          onReset: 'handleReset',
+        },
+      },
+      // 툴바
+      {
+        id: `${screenId}_toolbar`,
+        type: BlockType.TOOLBAR,
+        config: {
+          buttons: toolbarButtons,
+        },
+      },
+      // 데이터 그리드 - RealGrid
+      {
+        id: `${screenId}_grid`,
+        type: BlockType.DATA_GRID,
+        config: {
+          gridType: 'realgrid',
+          columns: gridColumns,
+          primaryKey: pkField,
+          rowSelection: data.crudConfig?.rowSelection ?? 'multiple',
+          pagination: data.crudConfig?.pagination ?? false,
+          pageSize: data.crudConfig?.pageSize ?? 50,
+          editable: true,
+          apiEndpoint: `/api/screens/${screenId.toLowerCase()}/data`,
+        },
+      },
+    ];
+
+    return {
+      version: '1.0',
+      screenId,
+      screenName: data.screenName,
+      screenNameEn: data.screenNameEn,
+      screenType: ScreenType.REALGRID_CRUD,
+      tableName: data.tableName,
+      layout: {
+        type: LayoutType.SINGLE_COLUMN,
+        blocks: blocks.map(b => b.id),
+      },
+      blocks,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * 검색 필드 생성
+   */
+  private generateSearchFields(data: CrudParsedData): SearchField[] {
+    return data.searchConditions.map((cond, i) => ({
+      id: `search_${i}`,
+      name: cond.field || `search${cond.label.replace(/\s/g, '')}`,
+      label: cond.label,
+      type: this.mapSearchFieldType(cond.type),
+      placeholder: cond.label,
+      required: cond.required || false,
+    }));
+  }
+
+  /**
+   * SearchCondition.type → SearchFieldType 매핑
+   * UI는 대문자 enum 사용 (YEAR_MONTH, BI_SITE 등)
+   */
+  private mapSearchFieldType(type: string): string {
+    const typeMap: Record<string, string> = {
+      // 소문자 (legacy)
+      'text': 'TEXT_INPUT',
+      'number': 'NUMBER_INPUT',
+      'date': 'DATE_PICKER',
+      'dateRange': 'DATE_RANGE',
+      'yearMonth': 'YEAR_MONTH',
+      'select': 'SELECT',
+      'multiSelect': 'MULTI_SELECT',
+      'checkbox': 'CHECKBOX',
+      'site': 'BI_SITE',
+      'scenario': 'BI_SCENARIO',
+      'dept': 'BI_DEPT',
+      'costCenter': 'BI_COST_CENTER',
+      'user': 'BI_USER',
+      'account': 'BI_ACCOUNT',
+      'expense': 'BI_EXPENSE',
+      'customer': 'BI_CUSTOMER',
+      'equipment': 'BI_EQUIPMENT',
+      'product': 'BI_PRODUCT',
+      // 대문자 (UI enum values) - 그대로 반환
+      'TEXT_INPUT': 'TEXT_INPUT',
+      'NUMBER_INPUT': 'NUMBER_INPUT',
+      'DATE_PICKER': 'DATE_PICKER',
+      'DATE_RANGE': 'DATE_RANGE',
+      'YEAR_MONTH': 'YEAR_MONTH',
+      'SELECT': 'SELECT',
+      'MULTI_SELECT': 'MULTI_SELECT',
+      'CHECKBOX': 'CHECKBOX',
+      'BI_SITE': 'BI_SITE',
+      'BI_SCENARIO': 'BI_SCENARIO',
+      'BI_DEPT': 'BI_DEPT',
+      'BI_COST_CENTER': 'BI_COST_CENTER',
+      'BI_USER': 'BI_USER',
+      'BI_ACCOUNT': 'BI_ACCOUNT',
+      'BI_EXPENSE': 'BI_EXPENSE',
+      'BI_CUSTOMER': 'BI_CUSTOMER',
+      'BI_EQUIPMENT': 'BI_EQUIPMENT',
+      'BI_PRODUCT': 'BI_PRODUCT',
+    };
+    return typeMap[type] || 'TEXT_INPUT';
+  }
+
+  /**
+   * 툴바 버튼 생성
+   */
+  private generateToolbarButtons(): ToolbarButton[] {
+    return [
+      { id: 'add', label: '행 추가', icon: 'Plus', action: 'handleAddRow', variant: 'primary' },
+      { id: 'save', label: '저장', icon: 'Save', action: 'handleSave', variant: 'success' },
+      { id: 'delete', label: '삭제', icon: 'Trash2', action: 'handleDeleteSelected', variant: 'danger' },
+      { id: 'excel', label: '엑셀', icon: 'Download', action: 'handleExcelExport', variant: 'secondary', position: 'right' },
+    ];
+  }
+
+  /**
+   * 그리드 컬럼 생성
+   */
+  private generateGridColumns(columns: CrudColumnDef[], pkField: string): GridColumn[] {
+    return columns.map((col, index) => ({
+      id: `col_${index}`,
+      headerName: col.headerName,
+      field: col.field,
+      width: col.width || 120,
+      type: this.mapColumnType(col.editorType),
+      editable: col.editable,
+      required: col.required,
+      align: col.align,
+      isPrimaryKey: col.field === pkField,
+    }));
+  }
+
+  /**
+   * 에디터 타입 → 그리드 컬럼 타입 매핑
+   */
+  private mapColumnType(editorType: string): GridColumn['type'] {
+    const typeMap: Record<string, GridColumn['type']> = {
+      'text': 'text',
+      'number': 'number',
+      'date': 'date',
+      'datetime': 'datetime',
+      'select': 'select',
+      'checkbox': 'checkbox',
+      'textarea': 'text',
+      'readonly': 'text',
+    };
+    return typeMap[editorType] || 'text';
+  }
+
+  // ============================================================
+  // API 생성 (SimpleGridCrudTemplate과 동일)
+  // ============================================================
+
+  /**
+   * API 코드 생성
+   */
+  async generateApiCode(data: ParsedData): Promise<string> {
+    if (!isCrudParsedData(data)) {
+      throw new Error('CrudParsedData required');
     }
 
-    /**
-     * RealGrid DataType 매핑
-     */
-    private mapToRealGridDataType(type: string): string {
-        switch (type) {
-            case 'number':
-                return 'ValueType.NUMBER';
-            case 'date':
-            case 'datetime':
-                return 'ValueType.DATE';
-            case 'boolean':
-                return 'ValueType.BOOLEAN';
-            default:
-                return 'ValueType.TEXT';
-        }
+    const screenId = data.screenId ?? 'SC000';
+    const routerName = this.getRouterName(screenId);
+    const tableName = data.tableName ?? 'unknown_table';
+
+    return this.generateRouterCode(routerName, tableName, data.crudConfig, data.crudColumns);
+  }
+
+  /**
+   * API 라우터 코드 생성 (전체 결과 반환)
+   */
+  async generateApi(data: ParsedData): Promise<ApiGenerationResult> {
+    try {
+      const code = await this.generateApiCode(data);
+      const screenId = data.screenId ?? 'SC000';
+
+      return {
+        success: true,
+        fileName: `${this.getRouterName(screenId)}.ts`,
+        code,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
+  }
 
-    // ============================================================
-    // ScreenSchema 생성 (SimpleGridCrudTemplate과 동일)
-    // ============================================================
+  /**
+   * tRPC 라우터 코드 생성
+   */
+  private generateRouterCode(
+    routerName: string,
+    tableName: string,
+    config: CrudConfig,
+    columns: CrudColumnDef[]
+  ): string {
+    const pkField = config.primaryKey;
+    const zodSchema = this.generateZodSchema(columns);
 
-    /**
-     * ScreenSchema 생성 (Excel 데이터 → 블록 조립)
-     */
-    private generateScreenSchema(data: CrudParsedData): ScreenSchema {
-        const screenId = data.screenId ?? 'SC000';
-        const pkField = data.crudConfig?.primaryKey || 'id';
-
-        // 검색 필드 생성
-        const searchFields = this.generateSearchFields(data);
-
-        // 그리드 컬럼 생성
-        const gridColumns = this.generateGridColumns(data.crudColumns, pkField);
-
-        // 툴바 버튼 생성
-        const toolbarButtons = this.generateToolbarButtons();
-
-        // 블록 조립
-        const blocks: Block[] = [
-            // 페이지 헤더
-            {
-                id: `${screenId}_header`,
-                type: BlockType.PAGE_HEADER,
-                config: {
-                    title: data.screenName,
-                    subtitle: data.screenNameEn,
-                },
-            },
-            // 검색 폼
-            {
-                id: `${screenId}_search`,
-                type: BlockType.SEARCH_FORM,
-                config: {
-                    fields: searchFields,
-                    onSearch: 'handleSearch',
-                    onReset: 'handleReset',
-                },
-            },
-            // 툴바
-            {
-                id: `${screenId}_toolbar`,
-                type: BlockType.TOOLBAR,
-                config: {
-                    buttons: toolbarButtons,
-                },
-            },
-            // 데이터 그리드 - RealGrid
-            {
-                id: `${screenId}_grid`,
-                type: BlockType.DATA_GRID,
-                config: {
-                    gridType: 'realgrid',
-                    columns: gridColumns,
-                    primaryKey: pkField,
-                    rowSelection: data.crudConfig?.rowSelection ?? 'multiple',
-                    pagination: data.crudConfig?.pagination ?? false,
-                    pageSize: data.crudConfig?.pageSize ?? 50,
-                    editable: true,
-                    apiEndpoint: `/api/screens/${screenId.toLowerCase()}/data`,
-                },
-            },
-        ];
-
-        return {
-            version: '1.0',
-            screenId,
-            screenName: data.screenName,
-            screenNameEn: data.screenNameEn,
-            screenType: ScreenType.REALGRID_CRUD,
-            tableName: data.tableName,
-            layout: {
-                type: LayoutType.SINGLE_COLUMN,
-                blocks: blocks.map(b => b.id),
-            },
-            blocks,
-            createdAt: new Date().toISOString(),
-        };
-    }
-
-    /**
-     * 검색 필드 생성
-     */
-    private generateSearchFields(data: CrudParsedData): SearchField[] {
-        return data.searchConditions.map((cond, i) => ({
-            id: `search_${i}`,
-            name: cond.field || `search${cond.label.replace(/\s/g, '')}`,
-            label: cond.label,
-            type: this.mapSearchFieldType(cond.type),
-            placeholder: cond.label,
-            required: cond.required || false,
-        }));
-    }
-
-    /**
-     * SearchCondition.type → SearchFieldType 매핑
-     * UI는 대문자 enum 사용 (YEAR_MONTH, BI_SITE 등)
-     */
-    private mapSearchFieldType(type: string): string {
-        const typeMap: Record<string, string> = {
-            // 소문자 (legacy)
-            'text': 'TEXT_INPUT',
-            'number': 'NUMBER_INPUT',
-            'date': 'DATE_PICKER',
-            'dateRange': 'DATE_RANGE',
-            'yearMonth': 'YEAR_MONTH',
-            'select': 'SELECT',
-            'multiSelect': 'MULTI_SELECT',
-            'checkbox': 'CHECKBOX',
-            'site': 'BI_SITE',
-            'scenario': 'BI_SCENARIO',
-            'dept': 'BI_DEPT',
-            'costCenter': 'BI_COST_CENTER',
-            'user': 'BI_USER',
-            'account': 'BI_ACCOUNT',
-            'expense': 'BI_EXPENSE',
-            'customer': 'BI_CUSTOMER',
-            'equipment': 'BI_EQUIPMENT',
-            'product': 'BI_PRODUCT',
-            // 대문자 (UI enum values) - 그대로 반환
-            'TEXT_INPUT': 'TEXT_INPUT',
-            'NUMBER_INPUT': 'NUMBER_INPUT',
-            'DATE_PICKER': 'DATE_PICKER',
-            'DATE_RANGE': 'DATE_RANGE',
-            'YEAR_MONTH': 'YEAR_MONTH',
-            'SELECT': 'SELECT',
-            'MULTI_SELECT': 'MULTI_SELECT',
-            'CHECKBOX': 'CHECKBOX',
-            'BI_SITE': 'BI_SITE',
-            'BI_SCENARIO': 'BI_SCENARIO',
-            'BI_DEPT': 'BI_DEPT',
-            'BI_COST_CENTER': 'BI_COST_CENTER',
-            'BI_USER': 'BI_USER',
-            'BI_ACCOUNT': 'BI_ACCOUNT',
-            'BI_EXPENSE': 'BI_EXPENSE',
-            'BI_CUSTOMER': 'BI_CUSTOMER',
-            'BI_EQUIPMENT': 'BI_EQUIPMENT',
-            'BI_PRODUCT': 'BI_PRODUCT',
-        };
-        return typeMap[type] || 'TEXT_INPUT';
-    }
-
-    /**
-     * 툴바 버튼 생성
-     */
-    private generateToolbarButtons(): ToolbarButton[] {
-        return [
-            { id: 'add', label: '행 추가', icon: 'Plus', action: 'handleAddRow', variant: 'primary' },
-            { id: 'save', label: '저장', icon: 'Save', action: 'handleSave', variant: 'success' },
-            { id: 'delete', label: '삭제', icon: 'Trash2', action: 'handleDeleteSelected', variant: 'danger' },
-            { id: 'excel', label: '엑셀', icon: 'Download', action: 'handleExcelExport', variant: 'secondary', position: 'right' },
-        ];
-    }
-
-    /**
-     * 그리드 컬럼 생성
-     */
-    private generateGridColumns(columns: CrudColumnDef[], pkField: string): GridColumn[] {
-        return columns.map((col, index) => ({
-            id: `col_${index}`,
-            headerName: col.headerName,
-            field: col.field,
-            width: col.width || 120,
-            type: this.mapColumnType(col.editorType),
-            editable: col.editable,
-            required: col.required,
-            align: col.align,
-            isPrimaryKey: col.field === pkField,
-        }));
-    }
-
-    /**
-     * 에디터 타입 → 그리드 컬럼 타입 매핑
-     */
-    private mapColumnType(editorType: string): GridColumn['type'] {
-        const typeMap: Record<string, GridColumn['type']> = {
-            'text': 'text',
-            'number': 'number',
-            'date': 'date',
-            'datetime': 'datetime',
-            'select': 'select',
-            'checkbox': 'checkbox',
-            'textarea': 'text',
-            'readonly': 'text',
-        };
-        return typeMap[editorType] || 'text';
-    }
-
-    // ============================================================
-    // API 생성 (SimpleGridCrudTemplate과 동일)
-    // ============================================================
-
-    /**
-     * API 코드 생성
-     */
-    async generateApiCode(data: ParsedData): Promise<string> {
-        if (!isCrudParsedData(data)) {
-            throw new Error('CrudParsedData required');
-        }
-
-        const screenId = data.screenId ?? 'SC000';
-        const routerName = this.getRouterName(screenId);
-        const tableName = data.tableName ?? 'unknown_table';
-
-        return this.generateRouterCode(routerName, tableName, data.crudConfig, data.crudColumns);
-    }
-
-    /**
-     * API 라우터 코드 생성 (전체 결과 반환)
-     */
-    async generateApi(data: ParsedData): Promise<ApiGenerationResult> {
-        try {
-            const code = await this.generateApiCode(data);
-            const screenId = data.screenId ?? 'SC000';
-
-            return {
-                success: true,
-                fileName: `${this.getRouterName(screenId)}.ts`,
-                code,
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : String(error),
-            };
-        }
-    }
-
-    /**
-     * tRPC 라우터 코드 생성
-     */
-    private generateRouterCode(
-        routerName: string,
-        tableName: string,
-        config: CrudConfig,
-        columns: CrudColumnDef[]
-    ): string {
-        const pkField = config.primaryKey;
-        const zodSchema = this.generateZodSchema(columns);
-
-        return `/**
+    return `/**
  * ${routerName} tRPC Router
  * @generated by AI Factory Lab (RealGrid Template)
  */
@@ -969,72 +979,72 @@ export const ${routerName}Router = createTRPCRouter({
     }),
 });
 `;
-    }
+  }
 
-    /**
-     * Zod 스키마 생성
-     */
-    private generateZodSchema(columns: CrudColumnDef[]): string {
-        const fields = columns.map(col => {
-            let zodType = 'z.string()';
+  /**
+   * Zod 스키마 생성
+   */
+  private generateZodSchema(columns: CrudColumnDef[]): string {
+    const fields = columns.map(col => {
+      let zodType = 'z.string()';
 
-            switch (col.editorType) {
-                case 'number':
-                    zodType = 'z.number()';
-                    break;
-                case 'checkbox':
-                    zodType = 'z.boolean()';
-                    break;
-                case 'date':
-                case 'datetime':
-                    zodType = 'z.string()'; // ISO string
-                    break;
-                default:
-                    zodType = 'z.string()';
-            }
+      switch (col.editorType) {
+        case 'number':
+          zodType = 'z.number()';
+          break;
+        case 'checkbox':
+          zodType = 'z.boolean()';
+          break;
+        case 'date':
+        case 'datetime':
+          zodType = 'z.string()'; // ISO string
+          break;
+        default:
+          zodType = 'z.string()';
+      }
 
-            if (!col.required) {
-                zodType += '.optional()';
-            }
+      if (!col.required) {
+        zodType += '.optional()';
+      }
 
-            return `  ${col.field}: ${zodType},`;
-        }).join('\n');
+      return `  ${col.field}: ${zodType},`;
+    }).join('\n');
 
-        const routerName = 'screen';
-        return `const ${routerName}Schema = z.object({\n${fields}\n});`;
-    }
+    const routerName = 'screen';
+    return `const ${routerName}Schema = z.object({\n${fields}\n});`;
+  }
 
-    /**
-     * 라우터 이름 생성
-     */
-    private getRouterName(screenId: string): string {
-        return `screen${screenId.replace('SC', '')}`;
-    }
+  /**
+   * 라우터 이름 생성
+   */
+  private getRouterName(screenId: string): string {
+    return `screen${screenId.replace('SC', '')}`;
+  }
 
-    // ============================================================
-    // 컴포넌트 + API 전체 생성
-    // ============================================================
+  // ============================================================
+  // 컴포넌트 + API 전체 생성
+  // ============================================================
 
-    /**
-     * 컴포넌트(스키마) + API 전체 생성
-     */
-    async generateScreen(data: ParsedData): Promise<ScreenGenerationResult> {
-        const [componentResult, apiResult] = await Promise.all([
-            this.generateComponent(data),
-            this.generateApi(data),
-        ]);
+  /**
+   * 컴포넌트(스키마) + API 전체 생성
+   */
+  async generateScreen(data: ParsedData): Promise<ScreenGenerationResult> {
+    const [componentResult, apiResult] = await Promise.all([
+      this.generateComponent(data),
+      this.generateApi(data),
+    ]);
 
-        return {
-            success: componentResult.success && apiResult.success,
-            component: componentResult,
-            api: apiResult,
-            metadata: {
-                screenId: data.screenId ?? 'SC000',
-                screenName: data.screenName,
-                screenType: ScreenType.REALGRID_CRUD,
-                tableName: data.tableName ?? '',
-                generatedAt: new Date().toISOString(),
-            },
-        };
-    }
+    return {
+      success: componentResult.success && apiResult.success,
+      component: componentResult,
+      api: apiResult,
+      metadata: {
+        screenId: data.screenId ?? 'SC000',
+        screenName: data.screenName,
+        screenType: ScreenType.REALGRID_CRUD,
+        tableName: data.tableName ?? '',
+        generatedAt: new Date().toISOString(),
+      },
+    };
+  }
 }

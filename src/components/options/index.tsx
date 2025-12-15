@@ -1,18 +1,20 @@
 /**
  * 옵션 공통 컴포넌트
- * IBM Carbon Design System 기반 + SC000006 스타일 적용
+ * IBM Carbon Design System 기반 + binary 스키마 마스터 테이블
  * 
- * 10가지 옵션 타입:
- * 1. CustomerSelect - 거래처 (doi_cust_mast)
- * 2. MaterialSelect - 부품/자재 (doi_material_mast)
- * 3. ModelSelect - 모델 (doi_model_mast)
- * 4. AccountSelect - 계정 (doi_acct)
- * 5. ExpenSelSelect - 비용구분 (doi_expen_sel)
- * 6. DepartmentSelect - 부서 (doi_dept)
- * 7. SiteSelect - Site (HQ, VN)
- * 8. SelCodeSelect - SEL_CODE (ACTUAL)
- * 9. YearMonthPicker - 년월 (yyyymm)
- * 10. YearPicker - 년 (yyyy)
+ * 옵션 타입:
+ * 1. CustomerSelect - 거래처 (bi_cust_mst)
+ * 2. MaterialSelect/ProductSelect - 제품/자재 (bi_prod_mst)
+ * 3. ModelSelect/EquipmentSelect - 설비 (bi_eqp_mst)
+ * 4. AccountSelect - 계정 (bi_acct_mst)
+ * 5. ExpenSelSelect - 비용구분 (bi_expen_sel_mst)
+ * 6. DepartmentSelect - 부서 (bi_dept_mst)
+ * 7. CostCenterSelect - 코스트센터 (bi_cost_center)
+ * 8. UserSelect - 사용자 (bi_user_mst)
+ * 9. SiteSelect - 사업장 (plant_site_code)
+ * 10. SelCodeSelect - 시나리오 (scenario_code)
+ * 11. YearMonthPicker - 년월 (yyyymm)
+ * 12. YearPicker - 년 (yyyy)
  */
 
 "use client";
@@ -87,7 +89,7 @@ function SearchableSelect({
   const allOptions = showAllOption ? [ALL_OPTION, ...options] : options;
 
   // 선택된 아이템 찾기
-  const selectedItem = value === '' 
+  const selectedItem = value === ''
     ? (showAllOption ? ALL_OPTION : undefined)
     : options.find((opt) => opt.code === value);
 
@@ -163,11 +165,11 @@ function SearchableSelect({
   }, [highlightedIndex]);
 
   return (
-    <div 
+    <div
       className={cn(
         inline ? "flex items-center gap-2" : "flex flex-col",
         className
-      )} 
+      )}
       ref={containerRef}
     >
       {/* 라벨 */}
@@ -201,9 +203,7 @@ function SearchableSelect({
           )}
         >
           <span className={cn("truncate", !selectedItem && "text-gray-400")}>
-            {selectedItem 
-              ? (selectedItem.code === '' ? selectedItem.name : `${selectedItem.code} - ${selectedItem.name}`)
-              : placeholder}
+            {selectedItem ? selectedItem.name : placeholder}
           </span>
           <div className="flex items-center gap-1 flex-shrink-0">
             {value && value !== '' && !disabled && (
@@ -292,10 +292,7 @@ function SearchableSelect({
                       {option.code === '' ? (
                         <span className="font-medium">{option.name}</span>
                       ) : (
-                        <>
-                          <span className="font-medium">{option.code}</span>
-                          <span className="text-gray-500 ml-1.5">- {option.name}</span>
-                        </>
+                        <span>{option.name}</span>
                       )}
                     </span>
                     {option.code === value && (
@@ -461,31 +458,139 @@ export function DepartmentSelect(props: BaseSelectProps) {
 // ==========================================
 
 export function SiteSelect(props: Omit<BaseSelectProps, "site">) {
-  const { data: options = [] } = api.options.getSites.useQuery();
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getSites.useQuery({
+    search,
+    limit: 100,
+  });
 
   return (
     <SearchableSelect
       {...props}
       options={options}
-      placeholder={props.placeholder ?? "Site 선택"}
-      label={props.label ?? "Site"}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "사업장 선택"}
+      label={props.label ?? "사업장"}
     />
   );
 }
 
 // ==========================================
-// 8. SEL_CODE 선택 (SelCodeSelect)
+// 8. SEL_CODE/시나리오 선택 (SelCodeSelect)
 // ==========================================
 
 export function SelCodeSelect(props: BaseSelectProps) {
-  const { data: options = [] } = api.options.getSelCodes.useQuery();
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getSelCodes.useQuery({
+    search,
+    limit: 100,
+  });
 
   return (
     <SearchableSelect
       {...props}
       options={options}
-      placeholder={props.placeholder ?? "SEL_CODE 선택"}
-      label={props.label ?? "SEL_CODE"}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "시나리오 선택"}
+      label={props.label ?? "시나리오"}
+    />
+  );
+}
+
+// ==========================================
+// 9. 코스트센터 선택 (CostCenterSelect) - 신규
+// ==========================================
+
+export function CostCenterSelect(props: BaseSelectProps) {
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getCostCenters.useQuery({
+    search,
+    site: props.site,
+    limit: 100,
+  });
+
+  return (
+    <SearchableSelect
+      {...props}
+      options={options}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "코스트센터 선택"}
+      label={props.label ?? "코스트센터"}
+    />
+  );
+}
+
+// ==========================================
+// 10. 사용자 선택 (UserSelect) - 신규
+// ==========================================
+
+export function UserSelect(props: BaseSelectProps) {
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getUsers.useQuery({
+    search,
+    site: props.site,
+    limit: 100,
+  });
+
+  return (
+    <SearchableSelect
+      {...props}
+      options={options}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "사용자 선택"}
+      label={props.label ?? "사용자"}
+    />
+  );
+}
+
+// ==========================================
+// 11. 설비 선택 (EquipmentSelect) - 신규 (ModelSelect alias)
+// ==========================================
+
+export function EquipmentSelect(props: BaseSelectProps) {
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getModels.useQuery({
+    search,
+    site: props.site,
+    limit: 100,
+  });
+
+  return (
+    <SearchableSelect
+      {...props}
+      options={options}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "설비 선택"}
+      label={props.label ?? "설비"}
+    />
+  );
+}
+
+// ==========================================
+// 12. 제품 선택 (ProductSelect) - MaterialSelect alias
+// ==========================================
+
+export function ProductSelect(props: BaseSelectProps) {
+  const [search, setSearch] = useState("");
+  const { data: options = [], isLoading } = api.options.getMaterials.useQuery({
+    search,
+    site: props.site,
+    limit: 100,
+  });
+
+  return (
+    <SearchableSelect
+      {...props}
+      options={options}
+      isLoading={isLoading}
+      onSearch={setSearch}
+      placeholder={props.placeholder ?? "제품 선택"}
+      label={props.label ?? "제품"}
     />
   );
 }
@@ -576,11 +681,11 @@ export function YearMonthPicker({
     : "";
 
   return (
-    <div 
+    <div
       className={cn(
         inline ? "flex items-center gap-2" : "flex flex-col",
         className
-      )} 
+      )}
       ref={containerRef}
     >
       {/* 라벨 */}
@@ -675,8 +780,8 @@ export function YearMonthPicker({
                       isSelected
                         ? "bg-blue-600 text-white"
                         : isCurrent
-                        ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
                     )}
                   >
                     {monthName}
@@ -750,11 +855,11 @@ export function YearPicker({
   const displayValue = effectiveValue ? `${effectiveValue}년` : "";
 
   return (
-    <div 
+    <div
       className={cn(
         inline ? "flex items-center gap-2" : "flex flex-col",
         className
-      )} 
+      )}
       ref={containerRef}
     >
       {/* 라벨 */}
@@ -827,8 +932,8 @@ export function YearPicker({
                       isSelected
                         ? "bg-blue-600 text-white"
                         : isCurrent
-                        ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
                     )}
                   >
                     {year}
@@ -850,10 +955,14 @@ export function YearPicker({
 export function OptionsDemo() {
   const [customer, setCustomer] = useState("");
   const [material, setMaterial] = useState("");
+  const [product, setProduct] = useState("");
   const [model, setModel] = useState("");
+  const [equipment, setEquipment] = useState("");
   const [account, setAccount] = useState("");
   const [expenSel, setExpenSel] = useState("");
   const [department, setDepartment] = useState("");
+  const [costCenter, setCostCenter] = useState("");
+  const [user, setUser] = useState("");
   const [site, setSite] = useState("");
   const [selCode, setSelCode] = useState("ACTUAL");
   const [yearMonth, setYearMonth] = useState("");
@@ -862,18 +971,27 @@ export function OptionsDemo() {
   return (
     <div className="p-6 bg-white">
       <h2 className="text-lg font-semibold text-[#161616] mb-6">
-        옵션 컴포넌트 데모
+        옵션 컴포넌트 데모 (총 14개)
       </h2>
-      
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {/* 마스터 테이블 기반 */}
         <CustomerSelect value={customer} onChange={setCustomer} site={site} />
         <MaterialSelect value={material} onChange={setMaterial} site={site} />
+        <ProductSelect value={product} onChange={setProduct} site={site} />
         <ModelSelect value={model} onChange={setModel} site={site} />
+        <EquipmentSelect value={equipment} onChange={setEquipment} site={site} />
         <AccountSelect value={account} onChange={setAccount} site={site} />
         <ExpenSelSelect value={expenSel} onChange={setExpenSel} site={site} />
         <DepartmentSelect value={department} onChange={setDepartment} site={site} />
+        <CostCenterSelect value={costCenter} onChange={setCostCenter} site={site} />
+        <UserSelect value={user} onChange={setUser} site={site} />
+
+        {/* 공통 옵션 */}
         <SiteSelect value={site} onChange={setSite} />
         <SelCodeSelect value={selCode} onChange={setSelCode} />
+
+        {/* 날짜 */}
         <YearMonthPicker value={yearMonth} onChange={setYearMonth} />
         <YearPicker value={year} onChange={setYear} />
       </div>
@@ -884,10 +1002,14 @@ export function OptionsDemo() {
           {JSON.stringify({
             customer,
             material,
+            product,
             model,
+            equipment,
             account,
             expenSel,
             department,
+            costCenter,
+            user,
             site,
             selCode,
             yearMonth,

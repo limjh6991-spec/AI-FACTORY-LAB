@@ -176,6 +176,19 @@ export async function GET(
       // 쿼리 끝의 세미콜론 제거
       execQuery = execQuery.trim().replace(/;+\s*$/, '');
 
+      // bi_로 시작하는 테이블에 binary 스키마 prefix 추가
+      // FROM bi_xxx 또는 JOIN bi_xxx 패턴을 "binary".bi_xxx로 변환
+      execQuery = execQuery.replace(
+        /\b(FROM|JOIN)\s+(bi_[a-z0-9_]+)/gi,
+        (match, keyword, tableName) => {
+          // 이미 스키마가 있으면 건너뜀
+          if (execQuery.includes(`"binary".${tableName}`)) {
+            return match;
+          }
+          return `${keyword} "binary".${tableName}`;
+        }
+      );
+
       // LIMIT 확인 및 추가
       if (!execQuery.toLowerCase().includes('limit')) {
         execQuery += ' LIMIT 500';
@@ -269,6 +282,11 @@ async function executeDefaultQuery(
   materialCode: string
 ): Promise<any[]> {
   try {
+    // bi_로 시작하는 테이블은 binary 스키마에 있음
+    const qualifiedTableName = tableName.toLowerCase().startsWith('bi_')
+      ? `"binary".${tableName}`
+      : tableName;
+
     // 테이블에 yyyymm 컬럼이 있는지 확인
     const columnCheck = await db.$queryRawUnsafe<any[]>(`
       SELECT column_name 
@@ -279,7 +297,7 @@ async function executeDefaultQuery(
 
     const hasYearMonth = columnCheck.length > 0;
 
-    let query = `SELECT * FROM ${tableName}`;
+    let query = `SELECT * FROM ${qualifiedTableName}`;
     const conditions: string[] = [];
 
     if (hasYearMonth && yearMonth) {
@@ -338,12 +356,40 @@ export async function POST(
     // 테이블명 가져오기
     let targetTable = tableName;
     if (!targetTable) {
-      // 메타데이터에서 테이블명 조회
+      // 1. 메타데이터에서 테이블명 조회 (SC000048 등)
       const generatedScreenDir = path.join(process.cwd(), 'generated', 'screens', screenId.toUpperCase());
       const metadataPath = path.join(generatedScreenDir, 'metadata.json');
       if (fs.existsSync(metadataPath)) {
         const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
         targetTable = metadata.tableName;
+      }
+
+      // 2. screenId가 sc_로 시작하면 테이블명으로 사용 (sc_bi_dept_mst → bi_dept_mst)
+      if (!targetTable && screenId.toLowerCase().startsWith('sc_')) {
+        targetTable = screenId.toLowerCase().replace(/^sc_/, '');
+        console.log(`[API] screenId에서 테이블명 추출: ${targetTable}`);
+      }
+
+      // 3. tableName으로 메타데이터 검색 fallback
+      if (!targetTable) {
+        const possibleTableName = screenId.toLowerCase().replace(/^sc_/, '');
+        const screensDir = path.join(process.cwd(), 'generated', 'screens');
+        if (fs.existsSync(screensDir)) {
+          const screenDirs = fs.readdirSync(screensDir);
+          for (const dir of screenDirs) {
+            const metaPath = path.join(screensDir, dir, 'metadata.json');
+            if (fs.existsSync(metaPath)) {
+              try {
+                const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+                if (meta.tableName === possibleTableName) {
+                  targetTable = meta.tableName;
+                  console.log(`[API] 메타데이터에서 테이블명 발견: ${targetTable}`);
+                  break;
+                }
+              } catch (e) { /* ignore */ }
+            }
+          }
+        }
       }
     }
 
@@ -354,8 +400,13 @@ export async function POST(
       }, { status: 400 });
     }
 
-    // PK 컬럼 조회
-    const pkColumns = await getPrimaryKeyColumns(targetTable);
+    // bi_로 시작하는 테이블은 binary 스키마에 있음
+    const qualifiedTableName = targetTable.toLowerCase().startsWith('bi_')
+      ? `"binary".${targetTable}`
+      : targetTable;
+
+    // PK 컬럼 조회 (스키마 포함된 이름으로)
+    const pkColumns = await getPrimaryKeyColumns(qualifiedTableName);
     if (pkColumns.length === 0) {
       return NextResponse.json({
         success: false,
@@ -380,7 +431,7 @@ export async function POST(
             .join(' AND ');
 
           if (pkColumns.every(pk => row[pk])) {
-            await tx.$executeRawUnsafe(`DELETE FROM ${targetTable} WHERE ${whereClause}`);
+            await tx.$executeRawUnsafe(`DELETE FROM ${qualifiedTableName} WHERE ${whereClause}`);
             results.deletedCount++;
           }
         } catch (err) {
@@ -410,7 +461,7 @@ export async function POST(
             .join(', ');
 
           if (setClauses && pkColumns.every(pk => row[pk])) {
-            await tx.$executeRawUnsafe(`UPDATE ${targetTable} SET ${setClauses} WHERE ${whereClause}`);
+            await tx.$executeRawUnsafe(`UPDATE ${qualifiedTableName} SET ${setClauses} WHERE ${whereClause}`);
             results.updatedCount++;
           }
         } catch (err) {
@@ -434,7 +485,7 @@ export async function POST(
             }
           });
 
-          const sql = `INSERT INTO ${targetTable} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
+          const sql = `INSERT INTO ${qualifiedTableName} (${columns.join(', ')}) VALUES (${values.join(', ')})`;
           await tx.$executeRawUnsafe(sql);
           results.insertedCount++;
         } catch (err) {

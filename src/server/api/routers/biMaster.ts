@@ -29,11 +29,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -55,7 +55,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           department_code as code, 
@@ -65,7 +65,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY department_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -77,11 +77,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -103,7 +103,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           cost_center_code as code, 
@@ -113,7 +113,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY cost_center_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -125,11 +125,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -151,7 +151,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           employee_id as code, 
@@ -161,7 +161,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY employee_id
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -173,11 +173,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -199,7 +199,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           account_code as code, 
@@ -209,7 +209,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY account_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -221,11 +221,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -247,7 +247,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           expense_item_code as code, 
@@ -257,7 +257,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY expense_item_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -269,11 +269,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -295,7 +295,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           partner_code as code, 
@@ -305,7 +305,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY partner_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -317,11 +317,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -343,7 +343,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           equipment_code as code, 
@@ -353,7 +353,7 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY equipment_code
         LIMIT $${paramIndex}
       `;
-      
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -365,11 +365,11 @@ export const biMasterRouter = createTRPCRouter({
     .input(masterQueryInput)
     .query(async ({ ctx, input }) => {
       const { search, site, yyyymm, scenario, limit } = input;
-      
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
         conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
@@ -391,7 +391,7 @@ export const biMasterRouter = createTRPCRouter({
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
           product_item_code as code, 
@@ -401,7 +401,43 @@ export const biMasterRouter = createTRPCRouter({
         ORDER BY product_item_code
         LIMIT $${paramIndex}
       `;
-      
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
+    }),
+
+  /**
+   * 사업장 목록 조회 (plant_site_code DISTINCT)
+   */
+  getSites: publicProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      limit: z.number().optional().default(100),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { search, limit } = input;
+
+      const conditions: string[] = ["plant_site_code IS NOT NULL"];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (search) {
+        conditions.push(`plant_site_code ILIKE $${paramIndex}`);
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+      params.push(limit);
+
+      const query = `
+        SELECT DISTINCT 
+          plant_site_code as code, 
+          plant_site_code as name
+        FROM "binary".bi_dept_mst
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY plant_site_code
+        LIMIT $${paramIndex}
+      `;
+
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
@@ -421,7 +457,7 @@ export const biMasterRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       const { site, yyyymm, scenario } = input;
-      
+
       const query = `
         SELECT 
           plant_site_code,
@@ -439,7 +475,7 @@ export const biMasterRouter = createTRPCRouter({
           AND scenario_code = $3
         ORDER BY department_code
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(query, site, yyyymm, scenario);
     }),
 
@@ -474,7 +510,7 @@ export const biMasterRouter = createTRPCRouter({
           use_yn = EXCLUDED.use_yn
         RETURNING *
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(
         query,
         input.plant_site_code,
@@ -507,7 +543,7 @@ export const biMasterRouter = createTRPCRouter({
           AND scenario_code = $3
           AND department_code = $4
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(
         query,
         input.plant_site_code,
@@ -528,7 +564,7 @@ export const biMasterRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       const { site, yyyymm, scenario } = input;
-      
+
       const query = `
         SELECT 
           plant_site_code,
@@ -546,7 +582,7 @@ export const biMasterRouter = createTRPCRouter({
           AND scenario_code = $3
         ORDER BY cost_center_code
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(query, site, yyyymm, scenario);
     }),
 
@@ -561,7 +597,7 @@ export const biMasterRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       const { site, yyyymm, scenario } = input;
-      
+
       const query = `
         SELECT 
           plant_site_code,
@@ -580,7 +616,7 @@ export const biMasterRouter = createTRPCRouter({
           AND scenario_code = $3
         ORDER BY product_item_code
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(query, site, yyyymm, scenario);
     }),
 
@@ -595,7 +631,7 @@ export const biMasterRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       const { site, yyyymm, scenario } = input;
-      
+
       const query = `
         SELECT 
           plant_site_code,
@@ -613,7 +649,7 @@ export const biMasterRouter = createTRPCRouter({
           AND scenario_code = $3
         ORDER BY partner_code
       `;
-      
+
       return await ctx.db.$queryRawUnsafe(query, site, yyyymm, scenario);
     }),
 });

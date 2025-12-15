@@ -80,7 +80,7 @@ export const publishScreen = publicProcedure
         menu_id: string;
       }>>`
         SELECT menu_level, menu_id 
-        FROM sys_menu 
+        FROM "binary".sys_menu 
         WHERE menu_id = ${input.parentMenuId}
       `;
 
@@ -90,7 +90,7 @@ export const publishScreen = publicProcedure
       // 현재 부모 아래 최대 sort_order 조회
       const maxSortOrder = await ctx.db.$queryRaw<Array<{ max_order: number | null }>>`
         SELECT MAX(sort_order) as max_order 
-        FROM sys_menu 
+        FROM "binary".sys_menu 
         WHERE parent_id = ${input.parentMenuId}
       `;
       const maxOrderValue = maxSortOrder?.[0]?.max_order ?? 0;
@@ -101,7 +101,7 @@ export const publishScreen = publicProcedure
 
       // 4. 메뉴 DB에 INSERT
       await ctx.db.$executeRaw`
-        INSERT INTO sys_menu (
+        INSERT INTO "binary".sys_menu (
           menu_id, parent_id, menu_level, sort_order,
           menu_name, menu_name_en, menu_path, menu_icon,
           screen_id, screen_type, is_active, is_visible,

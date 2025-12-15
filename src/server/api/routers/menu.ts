@@ -94,7 +94,7 @@ export const menuRouter = createTRPCRouter({
         menu_name, menu_name_en, menu_path, menu_icon,
         screen_id, screen_type, is_active, is_visible,
         badge_text, badge_type
-      FROM sys_menu
+      FROM "binary".sys_menu
       WHERE is_active = true AND is_visible = true
       ORDER BY sort_order ASC
     `;
@@ -158,7 +158,7 @@ export const menuRouter = createTRPCRouter({
       try {
         // 이미 존재하는지 확인
         const existing = await ctx.db.$queryRaw<Array<{ menu_id: string }>>`
-          SELECT menu_id FROM sys_menu WHERE menu_id = ${input.menuId}
+          SELECT menu_id FROM "binary".sys_menu WHERE menu_id = ${input.menuId}
         `;
 
         if (existing.length > 0) {
@@ -170,7 +170,7 @@ export const menuRouter = createTRPCRouter({
 
         // 메뉴 추가
         await ctx.db.$executeRaw`
-          INSERT INTO sys_menu (
+          INSERT INTO "binary".sys_menu (
             menu_id, parent_id, menu_name, menu_name_en, menu_path, 
             menu_icon, screen_id, sort_order, menu_level, 
             screen_type, is_active, is_visible
@@ -225,8 +225,8 @@ export const menuRouter = createTRPCRouter({
           m.menu_id, m.menu_name, m.menu_path, m.menu_icon,
           mr.can_read, mr.can_create, mr.can_update, 
           mr.can_delete, mr.can_export, mr.can_print
-        FROM sys_menu m
-        JOIN sys_menu_role mr ON m.menu_id = mr.menu_id
+        FROM "binary".sys_menu m
+        JOIN "binary".sys_menu_role mr ON m.menu_id = mr.menu_id
         WHERE mr.role_id = ${input.roleId}
           AND m.is_active = true
         ORDER BY m.sort_order
@@ -246,7 +246,7 @@ export const menuRouter = createTRPCRouter({
       is_active: boolean;
     }>>`
       SELECT role_id, role_name, role_desc, is_active
-      FROM sys_role
+      FROM "binary".sys_role
       WHERE is_active = true
       ORDER BY role_id
     `;
@@ -267,7 +267,7 @@ export const menuRouter = createTRPCRouter({
 
       // 하위 메뉴가 있는지 확인
       const children = await ctx.db.$queryRaw<Array<{ menu_id: string }>>`
-        SELECT menu_id FROM sys_menu WHERE parent_id = ${menuId}
+        SELECT menu_id FROM "binary".sys_menu WHERE parent_id = ${menuId}
       `;
 
       if (children.length > 0 && !deleteChildren) {
@@ -284,7 +284,7 @@ export const menuRouter = createTRPCRouter({
           // 모든 하위 메뉴 ID 수집 (재귀적)
           const getAllChildIds = async (parentId: string): Promise<string[]> => {
             const directChildren = await ctx.db.$queryRaw<Array<{ menu_id: string }>>`
-              SELECT menu_id FROM sys_menu WHERE parent_id = ${parentId}
+              SELECT menu_id FROM "binary".sys_menu WHERE parent_id = ${parentId}
             `;
 
             let allIds: string[] = [];
@@ -303,7 +303,7 @@ export const menuRouter = createTRPCRouter({
           for (const childId of childIds) {
             // 하위 메뉴의 screen_id 조회
             const childMenu = await ctx.db.$queryRaw<Array<{ screen_id: string | null }>>`
-              SELECT screen_id FROM sys_menu WHERE menu_id = ${childId}
+              SELECT screen_id FROM "binary".sys_menu WHERE menu_id = ${childId}
             `;
             if (childMenu[0]?.screen_id) {
               const fileResult = deleteScreenFiles(childMenu[0].screen_id);
@@ -313,13 +313,13 @@ export const menuRouter = createTRPCRouter({
 
           // 하위 메뉴들 먼저 삭제 (깊은 것부터)
           for (const childId of childIds.reverse()) {
-            await ctx.db.$executeRaw`DELETE FROM sys_menu WHERE menu_id = ${childId}`;
+            await ctx.db.$executeRaw`DELETE FROM "binary".sys_menu WHERE menu_id = ${childId}`;
           }
         }
 
         // 삭제할 메뉴의 screen_id 조회
         const menuToDelete = await ctx.db.$queryRaw<Array<{ screen_id: string | null }>>`
-          SELECT screen_id FROM sys_menu WHERE menu_id = ${menuId}
+          SELECT screen_id FROM "binary".sys_menu WHERE menu_id = ${menuId}
         `;
 
         // 해당 메뉴의 화면 파일 삭제
@@ -330,7 +330,7 @@ export const menuRouter = createTRPCRouter({
         }
 
         // 해당 메뉴 삭제
-        await ctx.db.$executeRaw`DELETE FROM sys_menu WHERE menu_id = ${menuId}`;
+        await ctx.db.$executeRaw`DELETE FROM "binary".sys_menu WHERE menu_id = ${menuId}`;
 
         return {
           success: true,

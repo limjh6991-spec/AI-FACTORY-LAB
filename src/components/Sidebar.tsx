@@ -116,7 +116,7 @@ function MenuItem({ item, depth = 0, collapsed }: { item: MenuNode; depth?: numb
   }
 
   // menuPath가 없거나 '#'이면 placeholder 페이지로 연결
-  const linkPath = (!item.menuPath || item.menuPath === "#") 
+  const linkPath = (!item.menuPath || item.menuPath === "#")
     ? `/screens/placeholder?menu=${encodeURIComponent(item.menuName)}`
     : item.menuPath;
 
@@ -160,9 +160,21 @@ export function Sidebar() {
         ) : error ? (
           <div className="px-4 py-3 text-sm text-red-500">메뉴를 불러올 수 없습니다.</div>
         ) : (
-          <div className="space-y-1">{menuTree?.map((item) => <MenuItem key={item.menuId} item={item} collapsed={collapsed} />)}</div>
+          <div className="space-y-1">
+            {/* 일반 메뉴 (sortOrder < 900) */}
+            {menuTree?.filter(item => item.sortOrder < 900).map((item) => <MenuItem key={item.menuId} item={item} collapsed={collapsed} />)}
+          </div>
         )}
       </nav>
+
+      {/* 시스템 메뉴 (sortOrder >= 900) - 하단 고정 */}
+      {!isLoading && !error && menuTree?.some(item => item.sortOrder >= 900) && (
+        <div className="border-t border-blue-100 py-2 px-2">
+          <div className="space-y-1">
+            {menuTree?.filter(item => item.sortOrder >= 900).map((item) => <MenuItem key={item.menuId} item={item} collapsed={collapsed} />)}
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-blue-100">
         <button onClick={() => setCollapsed(!collapsed)} className={cn("flex w-full items-center gap-3 px-4 py-3 text-sm text-slate-500", "hover:bg-blue-50 hover:text-blue-600 transition-colors", collapsed && "justify-center")}>

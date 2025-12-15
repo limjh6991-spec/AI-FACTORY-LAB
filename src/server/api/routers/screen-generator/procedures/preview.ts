@@ -285,17 +285,27 @@ export const generateRealGridPreview = publicProcedure
       // SQL 쿼리 생성
       const { SelectQueryBuilder } = await import('../templates/query-generator');
 
-      // 공통 옵션 타입 → DB 컬럼명 매핑
+      // 공통 옵션 타입 → DB 컬럼명 매핑 (실제 binary 스키마 테이블 기준)
       const OPTION_TYPE_TO_COLUMN: Record<string, string> = {
         'YEAR_MONTH': 'yyyymm',
         'BI_YEAR_MONTH': 'yyyymm',
         'BI_SITE': 'plant_site_code',
-        'BI_DEPT': 'dept_code',
-        'BI_ACCOUNT': 'acct_code',
-        'BI_CUSTOMER': 'cust_code',
-        'BI_EQUIPMENT': 'equipment_code',
-        'BI_PRODUCT': 'product_code',
         'BI_SCENARIO': 'scenario_code',
+        // bi_dept_mst 테이블
+        'BI_DEPT': 'department_code',
+        'BI_COST_CENTER': 'cost_center_mapping_code',
+        // bi_acct_mst 테이블
+        'BI_ACCOUNT': 'account_code',
+        // bi_cust_mst 테이블
+        'BI_CUSTOMER': 'partner_code',
+        // bi_prod_mst 테이블
+        'BI_PRODUCT': 'product_item_code',
+        // bi_equip_mst 테이블 (존재 시)
+        'BI_EQUIPMENT': 'equipment_code',
+        // bi_user_mst 테이블
+        'BI_USER': 'user_code',
+        // bi_expen_sel_mst 테이블
+        'BI_EXPENSE': 'expense_item_code',
       };
 
       const queryBuilder = new SelectQueryBuilder();

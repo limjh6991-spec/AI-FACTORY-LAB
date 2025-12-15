@@ -1,6 +1,10 @@
 /**
  * 옵션 공통 API 라우터
- * 각종 마스터 테이블에서 코드/명칭 데이터를 조회
+ * binary 스키마의 마스터 테이블에서 코드/명칭 데이터를 조회
+ * 
+ * 컬럼 규칙:
+ * - 표시: _name (예: department_name)
+ * - 값: _code (예: department_code)
  */
 
 import { z } from "zod";
@@ -12,305 +16,477 @@ interface OptionItem {
   name: string;
 }
 
-// 동적 WHERE 절 생성 헬퍼
-function buildWhereClause(
-  conditions: { field: string; value: string | undefined; isLike?: boolean }[]
-): { where: string; params: string[] } {
-  const clauses: string[] = ["1=1"];
-  const params: string[] = [];
-  let paramIndex = 1;
-
-  for (const cond of conditions) {
-    if (cond.value) {
-      if (cond.isLike) {
-        clauses.push(`(${cond.field} ILIKE $${paramIndex})`);
-        params.push(`%${cond.value}%`);
-      } else {
-        clauses.push(`${cond.field} = $${paramIndex}`);
-        params.push(cond.value);
-      }
-      paramIndex++;
-    }
-  }
-
-  return { where: clauses.join(" AND "), params };
-}
+// 공통 입력 스키마
+const optionQueryInput = z.object({
+  search: z.string().optional(),
+  site: z.string().optional(),      // plant_site_code
+  yyyymm: z.string().optional(),    // 년월
+  scenario: z.string().optional(),   // scenario_code
+  limit: z.number().optional().default(100),
+});
 
 export const optionsRouter = createTRPCRouter({
   /**
-   * 거래처 목록 조회 (doi_cust_mast)
-   * code: cust_code, name: cust_desc
+   * 거래처 목록 조회 (bi_cust_mst)
+   * code: partner_code, name: partner_name
    */
   getCustomers: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(cust_code ILIKE $${paramIndex} OR cust_desc ILIKE $${paramIndex})`);
+        conditions.push(`(partner_code ILIKE $${paramIndex} OR partner_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          cust_code as code, 
-          COALESCE(cust_desc, cust_code) as name
-        FROM doi_cust_mast
+          partner_code as code, 
+          COALESCE(partner_name, partner_code) as name
+        FROM "binary".bi_cust_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY cust_code
+        ORDER BY partner_code
         LIMIT $${paramIndex}
       `;
-      
-      const customers = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return customers;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * 부품/자재 목록 조회 (doi_material_mast)
-   * code: mat_code, name: mat_desc
+   * 제품/자재 목록 조회 (bi_prod_mst)
+   * code: product_item_code, name: product_item_name
    */
   getMaterials: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(mat_code ILIKE $${paramIndex} OR mat_desc ILIKE $${paramIndex})`);
+        conditions.push(`(product_item_code ILIKE $${paramIndex} OR product_item_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          mat_code as code, 
-          COALESCE(mat_desc, mat_code) as name
-        FROM doi_material_mast
+          product_item_code as code, 
+          COALESCE(product_item_name, product_item_code) as name
+        FROM "binary".bi_prod_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY mat_code
+        ORDER BY product_item_code
         LIMIT $${paramIndex}
       `;
-      
-      const materials = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return materials;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * 모델 목록 조회 (doi_model_mast)
-   * code: model, name: spec
+   * 설비 목록 조회 (bi_eqp_mst)
+   * code: equipment_code, name: equipment_name
    */
   getModels: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(model ILIKE $${paramIndex} OR spec ILIKE $${paramIndex})`);
+        conditions.push(`(equipment_code ILIKE $${paramIndex} OR equipment_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          model as code, 
-          spec as name
-        FROM doi_model_mast
+          equipment_code as code, 
+          COALESCE(equipment_name, equipment_code) as name
+        FROM "binary".bi_eqp_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY model
+        ORDER BY equipment_code
         LIMIT $${paramIndex}
       `;
-      
-      const models = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return models;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * 계정 목록 조회 (doi_acct)
-   * code: acct, name: acct_name
+   * 계정 목록 조회 (bi_acct_mst)
+   * code: account_code, name: account_name
    */
   getAccounts: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(acct ILIKE $${paramIndex} OR acct_name ILIKE $${paramIndex})`);
+        conditions.push(`(account_code ILIKE $${paramIndex} OR account_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          acct as code, 
-          COALESCE(acct_name, acct) as name
-        FROM doi_acct
+          account_code as code, 
+          COALESCE(account_name, account_code) as name
+        FROM "binary".bi_acct_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY acct
+        ORDER BY account_code
         LIMIT $${paramIndex}
       `;
-      
-      const accounts = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return accounts;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * 비용구분 목록 조회 (doi_expen_sel)
-   * code: expen_sel, name: expen_sel명
+   * 비용구분 목록 조회 (bi_expen_sel_mst)
+   * code: expense_item_code, name: expense_item_name
    */
   getExpenSels: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(expen_sel ILIKE $${paramIndex} OR "expen_sel명" ILIKE $${paramIndex})`);
+        conditions.push(`(expense_item_code ILIKE $${paramIndex} OR expense_item_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          expen_sel as code, 
-          COALESCE("expen_sel명", expen_sel) as name
-        FROM doi_expen_sel
+          expense_item_code as code, 
+          COALESCE(expense_item_name, expense_item_code) as name
+        FROM "binary".bi_expen_sel_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY expen_sel
+        ORDER BY expense_item_code
         LIMIT $${paramIndex}
       `;
-      
-      const expenSels = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return expenSels;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * 부서 목록 조회 (doi_dept)
-   * code: dept, name: dept_name
+   * 부서 목록 조회 (bi_dept_mst)
+   * code: department_code, name: department_name
    */
   getDepartments: publicProcedure
-    .input(z.object({
-      search: z.string().optional(),
-      site: z.string().optional(),
-      limit: z.number().optional().default(100),
-    }))
+    .input(optionQueryInput)
     .query(async ({ ctx, input }) => {
-      const { search, site, limit } = input;
-      
+      const { search, site, yyyymm, scenario, limit } = input;
+
       const conditions: string[] = ["1=1"];
       const params: (string | number)[] = [];
       let paramIndex = 1;
-      
+
       if (site) {
-        conditions.push(`site = $${paramIndex}`);
+        conditions.push(`plant_site_code = $${paramIndex}`);
         params.push(site);
         paramIndex++;
       }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
       if (search) {
-        conditions.push(`(dept ILIKE $${paramIndex} OR dept_name ILIKE $${paramIndex})`);
+        conditions.push(`(department_code ILIKE $${paramIndex} OR department_name ILIKE $${paramIndex})`);
         params.push(`%${search}%`);
         paramIndex++;
       }
       params.push(limit);
-      
+
       const query = `
         SELECT DISTINCT 
-          dept as code, 
-          COALESCE(dept_name, dept) as name
-        FROM doi_dept
+          department_code as code, 
+          COALESCE(department_name, department_code) as name
+        FROM "binary".bi_dept_mst
         WHERE ${conditions.join(" AND ")}
-        ORDER BY dept
+        ORDER BY department_code
         LIMIT $${paramIndex}
       `;
-      
-      const departments = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
-      return departments;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
     }),
 
   /**
-   * Site 목록 (고정값)
+   * 코스트센터 목록 조회 (bi_cost_center)
+   * code: cost_center_code, name: cost_center_name
    */
-  getSites: publicProcedure.query(async () => {
-    return [
-      { code: 'HQ', name: 'HQ (본사)' },
-      { code: 'VN', name: 'VN (베트남)' },
-    ];
-  }),
+  getCostCenters: publicProcedure
+    .input(optionQueryInput)
+    .query(async ({ ctx, input }) => {
+      const { search, site, yyyymm, scenario, limit } = input;
+
+      const conditions: string[] = ["1=1"];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (site) {
+        conditions.push(`plant_site_code = $${paramIndex}`);
+        params.push(site);
+        paramIndex++;
+      }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
+      if (search) {
+        conditions.push(`(cost_center_code ILIKE $${paramIndex} OR cost_center_name ILIKE $${paramIndex})`);
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+      params.push(limit);
+
+      const query = `
+        SELECT DISTINCT 
+          cost_center_code as code, 
+          COALESCE(cost_center_name, cost_center_code) as name
+        FROM "binary".bi_cost_center
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY cost_center_code
+        LIMIT $${paramIndex}
+      `;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
+    }),
 
   /**
-   * SEL_CODE 목록 (기본값 + 추후 확장)
+   * 사용자 목록 조회 (bi_user_mst)
+   * code: employee_id, name: employee_name
    */
-  getSelCodes: publicProcedure.query(async () => {
-    return [
-      { code: 'ACTUAL', name: 'ACTUAL (실적)' },
-    ];
-  }),
+  getUsers: publicProcedure
+    .input(optionQueryInput)
+    .query(async ({ ctx, input }) => {
+      const { search, site, yyyymm, scenario, limit } = input;
+
+      const conditions: string[] = ["1=1"];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (site) {
+        conditions.push(`plant_site_code = $${paramIndex}`);
+        params.push(site);
+        paramIndex++;
+      }
+      if (yyyymm) {
+        conditions.push(`yyyymm = $${paramIndex}`);
+        params.push(yyyymm);
+        paramIndex++;
+      }
+      if (scenario) {
+        conditions.push(`scenario_code = $${paramIndex}`);
+        params.push(scenario);
+        paramIndex++;
+      }
+      if (search) {
+        conditions.push(`(employee_id ILIKE $${paramIndex} OR employee_name ILIKE $${paramIndex})`);
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+      params.push(limit);
+
+      const query = `
+        SELECT DISTINCT 
+          employee_id as code, 
+          COALESCE(employee_name, employee_id) as name
+        FROM "binary".bi_user_mst
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY employee_id
+        LIMIT $${paramIndex}
+      `;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
+    }),
+
+  /**
+   * Site(사업장) 목록 조회 - bi_dept_mst에서 DISTINCT
+   */
+  getSites: publicProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      limit: z.number().optional().default(100),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { search, limit } = input;
+
+      const conditions: string[] = ["plant_site_code IS NOT NULL"];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (search) {
+        conditions.push(`plant_site_code ILIKE $${paramIndex}`);
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+      params.push(limit);
+
+      const query = `
+        SELECT DISTINCT 
+          plant_site_code as code, 
+          plant_site_code as name
+        FROM "binary".bi_dept_mst
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY plant_site_code
+        LIMIT $${paramIndex}
+      `;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
+    }),
+
+  /**
+   * SEL_CODE/시나리오 목록 - bi_dept_mst에서 DISTINCT scenario_code
+   */
+  getSelCodes: publicProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      limit: z.number().optional().default(100),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { search, limit } = input;
+
+      const conditions: string[] = ["scenario_code IS NOT NULL"];
+      const params: (string | number)[] = [];
+      let paramIndex = 1;
+
+      if (search) {
+        conditions.push(`scenario_code ILIKE $${paramIndex}`);
+        params.push(`%${search}%`);
+        paramIndex++;
+      }
+      params.push(limit);
+
+      const query = `
+        SELECT DISTINCT 
+          scenario_code as code, 
+          scenario_code as name
+        FROM "binary".bi_dept_mst
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY scenario_code
+        LIMIT $${paramIndex}
+      `;
+
+      const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
+      return results;
+    }),
 });
