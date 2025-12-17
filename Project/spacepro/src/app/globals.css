@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  /* SpacePro 색상 테마 - 민트 그린 + 크림 */
+  --background: #F5F5F0;
+  --foreground: #2D3436;
+  
+  /* 메인 컬러 팔레트 */
+  --primary: #8BC4A9;
+  --primary-dark: #6BA98C;
+  --primary-light: #B5D9C8;
+  
+  /* 악센트 컬러 */
+  --accent-coral: #E8A87C;
+  --accent-orange: #F5A962;
+  --accent-red: #E57373;
+  
+  /* 중성 컬러 */
+  --card-bg: #FFFFFF;
+  --border: #E8E8E4;
+  --text-primary: #2D3436;
+  --text-secondary: #636E72;
+  --text-muted: #A0A0A0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 카드 스타일 */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 사이드바 */
+.sidebar {
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+}
+
+.sidebar-link {
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  color: var(--primary-dark);
+  background: var(--primary-light);
+}
+
+/* 민트 그린 버튼 */
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+/* 차트 색상 오버라이드 */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border);
+}
