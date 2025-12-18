@@ -115,51 +115,8 @@ export default function ProjectsMetronic() {
 
     return (
         <div className="min-h-screen" style={{ background: colors.gray100 }}>
-            {/* Sidebar - Metronic Dark Style */}
-            <aside className="fixed left-0 top-0 h-full w-[265px] flex flex-col" style={{ background: colors.dark }}>
-                {/* Logo */}
-                <div className="h-[65px] flex items-center px-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded flex items-center justify-center" style={{ background: colors.primary }}>
-                            <span className="text-white font-bold">S</span>
-                        </div>
-                        <span className="text-white text-lg font-semibold">SpacePro</span>
-                    </div>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 px-4 py-4">
-                    <div className="mb-4">
-                        <span className="text-[11px] font-semibold uppercase px-4" style={{ color: colors.gray600 }}>대시보드</span>
-                    </div>
-                    {[
-                        { label: '대시보드', active: true },
-                        { label: '프로젝트' },
-                        { label: '리포트' },
-                        { label: '생산관리' },
-                        { label: 'CCTV' },
-                        { label: 'KPI' },
-                    ].map((item, i) => (
-                        <a
-                            key={i}
-                            href="#"
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-[13px] transition-colors mb-1`}
-                            style={{
-                                color: item.active ? colors.white : colors.gray500,
-                                background: item.active ? colors.primary : 'transparent',
-                            }}
-                        >
-                            <span className="w-5 h-5 flex items-center justify-center">
-                                {i === 0 ? '📊' : i === 1 ? '📁' : i === 2 ? '📄' : i === 3 ? '🏭' : i === 4 ? '📹' : '📈'}
-                            </span>
-                            <span>{item.label}</span>
-                        </a>
-                    ))}
-                </nav>
-            </aside>
-
             {/* Main Content */}
-            <div className="ml-[265px]">
+            <div>
                 {/* Header */}
                 <header className="h-[65px] bg-white border-b flex items-center justify-between px-8" style={{ borderColor: colors.gray200 }}>
                     <div className="flex items-center gap-4">

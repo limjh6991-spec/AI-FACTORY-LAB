@@ -31,11 +31,11 @@ const navItems: NavItem[] = [
     { id: 'dashboard', label: '대시보드', icon: LayoutDashboard, href: '/' },
     { id: 'projects', label: '프로젝트', icon: FolderKanban, href: '/projects' },
     { id: 'kickoff', label: '킥오프 미팅', icon: Rocket, href: '/kickoff' },
-    { id: 'reports', label: '리포트', icon: FileText, href: '/reports' },
+    { id: 'proposal', label: '제안서', icon: FileText, href: '/proposal' },
+    { id: 'reports', label: '리포트', icon: FileSpreadsheet, href: '/reports' },
     { id: 'manufacturing', label: '생산관리', icon: Factory, href: '/manufacturing' },
     { id: 'cctv', label: 'CCTV', icon: Video, href: '/cctv' },
     { id: 'kpi', label: 'KPI', icon: BarChart3, href: '/kpi' },
-    { id: 'reports2', label: '통계', icon: FileSpreadsheet, href: '/reports2' },
 ];
 
 interface SidebarProps {
