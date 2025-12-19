@@ -1,0 +1,17 @@
+# OR-Tools Production Scheduling Service
+# Python 3.9+
+
+# Google OR-Tools for constraint programming
+ortools>=9.8
+
+# FastAPI web framework
+fastapi>=0.104
+
+# ASGI server
+uvicorn[standard]>=0.24
+
+# Pydantic for data validation
+pydantic>=2.5
+
+# CORS support
+python-multipart>=0.0.6

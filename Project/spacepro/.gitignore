@@ -43,3 +43,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Python virtual environment
+scheduling-service/venv/
+scheduling-service/__pycache__/
