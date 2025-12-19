@@ -133,11 +133,11 @@ machines = [
 
 ## 🚀 구현 단계
 
-### Phase 1: 기본 환경 구축 (M+3)
-- [ ] Python FastAPI 마이크로서비스 설정
-- [ ] OR-Tools 설치 및 테스트
-- [ ] Next.js ↔ Python 서비스 통신 구현
-- [ ] 기본 Job Shop Scheduler 구현
+### Phase 1: 기본 환경 구축 (M+3) ✅ 완료
+- [x] Python FastAPI 마이크로서비스 설정
+- [x] OR-Tools 설치 및 테스트
+- [x] 기본 Job Shop Scheduler 구현
+- [ ] Next.js ↔ Python 서비스 통신 통합 테스트
 
 ### Phase 2: 통합 및 UI (M+4)
 - [ ] 스케줄링 결과 DB 저장
@@ -246,5 +246,5 @@ Content-Type: application/json
 
 ---
 
-**작성일**: 2024-12-18  
-**버전**: v1.0
+**작성일**: 2024-12-19  
+**버전**: v1.1 (스케줄링 서비스 구현 완료)

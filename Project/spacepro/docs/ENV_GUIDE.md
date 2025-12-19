@@ -101,4 +101,4 @@ JWT_SECRET="very-long-random-secret-key-for-production"
 
 ---
 
-**작성일**: 2024-12-18
+**작성일**: 2024-12-19

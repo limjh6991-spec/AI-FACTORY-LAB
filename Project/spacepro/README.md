@@ -1,6 +1,6 @@
 # SpacePro - MES/MRP 생산계획 관리 시스템
 
-> **Next.js 15 + TypeScript + Tailwind CSS 기반 생산 모니터링 대시보드**
+> **Next.js 16 + TypeScript + Tailwind CSS + Prisma 7 기반 생산 모니터링 대시보드**
 
 ## 🚀 프로젝트 개요
 
@@ -25,12 +25,13 @@ SpacePro는 MES/MRP 기반의 **생산 진척현황 모니터링 대시보드** 
 
 ## 🛠️ 기술 스택
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **Charts**: Recharts
 - **Icons**: Lucide React
-- **Database**: PostgreSQL + Prisma (예정)
+- **Database**: PostgreSQL + Prisma 7
+- **OR-Tools**: Python 마이크로서비스 (스케줄링 최적화)
 
 ## 📁 프로젝트 구조
 
@@ -81,15 +82,22 @@ npm run dev -- -p 3001
 http://localhost:3001
 ```
 
-## 📅 향후 계획
+## 📅 개발 현황
 
-- [ ] Prisma + PostgreSQL 연동
+### ✅ 완료
+- [x] Prisma 7 + PostgreSQL 연동
+- [x] 동적 사이드바 메뉴 시스템
+- [x] 월간 생산계획 (`/plan/monthly`)
+- [x] AI Demo 페이지 (`/ai-demo`) - LUI + MCP + Agent Orchestration
+- [x] Scheduling Service (Python OR-Tools 마이크로서비스)
+
+### 🔄 진행 중
 - [ ] 마스터 데이터 관리 화면 (품목, BOM, 공정)
+- [ ] OR-Tools Python 서비스 연동
 - [ ] 생산 오더 관리
-- [ ] 실시간 설비 모니터링
-- [ ] 알람 시스템 고도화
 
 ---
 
 **Created**: 2024년 12월 17일  
+**Updated**: 2024년 12월 19일  
 **Author**: SpacePro Team
