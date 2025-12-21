@@ -1,0 +1,342 @@
+nohup: 입력 무시
+
+> ai-factory-nextjs@0.1.0 dev
+> next dev --turbo
+
+   ▲ Next.js 15.5.6 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.30.1.54:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 565ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1503ms
+ GET / 200 in 1731ms
+ ✓ Compiled /api/trpc/[trpc] in 376ms
+prisma:query 
+      SELECT 
+        menu_id, parent_id, menu_level, sort_order,
+        menu_name, menu_name_en, menu_path, menu_icon,
+        screen_id, screen_type, is_active, is_visible,
+        badge_text, badge_type
+      FROM sys_menu
+      WHERE is_active = true AND is_visible = true
+      ORDER BY sort_order ASC
+    
+[TRPC] menu.getMenuTree took 327ms to execute
+ GET /api/trpc/menu.getMenuTree?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 1469ms
+ ✓ Compiled /screens/[screenId] in 323ms
+ GET /screens/sc110 200 in 518ms
+ ✓ Compiled /api/screens/[screenId] in 56ms
+ GET /api/screens/SC110 404 in 649ms
+ GET /api/screens/SC110 404 in 234ms
+ GET /screens/sc540 200 in 48ms
+ GET /api/screens/SC540 404 in 236ms
+ GET /api/screens/SC540 404 in 217ms
+ GET /screens/SC000016 200 in 44ms
+ ○ Compiling /screens/sc000016 ...
+ ✓ Compiled /screens/sc000016 in 681ms
+ GET /screens/sc000016 200 in 712ms
+ GET /screens/sc000016 200 in 25ms
+ ✓ Compiled /api/screens/[screenId]/data in 81ms
+prisma:query SELECT 1
+prisma:query 
+        SELECT DISTINCT 
+          mat_code as code, 
+          COALESCE(mat_desc, mat_code) as name
+        FROM doi_material_mast
+        WHERE 1=1
+        ORDER BY mat_code
+        LIMIT $1
+      
+[TRPC] options.getMaterials took 277ms to execute
+ GET /api/trpc/options.getMaterials?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%2C%22site%22%3Anull%2C%22limit%22%3A100%7D%2C%22meta%22%3A%7B%22values%22%3A%7B%22site%22%3A%5B%22undefined%22%5D%7D%2C%22v%22%3A1%7D%7D%7D 200 in 549ms
+[API] /api/screens/sc000016/data 요청
+[API] 메타데이터 로드: 자재수불부
+[API] SQL 쿼리 로드: -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미...
+[API] 실행 쿼리: -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미매핑 컬럼 20개 (빈값으로 처리됨 - JOIN 또는 계산 필요):
+-- 품번, 품명, 대분류, 중분류, 규격, 기초수량, 기초금액, 기초단가, 기타입고수량, 기타입고금액, 기타입고단가, 출고수량, 출고금액, 출고단가, 기타출고수량, 기타출고금액, 기타출고단가, 재고수량, 재고금액, 재고단가
+-- 
+-- 💡 힌트: 자재수불부는 보통 다음과 같은 구조가 필...
+prisma:query -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미매핑 컬럼 20개 (빈값으로 처리됨 - JOIN 또는 계산 필요):
+-- 품번, 품명, 대분류, 중분류, 규격, 기초수량, 기초금액, 기초단가, 기타입고수량, 기타입고금액, 기타입고단가, 출고수량, 출고금액, 출고단가, 기타출고수량, 기타출고금액, 기타출고단가, 재고수량, 재고금액, 재고단가
+-- 
+-- 💡 힌트: 자재수불부는 보통 다음과 같은 구조가 필요합니다:
+--   - 기초 = 전월 재고
+--   - 입고 = 당월 입고 합계
+--   - 출고 = 당월 출고 합계  
+--   - 재고 = 기초 + 입고 - 출고
+-- 별도 테이블 JOIN 또는 서브쿼리/CTE로 계산 필요
+
+SELECT
+  mat_class AS "자재구분",
+  '' AS "품번",  -- TODO: 미매핑
+  '' AS "품명",  -- TODO: 미매핑
+  '' AS "대분류",  -- TODO: 미매핑
+  '' AS "중분류",  -- TODO: 미매핑
+  '' AS "규격",  -- TODO: 미매핑
+  '' AS "기초수량",  -- TODO: 미매핑
+  '' AS "기초금액",  -- TODO: 미매핑
+  '' AS "기초단가",  -- TODO: 미매핑
+  in_qty AS "입고수량",
+  in_amt AS "입고금액",
+  unit_cost AS "입고단가",
+  '' AS "기타입고수량",  -- TODO: 미매핑
+  '' AS "기타입고금액",  -- TODO: 미매핑
+  '' AS "기타입고단가",  -- TODO: 미매핑
+  '' AS "출고수량",  -- TODO: 미매핑
+  '' AS "출고금액",  -- TODO: 미매핑
+  '' AS "출고단가",  -- TODO: 미매핑
+  '' AS "기타출고수량",  -- TODO: 미매핑
+  '' AS "기타출고금액",  -- TODO: 미매핑
+  '' AS "기타출고단가",  -- TODO: 미매핑
+  '' AS "재고수량",  -- TODO: 미매핑
+  '' AS "재고금액",  -- TODO: 미매핑
+  '' AS "재고단가"  -- TODO: 미매핑
+FROM doi_material_resc
+WHERE 1=1
+  AND yyyymm = '202512'
+  AND yyyymm = '202512'
+ORDER BY yyyymm DESC
+ LIMIT 500
+[API] 데이터 조회 완료: 0건
+ GET /api/screens/sc000016/data?yearMonth=202512 200 in 713ms
+[API] /api/screens/sc000016/data 요청
+[API] 메타데이터 로드: 자재수불부
+[API] SQL 쿼리 로드: -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미...
+[API] 실행 쿼리: -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미매핑 컬럼 20개 (빈값으로 처리됨 - JOIN 또는 계산 필요):
+-- 품번, 품명, 대분류, 중분류, 규격, 기초수량, 기초금액, 기초단가, 기타입고수량, 기타입고금액, 기타입고단가, 출고수량, 출고금액, 출고단가, 기타출고수량, 기타출고금액, 기타출고단가, 재고수량, 재고금액, 재고단가
+-- 
+-- 💡 힌트: 자재수불부는 보통 다음과 같은 구조가 필...
+prisma:query -- 자재수불부 조회 쿼리
+-- 생성일시: 2025-12-07T04:32:14.306Z
+-- 테이블: doi_material_resc
+-- 사용 가능 컬럼: 14개
+
+-- ⚠️ 미매핑 컬럼 20개 (빈값으로 처리됨 - JOIN 또는 계산 필요):
+-- 품번, 품명, 대분류, 중분류, 규격, 기초수량, 기초금액, 기초단가, 기타입고수량, 기타입고금액, 기타입고단가, 출고수량, 출고금액, 출고단가, 기타출고수량, 기타출고금액, 기타출고단가, 재고수량, 재고금액, 재고단가
+-- 
+-- 💡 힌트: 자재수불부는 보통 다음과 같은 구조가 필요합니다:
+--   - 기초 = 전월 재고
+--   - 입고 = 당월 입고 합계
+--   - 출고 = 당월 출고 합계  
+--   - 재고 = 기초 + 입고 - 출고
+-- 별도 테이블 JOIN 또는 서브쿼리/CTE로 계산 필요
+
+SELECT
+  mat_class AS "자재구분",
+  '' AS "품번",  -- TODO: 미매핑
+  '' AS "품명",  -- TODO: 미매핑
+  '' AS "대분류",  -- TODO: 미매핑
+  '' AS "중분류",  -- TODO: 미매핑
+  '' AS "규격",  -- TODO: 미매핑
+  '' AS "기초수량",  -- TODO: 미매핑
+  '' AS "기초금액",  -- TODO: 미매핑
+  '' AS "기초단가",  -- TODO: 미매핑
+  in_qty AS "입고수량",
+  in_amt AS "입고금액",
+  unit_cost AS "입고단가",
+  '' AS "기타입고수량",  -- TODO: 미매핑
+  '' AS "기타입고금액",  -- TODO: 미매핑
+  '' AS "기타입고단가",  -- TODO: 미매핑
+  '' AS "출고수량",  -- TODO: 미매핑
+  '' AS "출고금액",  -- TODO: 미매핑
+  '' AS "출고단가",  -- TODO: 미매핑
+  '' AS "기타출고수량",  -- TODO: 미매핑
+  '' AS "기타출고금액",  -- TODO: 미매핑
+  '' AS "기타출고단가",  -- TODO: 미매핑
+  '' AS "재고수량",  -- TODO: 미매핑
+  '' AS "재고금액",  -- TODO: 미매핑
+  '' AS "재고단가"  -- TODO: 미매핑
+FROM doi_material_resc
+WHERE 1=1
+  AND yyyymm = '202512'
+  AND yyyymm = '202512'
+ORDER BY yyyymm DESC
+ LIMIT 500
+[API] 데이터 조회 완료: 0건
+ GET /api/screens/sc000016/data?yearMonth=202512 200 in 248ms
+ ✓ Compiled /_not-found/page in 139ms
+ GET /settings 404 in 165ms
+ GET /settings 404 in 43ms
+prisma:query 
+      SELECT 
+        menu_id, parent_id, menu_level, sort_order,
+        menu_name, menu_name_en, menu_path, menu_icon,
+        screen_id, screen_type, is_active, is_visible,
+        badge_text, badge_type
+      FROM sys_menu
+      WHERE is_active = true AND is_visible = true
+      ORDER BY sort_order ASC
+    
+[TRPC] menu.getMenuTree took 433ms to execute
+ GET /api/trpc/menu.getMenuTree?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 691ms
+ GET /settings/db-metadata 404 in 22ms
+ GET /settings/db-metadata 404 in 33ms
+prisma:query 
+      SELECT 
+        menu_id, parent_id, menu_level, sort_order,
+        menu_name, menu_name_en, menu_path, menu_icon,
+        screen_id, screen_type, is_active, is_visible,
+        badge_text, badge_type
+      FROM sys_menu
+      WHERE is_active = true AND is_visible = true
+      ORDER BY sort_order ASC
+    
+[TRPC] menu.getMenuTree took 261ms to execute
+ GET /api/trpc/menu.getMenuTree?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 524ms
+ ✓ Compiled /settings/screen-generator in 321ms
+ GET /settings/screen-generator 200 in 345ms
+ ✓ Compiled /settings/menu in 161ms
+ GET /settings/menu 200 in 184ms
+[TRPC] screenGenerator.getTempScreenList took 476ms to execute
+ GET /api/trpc/screenGenerator.getTempScreenList?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 742ms
+[TRPC] screenGenerator.getTempScreen took 459ms to execute
+ GET /api/trpc/screenGenerator.getTempScreen?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22screenId%22%3A%22TEMP_1765078982608%22%7D%7D%7D 200 in 726ms
+ GET / 200 in 27ms
+ GET /screens/sc230 200 in 49ms
+ GET /api/screens/SC230 404 in 236ms
+ GET /api/screens/SC230 404 in 213ms
+ ✓ Compiled /screens/sc930 in 123ms
+ GET /screens/sc930 200 in 144ms
+ GET /settings/menu 200 in 23ms
+ GET /settings/menu 200 in 22ms
+[TRPC] screenGenerator.getTempScreenList took 183ms to execute
+prisma:query 
+      SELECT 
+        menu_id, parent_id, menu_level, sort_order,
+        menu_name, menu_name_en, menu_path, menu_icon,
+        screen_id, screen_type, is_active, is_visible,
+        badge_text, badge_type
+      FROM sys_menu
+      WHERE is_active = true AND is_visible = true
+      ORDER BY sort_order ASC
+    
+[TRPC] menu.getMenuTree took 320ms to execute
+ GET /api/trpc/screenGenerator.getTempScreenList,menu.getMenuTree?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 200 in 581ms
+ ✓ Compiled in 92ms
+ ✓ Compiled in 130ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 624ms
+ ⨯ Error: Cannot find module '../chunks/ssr/[turbopack]_runtime.js'
+Require stack:
+- /home/roarm_m3/ai-factory-lab/.next/server/pages/_document.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/require.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/load-components.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/utils.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/options.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/index.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/parse-module.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-server.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/start-server.js
+    at Object.<anonymous> (.next/server/pages/_document.js:1:7) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /api/trpc/menu.getMenuTree,screenGenerator.getTempScreenList?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 500 in 751ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ Error: Cannot find module '../chunks/ssr/[turbopack]_runtime.js'
+Require stack:
+- /home/roarm_m3/ai-factory-lab/.next/server/pages/_document.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/require.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/load-components.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/utils.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/options.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/index.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/parse-module.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-server.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/start-server.js
+    at Object.<anonymous> (.next/server/pages/_document.js:1:7) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /api/trpc/menu.getMenuTree,screenGenerator.getTempScreenList?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 500 in 45ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/roarm_m3/ai-factory-lab/.next/server/app/api/trpc/[trpc]/[__metadata_id__]/route/app-paths-manifest.json'
+}
+ ⨯ Error: Cannot find module '../chunks/ssr/[turbopack]_runtime.js'
+Require stack:
+- /home/roarm_m3/ai-factory-lab/.next/server/pages/_document.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/require.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/load-components.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/utils.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/options.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/index.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/parse-module.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-server.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/start-server.js
+    at Object.<anonymous> (.next/server/pages/_document.js:1:7) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET /api/trpc/menu.getMenuTree,screenGenerator.getTempScreenList?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%2C%22v%22%3A1%7D%7D%7D 500 in 41ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/roarm_m3/ai-factory-lab/.next/server/app/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/roarm_m3/ai-factory-lab/.next/server/app/page/app-build-manifest.json'
+}
+ ⨯ Error: Cannot find module '../chunks/ssr/[turbopack]_runtime.js'
+Require stack:
+- /home/roarm_m3/ai-factory-lab/.next/server/pages/_document.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/require.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/load-components.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/utils.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/options.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/swc/index.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/parse-module.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/router-server.js
+- /home/roarm_m3/ai-factory-lab/node_modules/next/dist/server/lib/start-server.js
+    at Object.<anonymous> (.next/server/pages/_document.js:1:7) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET / 500 in 40ms

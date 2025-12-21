@@ -1,0 +1,13 @@
+{
+  "menuId": "MENU_SC000048",
+  "parentId": "MNU500",
+  "menuName": "부서관리",
+  "menuNameEn": "",
+  "menuPath": "/screens/SC000048",
+  "screenId": "SC000048",
+  "menuLevel": 2,
+  "sortOrder": 570,
+  "isActive": true,
+  "isVisible": true,
+  "createdAt": "2025-12-14T07:57:43.447Z"
+}

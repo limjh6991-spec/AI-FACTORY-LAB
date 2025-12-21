@@ -1,0 +1,348 @@
+{
+  "screenName": "제조원가(제품)",
+  "screenNameEn": "",
+  "tableName": "doi_stco",
+  "searchConditions": [
+    {
+      "label": "년월",
+      "type": "yearmonth",
+      "field": "yearmonth",
+      "required": false
+    }
+  ],
+  "gridColumns": {
+    "row1": [
+      "제조원가(제품)",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "단위 : 수량_EA / L, 금액_\\",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "row2": [
+      "구분",
+      "코드",
+      "Inch",
+      "SITE",
+      "계획",
+      "",
+      "계획 대비 실적",
+      "",
+      "달성률",
+      "",
+      "기초재공품재고(BOH)",
+      "",
+      "입고(IN)",
+      "",
+      "",
+      "",
+      "출고(OUT)",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "불량률",
+      "기말재공품재고(EOH)",
+      "",
+      ""
+    ],
+    "row3": [
+      "",
+      "",
+      "",
+      "",
+      "plan_qty",
+      "plan_amt",
+      "actual_qty",
+      "actual_amt",
+      "achv_qty",
+      "achv_amt",
+      "boh_qty",
+      "boh_amt",
+      "생산입고수량",
+      "생산입고금액",
+      "타계정입고수량",
+      "타계정입고금액",
+      "출고수량",
+      "출고금액",
+      "타계정출고수량",
+      "타계정출고금액",
+      "LOSS수량",
+      "LOSS금액",
+      "",
+      "eoh_qty",
+      "eoh_amt",
+      ""
+    ],
+    "merges": [
+      {
+        "startCol": 0,
+        "endCol": 0,
+        "startRow": 1,
+        "endRow": 2
+      },
+      {
+        "startCol": 1,
+        "endCol": 1,
+        "startRow": 1,
+        "endRow": 2
+      },
+      {
+        "startCol": 2,
+        "endCol": 2,
+        "startRow": 1,
+        "endRow": 2
+      },
+      {
+        "startCol": 3,
+        "endCol": 3,
+        "startRow": 1,
+        "endRow": 2
+      },
+      {
+        "startCol": 4,
+        "endCol": 5,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 6,
+        "endCol": 7,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 8,
+        "endCol": 9,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 10,
+        "endCol": 11,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 12,
+        "endCol": 15,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 16,
+        "endCol": 21,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 22,
+        "endCol": 22,
+        "startRow": 1,
+        "endRow": 2
+      },
+      {
+        "startCol": 23,
+        "endCol": 24,
+        "startRow": 1,
+        "endRow": 1
+      },
+      {
+        "startCol": 0,
+        "endCol": 3,
+        "startRow": 3,
+        "endRow": 3
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 5,
+        "endRow": 16
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 18,
+        "endRow": 29
+      },
+      {
+        "startCol": 0,
+        "endCol": 3,
+        "startRow": 30,
+        "endRow": 30
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 32,
+        "endRow": 43
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 45,
+        "endRow": 56
+      },
+      {
+        "startCol": 0,
+        "endCol": 3,
+        "startRow": 57,
+        "endRow": 57
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 59,
+        "endRow": 70
+      },
+      {
+        "startCol": 0,
+        "endCol": 2,
+        "startRow": 72,
+        "endRow": 83
+      },
+      {
+        "startCol": 0,
+        "endCol": 3,
+        "startRow": 84,
+        "endRow": 84
+      },
+      {
+        "startCol": 0,
+        "endCol": 0,
+        "startRow": 85,
+        "endRow": 88
+      },
+      {
+        "startCol": 1,
+        "endCol": 3,
+        "startRow": 85,
+        "endRow": 85
+      },
+      {
+        "startCol": 1,
+        "endCol": 3,
+        "startRow": 86,
+        "endRow": 86
+      },
+      {
+        "startCol": 1,
+        "endCol": 3,
+        "startRow": 87,
+        "endRow": 87
+      },
+      {
+        "startCol": 1,
+        "endCol": 3,
+        "startRow": 88,
+        "endRow": 88
+      }
+    ],
+    "summaryRows": [
+      "SITE 別 합계"
+    ],
+    "sampleData": [
+      [
+        "202510",
+        "HQ",
+        "ACTUAL",
+        "0201",
+        "MDEP",
+        "제)감가상각비",
+        160,
+        0,
+        0,
+        160,
+        1264542,
+        0,
+        1264542,
+        0
+      ],
+      [
+        "202510",
+        "HQ",
+        "ACTUAL",
+        "0201",
+        "MEAL",
+        "제)복리후생비-사내식대",
+        160,
+        0,
+        0,
+        160,
+        83471,
+        0,
+        83471,
+        0
+      ],
+      [
+        "202510",
+        "HQ",
+        "ACTUAL",
+        "0201",
+        "MELC",
+        "제)전력비",
+        160,
+        0,
+        0,
+        160,
+        1033047,
+        0,
+        1033047,
+        0
+      ],
+      [
+        "202510",
+        "HQ",
+        "ACTUAL",
+        "0201",
+        "MEMP",
+        "제)보험료-고용,산재보험",
+        160,
+        0,
+        0,
+        160,
+        81603,
+        0,
+        81603,
+        0
+      ],
+      [
+        "202510",
+        "HQ",
+        "ACTUAL",
+        "0201",
+        "MFEE",
+        "제)지급수수료-기타",
+        160,
+        0,
+        0,
+        160,
+        312607,
+        0,
+        312607,
+        0
+      ]
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "screenId": "SC000021",
+  "screenName": "자재수불부",
+  "screenNameEn": "Material Inventory Ledger",
+  "tableName": "doi_material_resc",
+  "createdAt": "2025-12-09T10:58:56.160Z",
+  "status": "published",
+  "publishedAt": "2025-12-09T10:59:06.321Z"
+}

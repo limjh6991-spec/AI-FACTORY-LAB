@@ -1,0 +1,13 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/trpc/[trpc]/route.js")
+R.c("server/chunks/b1a17_server_api_routers_screen-generator_templates_query-generator_index_ts_953909ed._.js")
+R.c("server/chunks/[root-of-the-server]__647103d6._.js")
+R.c("server/chunks/node_modules_next_dist_2364ee0f._.js")
+R.c("server/chunks/node_modules_@trpc_server_dist_1ed2c3c6._.js")
+R.c("server/chunks/node_modules_zod_v3_f358d7b3._.js")
+R.c("server/chunks/node_modules_xlsx_xlsx_mjs_539ebb60._.js")
+R.c("server/chunks/node_modules_chromadb_dist_0065626d._.js")
+R.c("server/chunks/node_modules_@anthropic-ai_sdk_8ae23c98._.js")
+R.c("server/chunks/node_modules_f4a67af3._.js")
+R.m("[project]/.next-internal/server/app/api/trpc/[trpc]/route/actions.js [app-rsc] (server actions loader, ecmascript)")
+R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/trpc/[trpc]/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/trpc/[trpc]/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

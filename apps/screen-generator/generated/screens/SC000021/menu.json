@@ -1,0 +1,13 @@
+{
+  "menuId": "MENU_SC000021",
+  "parentId": "MNU600",
+  "menuName": "자재수불부",
+  "menuNameEn": "",
+  "menuPath": "/screens/SC000021",
+  "screenId": "SC000021",
+  "menuLevel": 2,
+  "sortOrder": 670,
+  "isActive": true,
+  "isVisible": true,
+  "createdAt": "2025-12-09T10:59:06.333Z"
+}
