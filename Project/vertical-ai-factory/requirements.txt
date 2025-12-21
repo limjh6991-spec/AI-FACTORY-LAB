@@ -1,0 +1,20 @@
+# Vertical AI Factory
+# Multi-Agent System with LangGraph
+
+# Core dependencies
+langgraph>=0.2.0
+langchain>=0.3.0
+langchain-google-genai>=2.0.0
+langchain-core>=0.3.0
+
+# Pydantic for structured output
+pydantic>=2.0.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# Database
+# sqlite3 is built-in, no need to install
+
+# Development utilities
+rich>=13.0.0  # Pretty console output

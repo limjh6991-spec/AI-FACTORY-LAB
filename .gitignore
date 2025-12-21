@@ -52,3 +52,9 @@ yarn-error.log*
 # system logs
 /system_log/*.log
 logs/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
