@@ -39,7 +39,15 @@ const mcpResources = [
 ];
 
 // 에이전트 상태
-const initialAgents = [
+interface AgentState {
+    id: string;
+    name: string;
+    status: string;
+    task: string;
+    time: string | null;
+}
+
+const initialAgents: AgentState[] = [
     { id: 'analyst', name: 'Analyst Agent', status: 'idle', task: '대기 중', time: null },
     { id: 'sql', name: 'SQL Writer', status: 'idle', task: '대기 중', time: null },
     { id: 'critic', name: 'Critic Agent', status: 'idle', task: '검증 대기', time: null },
@@ -53,72 +61,156 @@ export default function AISystemDemo() {
     const [showDiff, setShowDiff] = useState(false);
     const [processingStep, setProcessingStep] = useState(0);
 
-    // 의도 처리 시뮬레이션
+    // 의도 처리 - 실제 API 호출
     const handleSubmitIntent = async () => {
         if (!intent.trim()) return;
 
         setSystemStatus('processing');
         setProcessingStep(1);
+        setArtifact(null);
 
         // 1단계: Analyst Agent 시작
         setAgents(prev => prev.map(a =>
             a.id === 'analyst' ? { ...a, status: 'running', task: '의도 분석 중...' } : a
         ));
 
-        await new Promise(r => setTimeout(r, 1500));
-        setAgents(prev => prev.map(a =>
-            a.id === 'analyst' ? { ...a, status: 'done', task: '분석 완료', time: '1.2s' } : a
-        ));
-        setProcessingStep(2);
+        const startTime = Date.now();
 
-        // 2단계: SQL Writer 시작
-        setAgents(prev => prev.map(a =>
-            a.id === 'sql' ? { ...a, status: 'running', task: '쿼리 생성 중...' } : a
-        ));
+        try {
+            // API 호출
+            const response = await fetch('/api/ai-query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: intent }),
+            });
 
-        await new Promise(r => setTimeout(r, 1000));
-        setAgents(prev => prev.map(a =>
-            a.id === 'sql' ? { ...a, status: 'done', task: '쿼리 완료', time: '0.8s' } : a
-        ));
-        setProcessingStep(3);
+            const data = await response.json();
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
-        // 3단계: 결과물 생성
-        setArtifact({
-            title: '10월 A프로젝트 원가 분석 보고서',
-            content: `## 분석 개요
-분석 기간: 2024년 10월 1일 ~ 10월 31일
-대상 프로젝트: A프로젝트 (코드: PRJ-2024-A001)
+            if (data.error) {
+                // 에러 처리
+                setAgents(prev => prev.map(a => ({
+                    ...a,
+                    status: 'idle',
+                    task: a.id === 'analyst' ? `오류: ${data.error}` : '대기 중'
+                })));
+                setSystemStatus('ready');
+                setProcessingStep(0);
+                alert(`❌ 오류: ${data.error}`);
+                return;
+            }
 
-## 원가 구성
-| 항목 | 금액 | 비율 |
-|------|------|------|
-| 직접 재료비 | 45,230,000원 | 42.3% |
-| 직접 노무비 | 32,150,000원 | 30.1% |
-| 제조 경비 | 29,520,000원 | 27.6% |
-| **총 원가** | **106,900,000원** | **100%** |
+            // Analyst 완료
+            if (data.analyst) {
+                setAgents(prev => prev.map(a =>
+                    a.id === 'analyst' ? { ...a, status: 'done', task: '분석 완료', time: `${(parseFloat(totalTime) * 0.3).toFixed(1)}s` } : a
+                ));
+                setProcessingStep(2);
+            }
 
-## 핵심 인사이트
-1. 직접 재료비가 예산 대비 8.2% 초과
-2. 노무비는 목표 이내 (97.4% 달성)
-3. 경비 절감 여지: 약 2,300,000원`,
-            changes: [
-                { type: 'add', line: '재료비 초과 원인 분석 추가' },
-                { type: 'add', line: '개선 권고사항 3건 도출' },
-            ]
-        });
+            // Writer 처리
+            setAgents(prev => prev.map(a =>
+                a.id === 'sql' ? { ...a, status: data.writer ? 'done' : 'running', task: data.writer ? '쿼리 완료' : '쿼리 생성 중...' } : a
+            ));
+            if (data.writer) {
+                setAgents(prev => prev.map(a =>
+                    a.id === 'sql' ? { ...a, status: 'done', task: '쿼리 완료', time: `${(parseFloat(totalTime) * 0.4).toFixed(1)}s` } : a
+                ));
+                setProcessingStep(3);
+            }
 
-        // 4단계: Critic 검증
-        setAgents(prev => prev.map(a =>
-            a.id === 'critic' ? { ...a, status: 'running', task: '결과 검증 중...' } : a
-        ));
+            // Critic 처리
+            if (data.critic) {
+                setAgents(prev => prev.map(a =>
+                    a.id === 'critic' ? {
+                        ...a,
+                        status: 'done',
+                        task: data.critic.validation_result ? '검증 통과 ✓' : `재시도 ${data.critique_count}회`,
+                        time: `${(parseFloat(totalTime) * 0.3).toFixed(1)}s`
+                    } : a
+                ));
+                setProcessingStep(4);
+            }
 
-        await new Promise(r => setTimeout(r, 800));
-        setAgents(prev => prev.map(a =>
-            a.id === 'critic' ? { ...a, status: 'done', task: '검증 완료', time: '0.6s' } : a
-        ));
+            // 결과 아티팩트 생성
+            setArtifact({
+                title: `SQL 분석 결과: "${intent}"`,
+                analyst: data.analyst,
+                writer: data.writer,
+                critic: data.critic,
+                final_sql: data.final_sql,
+                execution_result: data.execution_result,
+                critique_count: data.critique_count || 0,
+                content: formatResultContent(data),
+                changes: data.final_sql ? [
+                    { type: 'add', line: `SQL 쿼리 생성 완료` },
+                    { type: 'add', line: `총 처리 시간: ${totalTime}s` },
+                ] : []
+            });
 
-        setSystemStatus('done');
-        setProcessingStep(4);
+            setSystemStatus('done');
+
+        } catch (error) {
+            console.error('API Error:', error);
+            setAgents(prev => prev.map(a => ({
+                ...a,
+                status: 'idle',
+                task: '오류 발생'
+            })));
+            setSystemStatus('ready');
+            setProcessingStep(0);
+            alert('❌ AI 서비스에 연결할 수 없습니다. Python 서버가 실행 중인지 확인해주세요.');
+        }
+    };
+
+    // 결과 포맷팅 함수
+    const formatResultContent = (data: any) => {
+        let content = '';
+
+        if (data.analyst) {
+            content += `## 🔍 분석 결과\n`;
+            content += `**사고 과정:** ${data.analyst.thought || '-'}\n\n`;
+            content += `**대상 테이블:** ${data.analyst.target_table || '-'}\n`;
+            content += `**필요 컬럼:** ${data.analyst.required_columns?.join(', ') || '-'}\n`;
+            content += `**필터 조건:** ${data.analyst.filter_conditions || '없음'}\n`;
+            content += `**집계:** ${data.analyst.aggregation || '없음'}\n\n`;
+        }
+
+        if (data.writer) {
+            content += `## ✍️ 생성된 SQL\n`;
+            content += `\`\`\`sql\n${data.writer.sql_query || data.final_sql}\n\`\`\`\n\n`;
+            content += `**설명:** ${data.writer.explanation || '-'}\n\n`;
+        }
+
+        if (data.critic) {
+            const status = data.critic.validation_result ? '✅ 통과' : '❌ 실패';
+            content += `## 🔒 검증 결과\n`;
+            content += `**상태:** ${status}\n`;
+            content += `**보안:** ${data.critic.security_passed ? '✅' : '❌'}\n`;
+            content += `**효율성:** ${'⭐'.repeat(data.critic.efficiency_score || 0)}\n`;
+            if (data.critic.feedback) {
+                content += `**피드백:** ${data.critic.feedback}\n`;
+            }
+            content += '\n';
+        }
+
+        if (data.execution_result && data.execution_result.length > 0) {
+            content += `## 📊 실행 결과\n`;
+            content += `총 ${data.execution_result.length}건의 결과\n\n`;
+
+            // 테이블 형태로 표시
+            const keys = Object.keys(data.execution_result[0]);
+            content += `| ${keys.join(' | ')} |\n`;
+            content += `| ${keys.map(() => '---').join(' | ')} |\n`;
+            data.execution_result.slice(0, 10).forEach((row: any) => {
+                content += `| ${keys.map(k => row[k]).join(' | ')} |\n`;
+            });
+            if (data.execution_result.length > 10) {
+                content += `\n... 외 ${data.execution_result.length - 10}건\n`;
+            }
+        }
+
+        return content;
     };
 
     // 승인 처리
