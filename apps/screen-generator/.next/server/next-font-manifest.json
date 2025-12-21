@@ -3,6 +3,9 @@
     "[project]/src/app/builder/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
+    "[project]/src/app/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
+    ],
     "[project]/src/app/screens/[screenId]/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
@@ -16,6 +19,18 @@
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
     "[project]/src/app/screens/sc000049/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
+    ],
+    "[project]/src/app/screens/sc011507/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
+    ],
+    "[project]/src/app/screens/sc172866/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
+    ],
+    "[project]/src/app/screens/sc682270/page": [
+      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
+    ],
+    "[project]/src/app/screens/sc831626/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
     "[project]/src/app/system/realgrid-samples/page": [

@@ -1,0 +1,39 @@
+{
+  "screenId": "SC011507",
+  "screenName": "화면테스트",
+  "layout": [
+    {
+      "i": "layout_1",
+      "type": "ToolbarRow",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "minW": 6,
+      "minH": 1,
+      "slots": [
+        {
+          "id": "layout_1_slot_1",
+          "components": [
+            {
+              "type": "Option",
+              "templateId": "YearMonthPicker",
+              "label": "기준월 선택"
+            },
+            {
+              "type": "Option",
+              "templateId": "ProductSelect",
+              "label": "제품 선택"
+            },
+            {
+              "type": "Button",
+              "templateId": "btn_search",
+              "label": "조회"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2025-12-21T10:13:31.795Z"
+}

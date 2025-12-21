@@ -1,19 +1,22 @@
 'use client';
 
 /**
- * 레이아웃 빌더 메인 페이지 - 템플릿 프리셋 지원
+ * 레이아웃 빌더 메인 페이지 - 코드 생성 지원
  */
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Palette } from './components/Palette';
 import { Canvas } from './components/Canvas';
 import { ComponentSelector } from './components/ComponentSelector';
 import { TemplateSelector } from './components/TemplateSelector';
 import { useLayoutStore } from './store/layoutStore';
+import { generateScreenCode } from './codeGenerator';
 import type { ComponentType, TemplatePreset, LayoutType } from './types';
-import { Save, Trash2, Download, Upload, Layout } from 'lucide-react';
+import { Save, Trash2, Download, Upload, Layout, Code, Loader2 } from 'lucide-react';
 
 export default function BuilderPage() {
+    const router = useRouter();
     const { items, clearAll, loadLayout, addComponent, selectedItemId, selectedSlotId } = useLayoutStore();
     const [selectorOpen, setSelectorOpen] = useState(false);
     const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
@@ -21,6 +24,7 @@ export default function BuilderPage() {
     const [targetSlotId, setTargetSlotId] = useState<string | null>(null);
     const [targetLayoutType, setTargetLayoutType] = useState<LayoutType | undefined>();
     const [initialComponentType, setInitialComponentType] = useState<ComponentType | undefined>();
+    const [isGenerating, setIsGenerating] = useState(false);
 
     // 슬롯 클릭 시 컴포넌트 선택 팝업
     const handleSlotClick = (itemId: string, slotId: string, layoutType: LayoutType) => {
@@ -52,7 +56,6 @@ export default function BuilderPage() {
 
     // 템플릿 선택 완료
     const handleTemplateSelect = (template: TemplatePreset) => {
-        // 기존 레이아웃 클리어 후 템플릿 적용
         loadLayout(template.layout);
     };
 
@@ -86,10 +89,68 @@ export default function BuilderPage() {
         input.click();
     };
 
-    const handleSave = () => {
-        const json = JSON.stringify(items, null, 2);
-        console.log('Layout JSON:', json);
-        alert('레이아웃이 콘솔에 저장되었습니다.\n\n' + json.substring(0, 500) + '...');
+    // 화면 생성
+    const handleGenerateScreen = async () => {
+        if (items.length === 0) {
+            alert('레이아웃을 먼저 구성하세요');
+            return;
+        }
+
+        const screenName = prompt('화면 이름을 입력하세요:', '새 화면');
+        if (!screenName) return;
+
+        setIsGenerating(true);
+
+        try {
+            // 화면 ID 생성 (timestamp 기반)
+            const screenId = `SC${Date.now().toString().slice(-6)}`;
+
+            // 코드 생성
+            const code = generateScreenCode(screenId, screenName, items);
+
+            // API 호출하여 파일 저장
+            const response = await fetch('/api/builder/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    screenId,
+                    screenName,
+                    code,
+                    layout: items,
+                }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(`화면이 생성되었습니다!\n\n경로: ${result.path}`);
+                // 생성된 화면으로 이동
+                router.push(`/screens/${screenId.toLowerCase()}`);
+            } else {
+                const error = await response.json();
+                alert(`오류: ${error.message}`);
+            }
+        } catch (error) {
+            console.error('Generation error:', error);
+            alert('화면 생성 중 오류가 발생했습니다.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    // 코드 미리보기
+    const handlePreviewCode = () => {
+        if (items.length === 0) {
+            alert('레이아웃을 먼저 구성하세요');
+            return;
+        }
+        const code = generateScreenCode('PreviewScreen', '미리보기', items);
+        console.log(code);
+
+        // 새 창에 코드 표시
+        const w = window.open('', '_blank');
+        if (w) {
+            w.document.write(`<pre style="font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4;">${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`);
+        }
     };
 
     // 컴포넌트 수 계산
@@ -139,12 +200,25 @@ export default function BuilderPage() {
                         <Trash2 className="h-4 w-4" />
                         초기화
                     </button>
+                    <span className="text-slate-300">|</span>
                     <button
-                        onClick={handleSave}
-                        className="px-4 py-1.5 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors flex items-center gap-1.5"
+                        onClick={handlePreviewCode}
+                        className="px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1.5"
                     >
-                        <Save className="h-4 w-4" />
-                        저장
+                        <Code className="h-4 w-4" />
+                        코드 미리보기
+                    </button>
+                    <button
+                        onClick={handleGenerateScreen}
+                        disabled={isGenerating || items.length === 0}
+                        className="px-4 py-1.5 text-sm text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                        {isGenerating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Save className="h-4 w-4" />
+                        )}
+                        화면 생성
                     </button>
                 </div>
             </div>

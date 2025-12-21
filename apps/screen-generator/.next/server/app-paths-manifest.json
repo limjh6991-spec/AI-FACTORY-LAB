@@ -1,13 +1,19 @@
 {
+  "/api/builder/generate/route": "app/api/builder/generate/route.js",
   "/api/screens/[screenId]/data/route": "app/api/screens/[screenId]/data/route.js",
   "/api/screens/[screenId]/route": "app/api/screens/[screenId]/route.js",
   "/api/trpc/[trpc]/route": "app/api/trpc/[trpc]/route.js",
   "/builder/page": "app/builder/page.js",
+  "/page": "app/page.js",
   "/screens/[screenId]/page": "app/screens/[screenId]/page.js",
   "/screens/sc000021/page": "app/screens/sc000021/page.js",
   "/screens/sc000024/page": "app/screens/sc000024/page.js",
   "/screens/sc000048/page": "app/screens/sc000048/page.js",
   "/screens/sc000049/page": "app/screens/sc000049/page.js",
+  "/screens/sc011507/page": "app/screens/sc011507/page.js",
+  "/screens/sc172866/page": "app/screens/sc172866/page.js",
+  "/screens/sc682270/page": "app/screens/sc682270/page.js",
+  "/screens/sc831626/page": "app/screens/sc831626/page.js",
   "/system/realgrid-samples/page": "app/system/realgrid-samples/page.js",
   "/test/options/page": "app/test/options/page.js"
 }

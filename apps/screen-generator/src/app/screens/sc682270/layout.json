@@ -1,0 +1,71 @@
+{
+  "screenId": "SC682270",
+  "screenName": "테스트화면",
+  "layout": [
+    {
+      "i": "layout_1",
+      "type": "ToolbarRow",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 1,
+      "minW": 6,
+      "minH": 1,
+      "slots": [
+        {
+          "id": "layout_1_slot_1",
+          "components": [
+            {
+              "type": "Option",
+              "templateId": "opt_search",
+              "label": "검색 옵션"
+            },
+            {
+              "type": "Option",
+              "templateId": "opt_date",
+              "label": "기간 옵션"
+            },
+            {
+              "type": "Button",
+              "templateId": "btn_search",
+              "label": "조회"
+            },
+            {
+              "type": "Button",
+              "templateId": "btn_save",
+              "label": "저장"
+            },
+            {
+              "type": "Button",
+              "templateId": "btn_export",
+              "label": "엑셀"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "i": "layout_2",
+      "type": "FullWidth",
+      "x": 0,
+      "y": 1,
+      "w": 12,
+      "h": 6,
+      "minW": 6,
+      "minH": 2,
+      "slots": [
+        {
+          "id": "layout_2_slot_1",
+          "components": [
+            {
+              "type": "Grid",
+              "templateId": "grid_basic",
+              "label": "기본 그리드"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2025-12-21T10:24:42.507Z"
+}
