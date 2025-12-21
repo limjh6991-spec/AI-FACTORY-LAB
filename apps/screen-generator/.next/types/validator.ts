@@ -47,6 +47,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../src/app/builder/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/builder">> = Specific
+  const handler = {} as typeof import("../../src/app/builder/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/excel-generator/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/excel-generator">> = Specific

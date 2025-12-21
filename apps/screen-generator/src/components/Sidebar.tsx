@@ -163,6 +163,31 @@ export function Sidebar() {
           <div className="space-y-1">
             {/* 일반 메뉴 (sortOrder < 900) */}
             {menuTree?.filter(item => item.sortOrder < 900).map((item) => <MenuItem key={item.menuId} item={item} collapsed={collapsed} />)}
+
+            {/* 개발 도구 - 고정 메뉴 */}
+            {!collapsed && <div className="mt-4 pt-3 border-t border-blue-100"><span className="px-4 text-[10px] font-semibold text-blue-400 uppercase tracking-wider">개발 도구</span></div>}
+            <Link
+              href="/builder"
+              className={cn(
+                "group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-150",
+                "hover:bg-blue-100 hover:text-blue-900 text-slate-600 border-l-[3px] border-l-transparent",
+                collapsed && "justify-center px-3"
+              )}
+            >
+              <svg className="h-5 w-5 text-slate-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+              {!collapsed && <span className="truncate">레이아웃 빌더</span>}
+            </Link>
+            <Link
+              href="/test/options"
+              className={cn(
+                "group flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-150",
+                "hover:bg-blue-100 hover:text-blue-900 text-slate-600 border-l-[3px] border-l-transparent",
+                collapsed && "justify-center px-3"
+              )}
+            >
+              <svg className="h-5 w-5 text-slate-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+              {!collapsed && <span className="truncate">공통 컴포넌트</span>}
+            </Link>
           </div>
         )}
       </nav>
