@@ -489,4 +489,49 @@ export const optionsRouter = createTRPCRouter({
       const results = await ctx.db.$queryRawUnsafe<OptionItem[]>(query, ...params);
       return results;
     }),
+
+  /**
+   * 회사별 UI 라벨 조회 (bi_common_code - code_type='LABEL')
+   */
+  getLabels: publicProcedure
+    .input(z.object({
+      companyCode: z.string().optional().default("BINARY"),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { companyCode } = input;
+
+      const results = await ctx.db.$queryRaw<
+        Array<{ category: string; ui_label: string }>
+      >`
+        SELECT category, ui_label 
+        FROM "binary".bi_common_code 
+        WHERE code_type = 'LABEL' 
+          AND company_code = ${companyCode}
+          AND use_yn = 'Y'
+          AND ui_label IS NOT NULL
+      `;
+
+      // 기본 라벨
+      const defaultLabels: Record<string, string> = {
+        CUSTOMER: "거래처",
+        DEPT: "부서",
+        ACCOUNT: "계정",
+        PRODUCT: "제품",
+        MATERIAL: "부품",
+        EQUIPMENT: "설비",
+        MODEL: "모델",
+        USER: "사용자",
+        SITE: "사업장",
+        SCENARIO: "시나리오",
+        COST_CENTER: "코스트센터",
+        EXPENSE: "비용구분",
+      };
+
+      // DB 결과로 덮어쓰기
+      for (const row of results) {
+        defaultLabels[row.category] = row.ui_label;
+      }
+
+      return defaultLabels;
+    }),
 });

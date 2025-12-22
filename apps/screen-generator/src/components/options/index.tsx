@@ -24,6 +24,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, ChevronDown, X, Calendar, Check } from "lucide-react";
 import { api } from "~/trpc/react";
 import { cn } from "~/lib/utils";
+import { useLabels, LabelProvider as _LabelProvider } from "./LabelContext";
+
+// LabelProvider 재export
+export { _LabelProvider as LabelProvider, useLabels };
 
 // ==========================================
 // 공통 타입 정의
@@ -315,6 +319,7 @@ function SearchableSelect({
 
 export function CustomerSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getCustomers.useQuery({
     search,
     site: props.site,
@@ -327,8 +332,8 @@ export function CustomerSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "거래처 선택"}
-      label={props.label ?? "거래처"}
+      placeholder={props.placeholder ?? `${labels.CUSTOMER} 선택`}
+      label={props.label ?? labels.CUSTOMER}
     />
   );
 }
@@ -339,6 +344,7 @@ export function CustomerSelect(props: BaseSelectProps) {
 
 export function MaterialSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getMaterials.useQuery({
     search,
     site: props.site,
@@ -351,8 +357,8 @@ export function MaterialSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "부품 선택"}
-      label={props.label ?? "부품"}
+      placeholder={props.placeholder ?? `${labels.MATERIAL} 선택`}
+      label={props.label ?? labels.MATERIAL}
     />
   );
 }
@@ -363,6 +369,7 @@ export function MaterialSelect(props: BaseSelectProps) {
 
 export function ModelSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getModels.useQuery({
     search,
     site: props.site,
@@ -375,8 +382,8 @@ export function ModelSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "모델 선택"}
-      label={props.label ?? "모델"}
+      placeholder={props.placeholder ?? `${labels.MODEL} 선택`}
+      label={props.label ?? labels.MODEL}
     />
   );
 }
@@ -387,6 +394,7 @@ export function ModelSelect(props: BaseSelectProps) {
 
 export function AccountSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getAccounts.useQuery({
     search,
     site: props.site,
@@ -399,8 +407,8 @@ export function AccountSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "계정 선택"}
-      label={props.label ?? "계정"}
+      placeholder={props.placeholder ?? `${labels.ACCOUNT} 선택`}
+      label={props.label ?? labels.ACCOUNT}
     />
   );
 }
@@ -411,6 +419,7 @@ export function AccountSelect(props: BaseSelectProps) {
 
 export function ExpenSelSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getExpenSels.useQuery({
     search,
     site: props.site,
@@ -423,8 +432,8 @@ export function ExpenSelSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "비용구분 선택"}
-      label={props.label ?? "비용구분"}
+      placeholder={props.placeholder ?? `${labels.EXPENSE} 선택`}
+      label={props.label ?? labels.EXPENSE}
     />
   );
 }
@@ -435,6 +444,7 @@ export function ExpenSelSelect(props: BaseSelectProps) {
 
 export function DepartmentSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getDepartments.useQuery({
     search,
     site: props.site,
@@ -447,8 +457,8 @@ export function DepartmentSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "부서 선택"}
-      label={props.label ?? "부서"}
+      placeholder={props.placeholder ?? `${labels.DEPT} 선택`}
+      label={props.label ?? labels.DEPT}
     />
   );
 }
@@ -459,6 +469,7 @@ export function DepartmentSelect(props: BaseSelectProps) {
 
 export function SiteSelect(props: Omit<BaseSelectProps, "site">) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getSites.useQuery({
     search,
     limit: 100,
@@ -470,8 +481,8 @@ export function SiteSelect(props: Omit<BaseSelectProps, "site">) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "사업장 선택"}
-      label={props.label ?? "사업장"}
+      placeholder={props.placeholder ?? `${labels.SITE} 선택`}
+      label={props.label ?? labels.SITE}
     />
   );
 }
@@ -482,6 +493,7 @@ export function SiteSelect(props: Omit<BaseSelectProps, "site">) {
 
 export function SelCodeSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getSelCodes.useQuery({
     search,
     limit: 100,
@@ -493,8 +505,8 @@ export function SelCodeSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "시나리오 선택"}
-      label={props.label ?? "시나리오"}
+      placeholder={props.placeholder ?? `${labels.SCENARIO} 선택`}
+      label={props.label ?? labels.SCENARIO}
     />
   );
 }
@@ -505,6 +517,7 @@ export function SelCodeSelect(props: BaseSelectProps) {
 
 export function CostCenterSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getCostCenters.useQuery({
     search,
     site: props.site,
@@ -517,8 +530,8 @@ export function CostCenterSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "코스트센터 선택"}
-      label={props.label ?? "코스트센터"}
+      placeholder={props.placeholder ?? `${labels.COST_CENTER} 선택`}
+      label={props.label ?? labels.COST_CENTER}
     />
   );
 }
@@ -529,6 +542,7 @@ export function CostCenterSelect(props: BaseSelectProps) {
 
 export function UserSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getUsers.useQuery({
     search,
     site: props.site,
@@ -541,8 +555,8 @@ export function UserSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "사용자 선택"}
-      label={props.label ?? "사용자"}
+      placeholder={props.placeholder ?? `${labels.USER} 선택`}
+      label={props.label ?? labels.USER}
     />
   );
 }
@@ -553,6 +567,7 @@ export function UserSelect(props: BaseSelectProps) {
 
 export function EquipmentSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getModels.useQuery({
     search,
     site: props.site,
@@ -565,8 +580,8 @@ export function EquipmentSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "설비 선택"}
-      label={props.label ?? "설비"}
+      placeholder={props.placeholder ?? `${labels.EQUIPMENT} 선택`}
+      label={props.label ?? labels.EQUIPMENT}
     />
   );
 }
@@ -577,6 +592,7 @@ export function EquipmentSelect(props: BaseSelectProps) {
 
 export function ProductSelect(props: BaseSelectProps) {
   const [search, setSearch] = useState("");
+  const { labels } = useLabels();
   const { data: options = [], isLoading } = api.options.getMaterials.useQuery({
     search,
     site: props.site,
@@ -589,8 +605,8 @@ export function ProductSelect(props: BaseSelectProps) {
       options={options}
       isLoading={isLoading}
       onSearch={setSearch}
-      placeholder={props.placeholder ?? "제품 선택"}
-      label={props.label ?? "제품"}
+      placeholder={props.placeholder ?? `${labels.PRODUCT} 선택`}
+      label={props.label ?? labels.PRODUCT}
     />
   );
 }
