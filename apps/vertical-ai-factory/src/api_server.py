@@ -270,6 +270,153 @@ async def get_knowledge_graph_visualization():
         raise HTTPException(status_code=500, detail=f"Knowledge Graph 시각화 오류: {str(e)}")
 
 
+@app.get("/api/graph/production-flow")
+async def get_production_flow_visualization(yyyymm: str = "202410", scenario: str = "ACTUAL-2024"):
+    """
+    생산수불 공정 흐름을 Sankey 다이어그램 호환 JSON으로 반환
+    
+    Args:
+        yyyymm: 기준년월 (YYYYMM)
+        scenario: 시나리오 코드
+    """
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        
+        db_url = os.getenv(
+            "POSTGRES_URL",
+            "postgresql://roarm_m3:2024-merry-christmas@localhost:5432/ai_factory_db"
+        )
+        
+        conn = psycopg2.connect(db_url)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # 공정 마스터 조회 (순서대로)
+        cursor.execute("""
+            SELECT process_code, process_name, area_code, area_ord, process_type
+            FROM bi_mst_process
+            WHERE is_active = TRUE
+            ORDER BY area_code, area_ord
+        """)
+        processes = cursor.fetchall()
+        
+        # 생산수불 조회
+        cursor.execute("""
+            SELECT 
+                process_code, product_code,
+                boh_qty, eoh_qty,
+                new_input_qty, process_in_qty, process_out_qty,
+                loss_qty, defect_out_qty, bonus_qty
+            FROM bi_trx_prod_inventory
+            WHERE inv_yyyymm = %s AND scenario_code = %s
+            ORDER BY process_code
+        """, (yyyymm, scenario))
+        inventory = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        # Sankey 형식으로 변환
+        nodes = []
+        links = []
+        node_index = {}
+        
+        # 노드 생성 (공정별)
+        for i, p in enumerate(processes):
+            node_id = p['process_code']
+            nodes.append({
+                "id": node_id,
+                "name": p['process_name'],
+                "area": p['area_code'],
+                "order": p['area_ord'],
+                "type": p['process_type']
+            })
+            node_index[node_id] = i
+        
+        # 외부 노드 추가
+        ext_nodes = [
+            {"id": "INPUT", "name": "원재료 투입", "area": "EXT", "order": 0, "type": "EXTERNAL"},
+            {"id": "OUTPUT", "name": "완제품", "area": "EXT", "order": 99, "type": "EXTERNAL"},
+            {"id": "LOSS", "name": "손실/불량", "area": "EXT", "order": 100, "type": "LOSS"}
+        ]
+        for n in ext_nodes:
+            node_index[n['id']] = len(nodes)
+            nodes.append(n)
+        
+        # 링크 생성 (공정간 흐름)
+        for inv in inventory:
+            proc = inv['process_code']
+            
+            # 신규 투입 (INPUT → 첫 공정)
+            if float(inv['new_input_qty'] or 0) > 0:
+                links.append({
+                    "source": node_index.get("INPUT", 0),
+                    "target": node_index.get(proc, 0),
+                    "value": float(inv['new_input_qty']),
+                    "type": "NEW_INPUT"
+                })
+            
+            # 다음 공정으로 출고
+            if float(inv['process_out_qty'] or 0) > 0:
+                # 다음 공정 찾기
+                next_proc = None
+                for p in processes:
+                    if p['process_code'] == proc:
+                        curr_ord = p['area_ord']
+                        curr_area = p['area_code']
+                        for np in processes:
+                            if np['area_code'] == curr_area and np['area_ord'] == curr_ord + 1:
+                                next_proc = np['process_code']
+                                break
+                        break
+                
+                if next_proc and next_proc in node_index:
+                    links.append({
+                        "source": node_index.get(proc, 0),
+                        "target": node_index.get(next_proc, 0),
+                        "value": float(inv['process_out_qty']),
+                        "type": "PROCESS_OUT"
+                    })
+                else:
+                    # 마지막 공정 → OUTPUT
+                    links.append({
+                        "source": node_index.get(proc, 0),
+                        "target": node_index.get("OUTPUT", 0),
+                        "value": float(inv['process_out_qty']),
+                        "type": "GOODS_OUT"
+                    })
+            
+            # 손실
+            loss_total = float(inv['loss_qty'] or 0) + float(inv['defect_out_qty'] or 0)
+            if loss_total > 0:
+                links.append({
+                    "source": node_index.get(proc, 0),
+                    "target": node_index.get("LOSS", 0),
+                    "value": loss_total,
+                    "type": "LOSS"
+                })
+        
+        return {
+            "status": "success",
+            "format": "sankey",
+            "yyyymm": yyyymm,
+            "scenario": scenario,
+            "data": {
+                "nodes": nodes,
+                "links": links
+            },
+            "stats": {
+                "total_nodes": len(nodes),
+                "total_links": len(links),
+                "total_processes": len(processes),
+                "inventory_records": len(inventory)
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"생산 흐름 시각화 오류: {str(e)}")
+
+
 # 시각화 페이지 정적 파일 서빙
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse

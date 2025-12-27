@@ -314,6 +314,9 @@
             <button class="tab-btn" data-tab="knowledge">
                 🕸️ Knowledge Graph
             </button>
+            <button class="tab-btn" data-tab="production">
+                🏭 생산수불 흐름
+            </button>
         </div>
 
         <!-- LangGraph Panel -->
@@ -356,6 +359,40 @@
                 <div class="loading">
                     <div class="spinner"></div>
                     Knowledge Graph 로딩 중...
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Flow Panel (NEW) -->
+        <div id="production" class="panel">
+            <h2>🏭 생산수불 공정 흐름도</h2>
+            <div class="filter-controls">
+                <select id="production-month">
+                    <option value="202410">2024년 10월</option>
+                    <option value="202411">2024년 11월</option>
+                    <option value="202412">2024년 12월</option>
+                </select>
+                <select id="production-scenario">
+                    <option value="ACTUAL-2024">실적 (ACTUAL)</option>
+                    <option value="FORECAST-2025Q1">속보 (FORECAST)</option>
+                    <option value="PLAN-2025">계획 (PLAN)</option>
+                </select>
+                <button class="tab-btn" onclick="loadProductionFlow()" style="padding: 10px 20px;">
+                    🔄 조회
+                </button>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#4ade80"></span> 원재료 투입</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#60a5fa"></span> 공정 간 이동</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span> 완제품 출고</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span> 손실/불량</div>
+            </div>
+            <div class="stats-bar" id="production-stats"></div>
+            <div id="sankey-container"
+                style="width: 100%; height: 500px; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden;">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    데이터를 조회하려면 조회 버튼을 클릭하세요
                 </div>
             </div>
         </div>
@@ -657,6 +694,195 @@
                 JSON.parse(JSON.stringify(filteredNodes)),
                 JSON.parse(JSON.stringify(filteredLinks))
             );
+        }
+
+        // =============================================
+        // Production Flow Visualization
+        // =============================================
+        async function loadProductionFlow() {
+            const container = document.getElementById('sankey-container');
+            const statsContainer = document.getElementById('production-stats');
+            const yyyymm = document.getElementById('production-month').value;
+            const scenario = document.getElementById('production-scenario').value;
+
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>생산 흐름 로딩 중...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/graph/production-flow?yyyymm=${yyyymm}&scenario=${scenario}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                if (data.status !== 'success') throw new Error(data.detail || 'Unknown error');
+
+                // Update stats
+                statsContainer.innerHTML = `
+                    <div class="stat-item">
+                        <div class="label">기준년월</div>
+                        <div class="value">${data.yyyymm}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">공정 수</div>
+                        <div class="value">${data.stats.total_processes}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">흐름 수</div>
+                        <div class="value">${data.stats.total_links}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="label">데이터 건수</div>
+                        <div class="value">${data.stats.inventory_records}</div>
+                    </div>
+                `;
+
+                // Render flow chart
+                container.innerHTML = '';
+                renderProductionFlow(data.data.nodes, data.data.links);
+
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ 생산 흐름 로드 실패: ${error.message}</div>`;
+                console.error('Production flow error:', error);
+            }
+        }
+
+        function renderProductionFlow(nodes, links) {
+            const container = document.getElementById('sankey-container');
+            const width = container.clientWidth || 900;
+            const height = container.clientHeight || 500;
+
+            const svg = d3.select('#sankey-container')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Color scale
+            const colorMap = {
+                'MAIN': '#60a5fa',
+                'INSP': '#a78bfa',
+                'REWORK': '#fbbf24',
+                'EXTERNAL': '#4ade80',
+                'LOSS': '#f87171'
+            };
+
+            const typeColorMap = {
+                'NEW_INPUT': '#4ade80',
+                'PROCESS_OUT': '#60a5fa',
+                'GOODS_OUT': '#a78bfa',
+                'LOSS': '#f87171'
+            };
+
+            // Filter only process nodes (not EXTERNAL/LOSS)
+            const processNodes = nodes.filter(n => n.type !== 'EXTERNAL' && n.type !== 'LOSS');
+            const extNodes = nodes.filter(n => n.type === 'EXTERNAL' || n.type === 'LOSS');
+
+            // Layout: horizontal arrangement
+            const nodeWidth = 120;
+            const nodeHeight = 60;
+            const padding = 60;
+            const startX = 80;
+            const centerY = height / 2;
+
+            // Position nodes
+            const nodePositions = {};
+
+            // External input on left
+            nodePositions['INPUT'] = { x: 20, y: centerY - 80 };
+
+            // Process nodes in sequence
+            processNodes.forEach((n, i) => {
+                nodePositions[n.id] = {
+                    x: startX + i * (nodeWidth + padding),
+                    y: centerY
+                };
+            });
+
+            // Output and Loss on right
+            const lastX = startX + (processNodes.length) * (nodeWidth + padding);
+            nodePositions['OUTPUT'] = { x: lastX, y: centerY - 60 };
+            nodePositions['LOSS'] = { x: lastX, y: centerY + 80 };
+
+            // Draw links (arrows)
+            const g = svg.append('g');
+
+            links.forEach(link => {
+                const sourcePos = nodePositions[nodes[link.source]?.id] || nodePositions[link.source];
+                const targetPos = nodePositions[nodes[link.target]?.id] || nodePositions[link.target];
+
+                if (!sourcePos || !targetPos) return;
+
+                const strokeWidth = Math.max(2, Math.min(20, link.value / 5));
+
+                // Draw curved arrow
+                const midX = (sourcePos.x + targetPos.x) / 2;
+                const path = `M ${sourcePos.x + nodeWidth / 2} ${sourcePos.y}
+                              Q ${midX} ${sourcePos.y - 30} ${targetPos.x - nodeWidth / 2} ${targetPos.y}`;
+
+                g.append('path')
+                    .attr('d', path)
+                    .attr('fill', 'none')
+                    .attr('stroke', typeColorMap[link.type] || '#60a5fa')
+                    .attr('stroke-width', strokeWidth)
+                    .attr('opacity', 0.6)
+                    .attr('stroke-linecap', 'round');
+
+                // Value label on link
+                g.append('text')
+                    .attr('x', midX)
+                    .attr('y', sourcePos.y - 35)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#e8e8e8')
+                    .attr('font-size', '11px')
+                    .attr('font-weight', 'bold')
+                    .text(link.value.toFixed(0));
+            });
+
+            // Draw nodes as rounded rectangles
+            nodes.forEach(n => {
+                const pos = nodePositions[n.id];
+                if (!pos) return;
+
+                const group = g.append('g')
+                    .attr('transform', `translate(${pos.x - nodeWidth / 2}, ${pos.y - nodeHeight / 2})`);
+
+                // Node rectangle
+                group.append('rect')
+                    .attr('width', nodeWidth)
+                    .attr('height', nodeHeight)
+                    .attr('rx', 10)
+                    .attr('fill', colorMap[n.type] || '#4b5563')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2)
+                    .attr('opacity', 0.9);
+
+                // Node name
+                group.append('text')
+                    .attr('x', nodeWidth / 2)
+                    .attr('y', nodeHeight / 2 - 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', '#fff')
+                    .attr('font-size', '12px')
+                    .attr('font-weight', 'bold')
+                    .text(n.name);
+
+                // Node code
+                group.append('text')
+                    .attr('x', nodeWidth / 2)
+                    .attr('y', nodeHeight / 2 + 12)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'rgba(255,255,255,0.7)')
+                    .attr('font-size', '10px')
+                    .text(n.id);
+
+                // Area label
+                if (n.area && n.area !== 'EXT') {
+                    group.append('text')
+                        .attr('x', nodeWidth / 2)
+                        .attr('y', -8)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', '#a78bfa')
+                        .attr('font-size', '10px')
+                        .text(`[${n.area}]`);
+                }
+            });
         }
 
         // =============================================
