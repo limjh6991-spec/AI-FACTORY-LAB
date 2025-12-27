@@ -16,6 +16,8 @@ class AgentState(TypedDict, total=False):
     
     Attributes:
         user_question: 사용자의 원래 질문
+        company_code: 대상 회사 코드 (BINARY, DOU, DOU_MES)
+        graph_context: Knowledge Graph 검색 결과
         analyst_output: Analyst Agent의 분석 결과
         writer_output: Writer Agent의 SQL 생성 결과
         critic_output: Critic Agent의 검증 결과
@@ -25,6 +27,8 @@ class AgentState(TypedDict, total=False):
         error: 에러 메시지 (있는 경우)
     """
     user_question: str
+    company_code: str
+    graph_context: Optional[str]
     analyst_output: Optional[AnalystOutput]
     writer_output: Optional[WriterOutput]
     critic_output: Optional[CriticOutput]
@@ -32,3 +36,4 @@ class AgentState(TypedDict, total=False):
     final_sql: Optional[str]
     status: str
     error: Optional[str]
+

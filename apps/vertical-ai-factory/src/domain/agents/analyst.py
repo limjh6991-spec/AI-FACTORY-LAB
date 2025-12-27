@@ -65,18 +65,24 @@ ANALYST_SYSTEM_PROMPT = """당신은 데이터 분석 기획 전문가입니다.
 
 ## 역할
 1. 사용자의 질문에서 원하는 정보가 무엇인지 파악
-2. 제공된 DB 스키마를 분석하여 어떤 테이블/컬럼을 사용해야 하는지 결정
+2. 제공된 DB 스키마와 Knowledge Graph 정보를 분석하여 어떤 테이블/컬럼을 사용해야 하는지 결정
 3. 필터 조건, 집계 함수 등 SQL 구성 요소 파악
 4. SQL Writer가 바로 쿼리를 작성할 수 있도록 명확한 Plan 작성
 
 ## 규칙
 - 데이터를 직접 조회하지 않습니다 (스키마만 확인)
+- Knowledge Graph 정보가 있으면 회사별 실제 테이블명/컬럼명을 사용합니다
 - 가능한 구체적이고 명확한 계획을 수립합니다
 - 한국어로 응답합니다
+
+## Knowledge Graph 컨텍스트
+{graph_context}
 
 ## DB 스키마 정보
 {schema_info}
 """
+
+
 
 
 # ============================================
@@ -100,12 +106,13 @@ class AnalystAgent:
         """DB 스키마 정보 조회"""
         return get_schema_info.invoke({})
     
-    def analyze(self, user_question: str) -> AnalystOutput:
+    def analyze(self, user_question: str, graph_context: str = None) -> AnalystOutput:
         """
         사용자 질문을 분석하여 SQL 실행 계획을 수립합니다.
         
         Args:
             user_question: 사용자의 자연어 질문
+            graph_context: Knowledge Graph 검색 결과 (선택)
             
         Returns:
             AnalystOutput: 구조화된 분석 결과
@@ -113,8 +120,15 @@ class AnalystAgent:
         # 스키마 정보 조회
         schema_info = self._get_schema_info()
         
+        # Graph context 기본값 설정
+        if not graph_context:
+            graph_context = "(Knowledge Graph 정보 없음)"
+        
         # 프롬프트 구성
-        system_prompt = ANALYST_SYSTEM_PROMPT.format(schema_info=schema_info)
+        system_prompt = ANALYST_SYSTEM_PROMPT.format(
+            schema_info=schema_info,
+            graph_context=graph_context
+        )
         
         messages = [
             SystemMessage(content=system_prompt),
@@ -126,14 +140,15 @@ class AnalystAgent:
         
         return result
     
-    def __call__(self, user_question: str) -> AnalystOutput:
+    def __call__(self, user_question: str, graph_context: str = None) -> AnalystOutput:
         """analyze 메서드의 shortcut"""
-        return self.analyze(user_question)
+        return self.analyze(user_question, graph_context)
 
 
 # ============================================
 # 테스트 코드
 # ============================================
+
 
 if __name__ == "__main__":
     import os

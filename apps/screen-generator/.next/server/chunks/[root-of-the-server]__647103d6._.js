@@ -14452,6 +14452,12 @@ ${columns.map((col)=>`    { fieldName: "${col.field}", dataType: ${this.mapToRea
             const setter = `set${field.name.charAt(0).toUpperCase() + field.name.slice(1)}`;
             const fieldType = field.type || 'TEXT_INPUT';
             switch(fieldType){
+                case 'DATE_PICKER':
+                    return `        <YearMonthPicker
+          value={${field.name}}
+          onChange={${setter}}
+          label="${field.label}"
+        />`;
                 case 'YEAR_MONTH':
                 case 'BI_YEAR_MONTH':
                     return `        <YearMonthPicker
@@ -14786,24 +14792,28 @@ ${newRowTemplate}        _isNew: true,
   // 변경 여부 확인
   const hasChanges = modifiedRows.size > 0 || deletedRows.length > 0;
 
-  // 인라인 스타일 정의 (IBM Carbon Design System)
+  // 인라인 스타일 정의
   const styles = {
     container: { display: 'flex', flexDirection: 'column' as const, height: '100%', padding: 16, backgroundColor: '#ffffff', fontFamily: "'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif" },
     title: { fontSize: 20, fontWeight: 600, marginBottom: 16, color: '#161616' },
-    searchContainer: { display: 'flex', alignItems: 'flex-end', gap: 16, marginBottom: 16, padding: 16, backgroundColor: '#f4f4f4', border: 'none' },
+    searchContainer: { display: 'flex', alignItems: 'flex-end', gap: 16, marginBottom: 16, padding: 16, backgroundColor: '#f4f4f4', borderRadius: 8 },
     searchField: { display: 'flex', flexDirection: 'column' as const, gap: 4 },
     label: { fontSize: 12, color: '#525252', marginBottom: 4 },
-    input: { height: 40, padding: '0 16px', border: 'none', borderBottom: '1px solid #8d8d8d', backgroundColor: '#f4f4f4', minWidth: 120, fontSize: 14 },
+    input: { height: 36, padding: '0 12px', border: '1px solid #d1d5db', borderRadius: 6, backgroundColor: '#ffffff', minWidth: 120, fontSize: 14 },
     buttonGroup: { display: 'flex', gap: 8, marginLeft: 'auto' },
     toolbar: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 },
-    btnPrimary: { display: 'flex', alignItems: 'center', gap: 4, height: 48, padding: '0 16px', backgroundColor: '#0f62fe', color: 'white', border: 'none', fontSize: 14, cursor: 'pointer' },
-    btnSuccess: { display: 'flex', alignItems: 'center', gap: 4, height: 48, padding: '0 16px', backgroundColor: '#24a148', color: 'white', border: 'none', fontSize: 14, cursor: 'pointer' },
-    btnDanger: { display: 'flex', alignItems: 'center', gap: 4, height: 48, padding: '0 16px', backgroundColor: '#da1e28', color: 'white', border: 'none', fontSize: 14, cursor: 'pointer' },
-    btnSecondary: { display: 'flex', alignItems: 'center', gap: 4, height: 48, padding: '0 16px', backgroundColor: '#393939', color: 'white', border: 'none', fontSize: 14, cursor: 'pointer' },
-    btnDisabled: { display: 'flex', alignItems: 'center', gap: 4, height: 48, padding: '0 16px', backgroundColor: '#c6c6c6', color: '#8d8d8d', border: 'none', fontSize: 14, cursor: 'not-allowed' },
     statusBar: { display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8, fontSize: 12, color: '#525252' },
     statusItem: { display: 'flex', alignItems: 'center', gap: 4 },
     gridContainer: { flex: 1, minHeight: 400 },
+  };
+
+  // Tailwind 기반 버튼 스타일
+  const btnClass = {
+    primary: "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all",
+    success: "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-all",
+    danger: "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-all",
+    secondary: "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-slate-500 text-white hover:bg-slate-600 transition-all",
+    disabled: "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed",
   };
 
   return (
@@ -14886,10 +14896,12 @@ ${newRowTemplate}        _isNew: true,
 ${hasSearchFields ? `      <div style={styles.searchContainer}>
 ${searchFieldsRender}
         <div style={styles.buttonGroup}>
-          <button onClick={handleSearch} style={styles.btnPrimary}>
-            검색
+          <button onClick={handleSearch} className={btnClass.primary}>
+            <Search className="h-4 w-4" />
+            조회
           </button>
-          <button onClick={handleReset} style={{ ...styles.btnPrimary, backgroundColor: '#e0e0e0', color: '#161616' }}>
+          <button onClick={handleReset} className={btnClass.secondary}>
+            <RotateCcw className="h-4 w-4" />
             초기화
           </button>
         </div>
@@ -14897,25 +14909,25 @@ ${searchFieldsRender}
 
       {/* 툴바 */}
       <div style={styles.toolbar}>
-        <button onClick={handleAddRow} style={styles.btnPrimary}>
-          <Plus style={{ width: 16, height: 16 }} />
+        <button onClick={handleAddRow} className={btnClass.primary}>
+          <Plus className="h-4 w-4" />
           행 추가
         </button>
         <button 
           onClick={handleSave} 
           disabled={!hasChanges}
-          style={hasChanges ? styles.btnSuccess : styles.btnDisabled}
+          className={hasChanges ? btnClass.success : btnClass.disabled}
         >
-          <Save style={{ width: 16, height: 16 }} />
+          <Save className="h-4 w-4" />
           저장
         </button>
-        <button onClick={handleDeleteSelected} style={styles.btnDanger}>
-          <Trash2 style={{ width: 16, height: 16 }} />
+        <button onClick={handleDeleteSelected} className={btnClass.danger}>
+          <Trash2 className="h-4 w-4" />
           삭제
         </button>
         <div style={{ marginLeft: 'auto' }}>
-          <button onClick={handleExcelExport} style={styles.btnSecondary}>
-            <Download style={{ width: 16, height: 16 }} />
+          <button onClick={handleExcelExport} className={btnClass.secondary}>
+            <Download className="h-4 w-4" />
             엑셀
           </button>
         </div>
@@ -16949,6 +16961,41 @@ const optionsRouter = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f
       `;
         const results = await ctx.db.$queryRawUnsafe(query, ...params);
         return results;
+    }),
+    /**
+   * 회사별 UI 라벨 조회 (bi_common_code - code_type='LABEL')
+   */ getLabels: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$server$2f$api$2f$trpc$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["publicProcedure"].input(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].object({
+        companyCode: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional().default("BINARY")
+    })).query(async ({ ctx, input })=>{
+        const { companyCode } = input;
+        const results = await ctx.db.$queryRaw`
+        SELECT category, ui_label 
+        FROM "binary".bi_common_code 
+        WHERE code_type = 'LABEL' 
+          AND company_code = ${companyCode}
+          AND use_yn = 'Y'
+          AND ui_label IS NOT NULL
+      `;
+        // 기본 라벨
+        const defaultLabels = {
+            CUSTOMER: "거래처",
+            DEPT: "부서",
+            ACCOUNT: "계정",
+            PRODUCT: "제품",
+            MATERIAL: "부품",
+            EQUIPMENT: "설비",
+            MODEL: "모델",
+            USER: "사용자",
+            SITE: "사업장",
+            SCENARIO: "시나리오",
+            COST_CENTER: "코스트센터",
+            EXPENSE: "비용구분"
+        };
+        // DB 결과로 덮어쓰기
+        for (const row of results){
+            defaultLabels[row.category] = row.ui_label;
+        }
+        return defaultLabels;
     })
 });
 }),

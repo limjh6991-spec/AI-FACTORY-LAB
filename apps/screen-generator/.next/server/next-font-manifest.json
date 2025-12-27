@@ -9,31 +9,25 @@
     "[project]/src/app/screens/[screenId]/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc000021/page": [
-      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
-    ],
-    "[project]/src/app/screens/sc000024/page": [
-      "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
-    ],
     "[project]/src/app/screens/sc000048/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc000049/page": [
+    "[project]/src/app/screens/sc000050/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc011507/page": [
+    "[project]/src/app/screens/sc000051/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc172866/page": [
+    "[project]/src/app/screens/sc109734/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc682270/page": [
+    "[project]/src/app/settings/menu-realgrid/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/screens/sc831626/page": [
+    "[project]/src/app/settings/screen-generator-realgrid/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
-    "[project]/src/app/system/realgrid-samples/page": [
+    "[project]/src/app/settings/screen-generator/page": [
       "static/media/caa3a2e1cccd8315-s.p.853070df.woff2"
     ],
     "[project]/src/app/test/options/page": [

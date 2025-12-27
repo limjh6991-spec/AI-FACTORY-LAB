@@ -1,6 +1,6 @@
 # 🤖 JARVIS 재연결 프롬프트
 
-> **최종 업데이트**: 2024년 12월 21일  
+> **최종 업데이트**: 2025년 12월 27일  
 > **목적**: 새로운 세션에서 프로젝트 현황을 빠르게 파악
 
 ---
@@ -52,7 +52,7 @@ ai-factory-lab/
     ├── screen-generator/        # RealGrid 화면 생성기
     ├── binary/                  # 프로젝트 관리 시스템
     ├── spacepro/                # MES/MRP 대시보드
-    └── vertical-ai-factory/     # 다중 에이전트 SQL
+    └── vertical-ai-factory/     # 다중 에이전트 SQL + Knowledge Graph
 ```
 
 ---
@@ -69,10 +69,10 @@ cd apps/binary && npm run dev
 # spacepro  
 cd apps/spacepro && npm run dev
 
-# vertical-ai-factory
-cd apps/vertical-ai-factory && source venv/bin/activate && python src/main.py
+# vertical-ai-factory (Knowledge Graph 포함)
+cd apps/vertical-ai-factory && ./venv/bin/python src/main.py
 ```
 
 ---
 
-**작성일**: 2024년 12월 21일
+**작성일**: 2025년 12월 27일

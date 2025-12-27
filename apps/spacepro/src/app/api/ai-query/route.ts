@@ -29,6 +29,8 @@ interface AgentResult {
 
 interface QueryResponse {
     status: string;
+    company_code?: string;
+    graph_context?: string;
     analyst?: AgentResult;
     writer?: AgentResult;
     critic?: AgentResult;
@@ -36,12 +38,13 @@ interface QueryResponse {
     execution_result?: Record<string, unknown>[];
     error?: string;
     critique_count: number;
+    provider?: string;
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { question } = body;
+        const { question, company_code = 'BINARY', provider = 'gemini' } = body;
 
         if (!question || typeof question !== 'string') {
             return NextResponse.json(
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ question }),
+            body: JSON.stringify({ question, company_code, provider }),
         });
 
         if (!response.ok) {

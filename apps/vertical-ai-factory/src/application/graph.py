@@ -18,6 +18,8 @@ from domain.state import AgentState
 from domain.agents.analyst import AnalystAgent
 from domain.agents.writer import WriterAgent
 from domain.agents.critic import CriticAgent
+from infrastructure.knowledge_graph import get_knowledge_graph
+from infrastructure.database.init_knowledge_graph import init_knowledge_graph
 
 
 # 최대 재시도 횟수
@@ -54,12 +56,41 @@ def get_critic():
 # 노드 함수 정의
 # ============================================
 
+def graph_context_node(state: AgentState) -> AgentState:
+    """
+    Knowledge Graph 컨텍스트 노드: 질문에서 관련 테이블/컬럼 정보 검색
+    """
+    try:
+        kg = get_knowledge_graph()
+        
+        # Knowledge Graph가 초기화되지 않았으면 초기화
+        if not kg.is_initialized:
+            init_knowledge_graph(use_cache=True)
+        
+        company_code = state.get("company_code", "BINARY")
+        context = kg.search_by_question(state["user_question"], company_code)
+        
+        return {
+            **state,
+            "graph_context": context,
+            "status": "context_ready"
+        }
+    except Exception as e:
+        # 실패해도 워크플로우 계속 진행
+        return {
+            **state,
+            "graph_context": f"(Knowledge Graph 검색 실패: {str(e)})",
+            "status": "context_ready"
+        }
+
+
 def analyst_node(state: AgentState) -> AgentState:
     """
     Analyst 노드: 사용자 질문을 분석하여 Plan 생성
     """
     try:
-        result = get_analyst().analyze(state["user_question"])
+        graph_context = state.get("graph_context")
+        result = get_analyst().analyze(state["user_question"], graph_context)
         return {
             **state,
             "analyst_output": result,
@@ -81,13 +112,14 @@ def writer_node(state: AgentState) -> AgentState:
         # Analyst 출력에서 plan 추출
         plan = state["analyst_output"].plan
         context = state["user_question"]
+        graph_context = state.get("graph_context")
         
         # Critic 피드백이 있으면 추가
         if state.get("critic_output") and not state["critic_output"].validation_result:
             feedback = state["critic_output"].feedback
             plan = f"{plan}\n\n[이전 피드백] {feedback}"
         
-        result = get_writer().write_sql(plan, context)
+        result = get_writer().write_sql(plan, context, graph_context)
         return {
             **state,
             "writer_output": result,
@@ -179,12 +211,14 @@ def build_graph() -> StateGraph:
     workflow = StateGraph(AgentState)
     
     # 노드 추가
+    workflow.add_node("graph_context", graph_context_node)
     workflow.add_node("analyst", analyst_node)
     workflow.add_node("writer", writer_node)
     workflow.add_node("critic", critic_node)
     
-    # 엣지 연결
-    workflow.set_entry_point("analyst")
+    # 엣지 연결 (graph_context → analyst → writer → critic)
+    workflow.set_entry_point("graph_context")
+    workflow.add_edge("graph_context", "analyst")
     workflow.add_edge("analyst", "writer")
     workflow.add_edge("writer", "critic")
     
@@ -206,18 +240,21 @@ def build_graph() -> StateGraph:
 graph = build_graph()
 
 
-def run_workflow(question: str) -> AgentState:
+def run_workflow(question: str, company_code: str = "BINARY") -> AgentState:
     """
     워크플로우 실행
     
     Args:
         question: 사용자 질문
+        company_code: 대상 회사 코드 (BINARY, DOU, DOU_MES)
         
     Returns:
         AgentState: 최종 상태
     """
     initial_state: AgentState = {
         "user_question": question,
+        "company_code": company_code,
+        "graph_context": None,
         "analyst_output": None,
         "writer_output": None,
         "critic_output": None,

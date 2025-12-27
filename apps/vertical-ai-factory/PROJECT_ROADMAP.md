@@ -27,16 +27,16 @@
 - [x] Workflow 연결 (Analyst -> Writer -> Critic -> End/Retry)
 - [x] Main Entrypoint (`main.py`) 작성
 
-### Phase 5: 테스트 및 검증
-- [ ] 시나리오 테스트: "10월 원가 분석해줘" -> SQL 생성 결과 확인
+### Phase 5: 테스트 및 검증 ✅ 완료
+- [x] 시나리오 테스트: "10월 원가 분석해줘" -> SQL 생성 결과 확인
 
-### Phase 6: SpacePro AI Demo 통합 🆕
+### Phase 6: SpacePro AI Demo 통합 ✅ 완료
 > SpacePro 프로젝트의 `/ai-demo` 페이지와 연동하여 웹 UI 제공
 
-- [ ] FastAPI 서버 추가 (`api_server.py`)
-- [ ] SpacePro API Route 생성 (`/api/ai-query`)  
-- [ ] AI Demo 페이지 실제 API 호출 연동
-- [ ] 실시간 Agent 진행 상태 표시
+- [x] FastAPI 서버 (`api_server.py`) - company_code, provider 지원
+- [x] SpacePro API Route (`/api/ai-query`) - 프록시 구현
+- [x] CORS 설정 (localhost:3000, 3001 허용)
+- [x] Knowledge Graph 컨텍스트 반환
 
 **아키텍처:**
 ```
@@ -49,8 +49,50 @@ SpacePro (Next.js)          Vertical AI Factory (Python)
 └─────────────────┘         └─────────────────────┘
 ```
 
+### Phase 7: RAG + Knowledge Graph 통합 ✅ 완료
+> bi_common_code 기반 지식 그래프로 AI가 비즈니스 로직을 더 깊이 이해
+
+- [x] Knowledge Graph 모듈 구현 (`knowledge_graph.py`)
+- [x] PostgreSQL bi_common_code 연동 (`init_knowledge_graph.py`)
+- [x] LangChain Tool 래핑 (`graph_search_tool.py`)
+- [x] Analyst Agent 통합 (graph_context 파라미터)
+- [x] LangGraph 워크플로우 업데이트 (graph_context → analyst → writer → critic)
+
+**아키텍처:**
+```
+graph_context → analyst → writer → critic
+     ↓              ↑
+Knowledge Graph ────┘
+(131 nodes, 111 edges) ← PostgreSQL bi_common_code 72개 매핑
+```
+
+### Phase 8: Writer 스키마 연동 개선 ✅ 완료
+> Writer Agent가 Knowledge Graph 정보를 활용하여 정확한 SQL 생성
+
+- [x] Writer Agent에 graph_context 파라미터 추가
+- [x] 시스템 프롬프트에 Knowledge Graph 섹션 추가  
+- [x] graph.py의 writer_node에서 graph_context 전달
+- [x] Graph Context 동작 검증 완료
+
+### Phase 10: Ollama 로컬 LLM 통합 ✅ 완료
+> 로컬에서 Ollama를 통해 LLM 실행, 비용 절감 및 프라이버시 강화
+
+- [x] Infrastructure Layer에 llm_provider.py 생성
+- [x] config.py 통합 (LLM_PROVIDER 환경변수)
+- [x] langchain-ollama 의존성 추가
+- [x] llama3.2:1b 테스트 성공 (qwen2.5-coder:7b는 네트워크 문제로 보류)
+
+**사용 방법:**
+```bash
+# Gemini 사용 (기본)
+./venv/bin/python src/main.py
+
+# Ollama 사용
+LLM_PROVIDER=ollama ./venv/bin/python src/main.py
+```
+
 ---
 
 **작성일**: 2024-12-19  
+**마지막 업데이트**: 2025-12-27  
 **프로젝트**: Vertical AI Factory
-

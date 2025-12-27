@@ -56,20 +56,13 @@ Analyst가 수립한 실행 계획을 바탕으로 정확하고 안전한 SQL �
 
 ## 역할
 1. Analyst의 Plan을 분석하여 SQL 쿼리로 변환
-2. 최적화된 쿼리 작성 (필요한 컬럼만 선택, 적절한 인덱스 활용)
-3. 가독성 좋은 쿼리 포맷팅
+2. Knowledge Graph 정보가 제공되면 해당 테이블명/컬럼명을 사용
+3. 최적화된 쿼리 작성 (필요한 컬럼만 선택, 적절한 인덱스 활용)
+4. 가독성 좋은 쿼리 포맷팅
 
 ## ⚠️ 절대 금지 규칙 (보안)
 다음 키워드는 절대 사용하지 마세요:
-- DELETE
-- DROP
-- UPDATE
-- INSERT
-- ALTER
-- TRUNCATE
-- CREATE
-- GRANT
-- REVOKE
+- DELETE, DROP, UPDATE, INSERT, ALTER, TRUNCATE, CREATE, GRANT, REVOKE
 
 오직 **SELECT** 문만 작성할 수 있습니다.
 
@@ -77,6 +70,10 @@ Analyst가 수립한 실행 계획을 바탕으로 정확하고 안전한 SQL �
 - 대량 데이터 조회 시 LIMIT 절 사용
 - SELECT * 대신 필요한 컬럼 명시
 - 적절한 alias 사용으로 가독성 향상
+- PostgreSQL 스키마 사용 시 "스키마명".테이블명 형식 사용
+
+## Knowledge Graph 컨텍스트 (회사별 테이블/컬럼 매핑)
+{graph_context}
 
 ## DB 스키마 정보
 {schema_info}
@@ -130,13 +127,14 @@ class WriterAgent:
         
         return len(errors) == 0, errors
     
-    def write_sql(self, plan: str, context: Optional[str] = None) -> WriterOutput:
+    def write_sql(self, plan: str, context: Optional[str] = None, graph_context: Optional[str] = None) -> WriterOutput:
         """
         Analyst의 Plan을 SQL 쿼리로 변환합니다.
         
         Args:
             plan: Analyst가 작성한 실행 계획
             context: 추가 컨텍스트 (원래 질문 등)
+            graph_context: Knowledge Graph 검색 결과 (회사별 테이블/컬럼 매핑)
             
         Returns:
             WriterOutput: 생성된 SQL과 설명
@@ -147,10 +145,18 @@ class WriterAgent:
         # 스키마 정보 조회
         schema_info = self._get_schema_info()
         
+        # Graph context 기본값 설정
+        if not graph_context:
+            graph_context = "(Knowledge Graph 정보 없음 - 기본 스키마 사용)"
+        
         # 프롬프트 구성
-        system_prompt = SQL_WRITER_SYSTEM_PROMPT.format(schema_info=schema_info)
+        system_prompt = SQL_WRITER_SYSTEM_PROMPT.format(
+            schema_info=schema_info,
+            graph_context=graph_context
+        )
         
         user_message = f"""다음 실행 계획에 따라 SQL 쿼리를 작성해주세요.
+Knowledge Graph에서 제공된 테이블명과 컬럼명을 정확히 사용하세요.
 
 ## 실행 계획
 {plan}
@@ -173,9 +179,9 @@ class WriterAgent:
         
         return result
     
-    def __call__(self, plan: str, context: Optional[str] = None) -> WriterOutput:
+    def __call__(self, plan: str, context: Optional[str] = None, graph_context: Optional[str] = None) -> WriterOutput:
         """write_sql 메서드의 shortcut"""
-        return self.write_sql(plan, context)
+        return self.write_sql(plan, context, graph_context)
 
 
 # ============================================

@@ -46,6 +46,8 @@ app.add_middleware(
 # Request/Response 모델
 class QueryRequest(BaseModel):
     question: str
+    company_code: str = "BINARY"  # BINARY, DOU, DOU_MES
+    provider: str = "gemini"       # gemini, ollama
 
 
 class AgentOutput(BaseModel):
@@ -67,6 +69,8 @@ class AgentOutput(BaseModel):
 
 class QueryResponse(BaseModel):
     status: str
+    company_code: str = "BINARY"
+    graph_context: Optional[str] = None
     analyst: Optional[dict] = None
     writer: Optional[dict] = None
     critic: Optional[dict] = None
@@ -74,6 +78,7 @@ class QueryResponse(BaseModel):
     execution_result: Optional[list] = None
     error: Optional[str] = None
     critique_count: int = 0
+    provider: str = "gemini"
 
 
 # 시작 시 DB 초기화
@@ -128,15 +133,22 @@ async def process_query(request: QueryRequest):
         )
     
     try:
-        # 워크플로우 실행
-        result = run_workflow(request.question)
+        # LLM Provider 설정
+        import os
+        os.environ["LLM_PROVIDER"] = request.provider
+        
+        # 워크플로우 실행 (company_code 전달)
+        result = run_workflow(request.question, request.company_code)
         
         # 응답 구성
         response = QueryResponse(
             status=result.get("status", "unknown"),
+            company_code=request.company_code,
+            graph_context=result.get("graph_context"),
             critique_count=result.get("critique_count", 0),
             final_sql=result.get("final_sql"),
-            error=result.get("error")
+            error=result.get("error"),
+            provider=request.provider
         )
         
         # Analyst 결과
