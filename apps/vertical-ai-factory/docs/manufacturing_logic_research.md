@@ -113,6 +113,178 @@ cost = qty * standard_cost
 
 ---
 
+### 2.5 재공품 평가 (WIP Valuation)
+
+재공품(Work-in-Progress)은 생산 공정 중에 있는 미완성품으로, 원재료와 완제품 사이의 재고입니다.
+
+**환산량 (Equivalent Units of Production):**
+```
+환산량 = 물리적 수량 × 완성도(%)
+```
+
+| 평가 방법 | 설명 | 적용 |
+|-----------|------|------|
+| **평균법** | 기초 재공품 + 당기 투입 합산 평균 | 단순, 일반적 |
+| **선입선출법 (FIFO)** | 기초 재공품과 당기 투입 분리 계산 | 정확, 비용 변동 큰 경우 |
+
+**원가요소별 완성도 예시:**
+| 원가 요소 | 투입 시점 | 완성도 |
+|-----------|----------|--------|
+| 직접재료비 | 공정 초기 전량 투입 | 100% |
+| 가공비 (노무비+간접비) | 공정 전반에 균등 발생 | 50% (평균) |
+
+**재공품 원가 계산:**
+```python
+# 재공품 원가 = 직접재료비 + 가공비
+wip_material_cost = wip_qty * material_unit_cost * material_completion
+wip_conversion_cost = wip_qty * conversion_unit_cost * conversion_completion
+wip_total_cost = wip_material_cost + wip_conversion_cost
+```
+
+---
+
+### 2.6 제조간접비 배부 (Overhead Allocation)
+
+제조간접비는 제품에 직접 추적하기 어려운 비용으로, 합리적인 기준으로 배부해야 합니다.
+
+**배부 방법:**
+
+| 방법 | 배부 기준 | 특징 |
+|------|----------|------|
+| **직접노무시간법** | 직접노무시간 | 노동집약적 제조 |
+| **기계시간법** | 기계가동시간 | 자동화 공정 |
+| **직접재료비법** | 직접재료비 금액 | 재료 비중 높은 제품 |
+| **ABC (활동기준원가)** | 활동별 원가동인 | 정밀, 복잡한 제품 믹스 |
+
+**전통적 배부율 계산:**
+```python
+# 예정 배부율 = 예정 제조간접비 / 예정 배부기준
+overhead_rate = estimated_overhead / estimated_machine_hours
+
+# 배부액 = 배부율 × 실제 배부기준
+allocated_overhead = overhead_rate * actual_machine_hours
+```
+
+**ABC (활동기준원가) 단계:**
+1. 활동 식별 (셋업, 검사, 자재 이동 등)
+2. 활동별 원가풀 집계
+3. 원가동인 결정 (셋업 횟수, 검사 횟수 등)
+4. 활동률 계산 = 활동원가 / 원가동인 수량
+5. 제품별 원가 배부
+
+**배부차이 처리:**
+```
+배부차이 = 실제 제조간접비 - 배부된 제조간접비
+├─ 과대배부 (실제 < 배부): 매출원가 감소 조정
+└─ 과소배부 (실제 > 배부): 매출원가 증가 조정
+```
+
+---
+
+### 2.7 원가 회계 전표 (Journal Entries)
+
+**제조원가 흐름에 따른 기표:**
+
+```
+원재료 → 재공품 → 제품 → 매출원가
+```
+
+| 거래 | 차변 | 대변 |
+|------|------|------|
+| **원재료 매입** | 원재료 (자산) | 현금/외상매입금 |
+| **원재료 투입 (직접재료비)** | 재공품 (자산) | 원재료 (자산) |
+| **직접노무비 발생** | 재공품 (자산) | 미지급임금 |
+| **제조간접비 발생** | 제조간접비 | 현금/감가상각누계액 등 |
+| **제조간접비 배부** | 재공품 (자산) | 제조간접비 |
+| **제품 완성** | 제품 (자산) | 재공품 (자산) |
+| **제품 판매** | 매출원가 (비용) | 제품 (자산) |
+
+**전표 예시 (Python dict):**
+```python
+journal_entries = [
+    # 원재료 매입
+    {"date": "2024-10-01", "dr": "원재료", "cr": "현금", "amount": 1000000},
+    
+    # 생산 투입
+    {"date": "2024-10-05", "dr": "재공품", "cr": "원재료", "amount": 800000},
+    
+    # 제조간접비 배부
+    {"date": "2024-10-31", "dr": "재공품", "cr": "제조간접비", "amount": 200000},
+    
+    # 제품 완성
+    {"date": "2024-10-31", "dr": "제품", "cr": "재공품", "amount": 1000000},
+    
+    # 판매
+    {"date": "2024-10-31", "dr": "매출원가", "cr": "제품", "amount": 900000},
+]
+```
+
+**매출원가 계산:**
+```
+매출원가 = 기초제품재고 + 당기제품제조원가 - 기말제품재고
+```
+
+---
+
+### 2.8 설비 가동시간 (Equipment Working Time)
+
+**시간 구분:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  카렌다 시간 (Calendar Time) - 24h × 365d                   │
+├─────────────────────────────────────────────────────────────┤
+│  부하 시간 (Load Time)                                       │
+│  = 카렌다 시간 - 휴지 로스 (정기보수, 수주부족)               │
+├─────────────────────────────────────────────────────────────┤
+│  가동 시간 (Operating Time)                                  │
+│  = 부하 시간 - 정지 로스 (고장, 준비교체, 조정)               │
+├─────────────────────────────────────────────────────────────┤
+│  실질 가동시간 (Net Operating Time)                          │
+│  = 가동 시간 - 성능 로스 (잠깐정지, 속도저하)                 │
+├─────────────────────────────────────────────────────────────┤
+│  가치 가동시간 (Value-Added Time)                            │
+│  = 실질 가동시간 - 불량 로스 (불량품, 재가공)                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**핵심 지표:**
+
+| 지표 | 수식 | 설명 |
+|------|------|------|
+| **OEE (설비종합효율)** | `가용성 × 성능 × 품질` | 설비 효율성 종합 지표 |
+| **가용성 (Availability)** | `가동시간 / 부하시간` | 정지 손실 반영 |
+| **성능 (Performance)** | `실질가동시간 / 가동시간` | 속도 손실 반영 |
+| **품질 (Quality)** | `양품수량 / 총생산수량` | 불량 손실 반영 |
+| **MTBF (평균무고장시간)** | `총가동시간 / 고장횟수` | 신뢰성 지표 |
+| **MTTR (평균수리시간)** | `총수리시간 / 수리횟수` | 유지보수 효율 |
+
+**OEE 계산 예시:**
+```python
+# OEE 계산
+availability = operating_time / load_time  # 예: 0.90
+performance = (ideal_cycle_time * total_pieces) / operating_time  # 예: 0.95  
+quality = good_pieces / total_pieces  # 예: 0.99
+
+oee = availability * performance * quality  # 예: 0.847 (84.7%)
+
+# MTBF / MTTR
+mtbf = total_operating_time / number_of_failures  # 예: 200시간
+mttr = total_repair_time / number_of_repairs  # 예: 2시간
+
+# 가용성 (MTBF 기반)
+availability_mtbf = mtbf / (mtbf + mttr)  # 예: 200/(200+2) = 99%
+```
+
+**OEE 벤치마크:**
+| 수준 | OEE | 설명 |
+|------|-----|------|
+| World Class | ≥ 85% | 세계 최고 수준 |
+| Good | 60-85% | 개선 여지 있음 |
+| Low | < 60% | 즉각 개선 필요 |
+
+---
+
 ## 3. bi_logic_rules 테이블 설계
 
 ```sql
@@ -157,11 +329,50 @@ INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, form
 ('INVENTORY', 'valuation_method', 'METHOD', 'DOU', 'MOVING_AVG', '이동평균법'),
 ('INVENTORY', 'valuation_method', 'METHOD', 'DOU_MES', 'STANDARD', '표준원가법');
 
+-- 재공품 평가 로직
+INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, formula, description) VALUES
+('WIP', 'wip_valuation', 'METHOD', NULL, 'WEIGHTED_AVG', '재공품 평균법'),
+('WIP', 'wip_valuation', 'METHOD', 'BINARY', 'FIFO', '재공품 선입선출법'),
+('WIP', 'equivalent_units', 'FORMULA', NULL, 'physical_qty * completion_rate', '환산량 계산'),
+('WIP', 'wip_material_cost', 'FORMULA', NULL, 'wip_qty * material_unit_cost * material_completion', '재공품 재료비'),
+('WIP', 'wip_conversion_cost', 'FORMULA', NULL, 'wip_qty * conversion_unit_cost * conversion_completion', '재공품 가공비');
+
+-- 제조간접비 배부 로직
+INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, formula, description) VALUES
+('OVERHEAD', 'allocation_base', 'METHOD', NULL, 'MACHINE_HOURS', '기계시간 기준 배부'),
+('OVERHEAD', 'allocation_base', 'METHOD', 'BINARY', 'LABOR_HOURS', '노무시간 기준 배부'),
+('OVERHEAD', 'allocation_base', 'METHOD', 'DOU', 'DIRECT_MATERIAL', '직접재료비 기준 배부'),
+('OVERHEAD', 'predetermined_rate', 'FORMULA', NULL, 'estimated_overhead / estimated_base', '예정배부율'),
+('OVERHEAD', 'variance', 'FORMULA', NULL, 'actual_overhead - applied_overhead', '배부차이'),
+('OVERHEAD', 'abc_setup_rate', 'FORMULA', NULL, 'setup_cost_pool / number_of_setups', 'ABC: 셋업 활동률'),
+('OVERHEAD', 'abc_inspection_rate', 'FORMULA', NULL, 'inspection_cost_pool / number_of_inspections', 'ABC: 검사 활동률');
+
+-- 회계 전표 로직
+INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, formula, description) VALUES
+('JOURNAL', 'mat_receipt', 'ENTRY', NULL, 'DR:원재료 / CR:현금', '원재료 매입'),
+('JOURNAL', 'mat_issue', 'ENTRY', NULL, 'DR:재공품 / CR:원재료', '원재료 투입'),
+('JOURNAL', 'labor_accrual', 'ENTRY', NULL, 'DR:재공품 / CR:미지급임금', '노무비 발생'),
+('JOURNAL', 'overhead_apply', 'ENTRY', NULL, 'DR:재공품 / CR:제조간접비', '제조간접비 배부'),
+('JOURNAL', 'prod_complete', 'ENTRY', NULL, 'DR:제품 / CR:재공품', '제품 완성'),
+('JOURNAL', 'cogs_recognize', 'ENTRY', NULL, 'DR:매출원가 / CR:제품', '매출원가 인식');
+
+-- 설비 가동시간 로직
+INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, formula, description) VALUES
+('EQUIPMENT', 'oee', 'FORMULA', NULL, 'availability * performance * quality', '설비종합효율'),
+('EQUIPMENT', 'availability', 'FORMULA', NULL, 'operating_time / load_time', '가용성'),
+('EQUIPMENT', 'performance', 'FORMULA', NULL, '(ideal_cycle_time * total_pieces) / operating_time', '성능'),
+('EQUIPMENT', 'quality', 'FORMULA', NULL, 'good_pieces / total_pieces', '품질'),
+('EQUIPMENT', 'mtbf', 'FORMULA', NULL, 'total_operating_time / number_of_failures', '평균무고장시간'),
+('EQUIPMENT', 'mttr', 'FORMULA', NULL, 'total_repair_time / number_of_repairs', '평균수리시간'),
+('EQUIPMENT', 'availability_mtbf', 'FORMULA', NULL, 'mtbf / (mtbf + mttr)', '가용성(MTBF기반)');
+
 -- KPI 로직
 INSERT INTO bi_logic_rules (category, logic_name, logic_type, company_code, formula, description) VALUES
 ('KPI', 'yield_rate', 'FORMULA', NULL, 'good_qty / input_qty * 100', '수율'),
 ('KPI', 'utilization', 'FORMULA', NULL, 'actual_hours / planned_hours * 100', '가동률'),
-('KPI', 'defect_rate', 'FORMULA', NULL, 'defect_qty / total_qty * 100', '불량률');
+('KPI', 'defect_rate', 'FORMULA', NULL, 'defect_qty / total_qty * 100', '불량률'),
+('KPI', 'inventory_turnover', 'FORMULA', NULL, 'cogs / avg_inventory', '재고회전율'),
+('KPI', 'on_time_delivery', 'FORMULA', NULL, 'on_time_deliveries / total_deliveries * 100', '납기준수율');
 ```
 
 ---
