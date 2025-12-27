@@ -93,6 +93,35 @@ LLM_PROVIDER=ollama ./venv/bin/python src/main.py
 
 ---
 
+### Phase 11: 그래프 시각화 페이지 ✅ 완료
+> LangGraph 워크플로우와 Knowledge Graph를 웹에서 인터랙티브하게 시각화
+
+- [x] FastAPI 엔드포인트 추가 (`/api/graph/langgraph`, `/api/graph/knowledge`)
+- [x] 독립 시각화 페이지 생성 (`src/visualization/index.html`)
+- [x] Mermaid.js로 LangGraph 워크플로우 렌더링
+- [x] D3.js Force Graph로 Knowledge Graph 시각화 (131 노드, 111 엣지)
+- [x] 노드 드래그, 줌, 필터링, 텍스트 레이블 기능
+
+**접속 URL:**
+```
+http://localhost:8100/visualization/
+```
+
+**시각화 구성:**
+```
+┌─────────────────────────────────────────────┐
+│  🔮 Vertical AI Factory - Graph Viewer      │
+├─────────────────────────────────────────────┤
+│ [⚡ LangGraph 워크플로우] [🕸️ Knowledge Graph] │
+├─────────────────────────────────────────────┤
+│  • Mermaid.js: 에이전트 워크플로우 다이어그램  │
+│  • D3.js Force: 테이블/컬럼 관계 그래프       │
+└─────────────────────────────────────────────┘
+```
+
+---
+
 **작성일**: 2024-12-19  
 **마지막 업데이트**: 2025-12-27  
 **프로젝트**: Vertical AI Factory
+

@@ -197,11 +197,94 @@ async def process_query(request: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============================================
+# 그래프 시각화 API
+# ============================================
+
+@app.get("/api/graph/langgraph")
+async def get_langgraph_visualization():
+    """
+    LangGraph 워크플로우를 Mermaid 다이어그램으로 반환
+    """
+    try:
+        from application.graph import graph
+        
+        # LangGraph의 내장 Mermaid 출력 사용
+        mermaid_code = graph.get_graph().draw_mermaid()
+        
+        return {
+            "status": "success",
+            "format": "mermaid",
+            "diagram": mermaid_code,
+            "description": "LangGraph 워크플로우: graph_context → analyst → writer → critic"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LangGraph 시각화 오류: {str(e)}")
+
+
+@app.get("/api/graph/knowledge")
+async def get_knowledge_graph_visualization():
+    """
+    Knowledge Graph를 D3.js Force Graph 호환 JSON으로 반환
+    """
+    try:
+        from infrastructure.knowledge_graph import get_knowledge_graph
+        from infrastructure.database.init_knowledge_graph import init_knowledge_graph
+        
+        kg = get_knowledge_graph()
+        
+        # Knowledge Graph가 초기화되지 않았으면 초기화
+        if not kg.is_initialized:
+            init_knowledge_graph(use_cache=True)
+        
+        # NetworkX 그래프를 D3.js 형식으로 변환
+        nodes = []
+        for node_id, attrs in kg.graph.nodes(data=True):
+            nodes.append({
+                "id": node_id,
+                "label": attrs.get("label", node_id),
+                "type": attrs.get("type", "unknown"),
+                "category": attrs.get("category", ""),
+                "company_code": attrs.get("company_code", ""),
+            })
+        
+        links = []
+        for source, target, attrs in kg.graph.edges(data=True):
+            links.append({
+                "source": source,
+                "target": target,
+                "type": attrs.get("type", ""),
+                "label": attrs.get("label", "")
+            })
+        
+        stats = kg.get_stats()
+        
+        return {
+            "status": "success",
+            "format": "d3_force",
+            "nodes": nodes,
+            "links": links,
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Knowledge Graph 시각화 오류: {str(e)}")
+
+
+# 시각화 페이지 정적 파일 서빙
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+visualization_path = project_root / "visualization"
+if visualization_path.exists():
+    app.mount("/visualization", StaticFiles(directory=str(visualization_path), html=True), name="visualization")
+
+
 if __name__ == "__main__":
     import uvicorn
     
     print("\n🏭 Vertical AI Factory API Server Starting...")
     print("📍 http://localhost:8100")
+    print("📊 Visualization: http://localhost:8100/visualization/")
     print("📚 API Docs: http://localhost:8100/docs\n")
     
     uvicorn.run(
