@@ -270,6 +270,100 @@ async def get_knowledge_graph_visualization():
         raise HTTPException(status_code=500, detail=f"Knowledge Graph 시각화 오류: {str(e)}")
 
 
+@app.get("/api/graph/extended")
+async def get_extended_knowledge_graph_visualization():
+    """
+    확장 Knowledge Graph 정보 반환
+    
+    포함 정보:
+    - UI 컴포넌트 매핑
+    - JOIN 관계
+    - 프로세스 흐름
+    """
+    try:
+        from infrastructure.database.init_knowledge_graph import init_extended_knowledge_graph
+        
+        ekg = init_extended_knowledge_graph(use_cache=True)
+        
+        # UI 컴포넌트
+        ui_components = ekg.get_all_ui_components()
+        
+        # JOIN 관계
+        join_relations = ekg.get_all_join_relationships()
+        
+        # 프로세스
+        processes = ekg.get_all_processes()
+        process_flows = {}
+        for proc in processes:
+            process_flows[proc["id"]] = ekg.get_process_flow(proc["id"])
+        
+        # 통계
+        stats = ekg.get_extended_stats()
+        
+        return {
+            "status": "success",
+            "ui_components": ui_components,
+            "join_relations": join_relations,
+            "processes": processes,
+            "process_flows": process_flows,
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"확장 Knowledge Graph 오류: {str(e)}")
+
+
+@app.get("/api/graph/ui-component")
+async def get_ui_component_for_column(column_name: str, data_type: str = None):
+    """
+    컬럼명에 적합한 UI 컴포넌트 추천
+    
+    Args:
+        column_name: 컬럼명
+        data_type: 데이터 타입 (optional)
+    """
+    try:
+        from infrastructure.database.init_knowledge_graph import init_extended_knowledge_graph
+        
+        ekg = init_extended_knowledge_graph(use_cache=True)
+        result = ekg.get_ui_component(column_name, data_type)
+        
+        return {
+            "status": "success",
+            "column_name": column_name,
+            "data_type": data_type,
+            **result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"UI 컴포넌트 조회 오류: {str(e)}")
+
+
+@app.get("/api/graph/join-sql")
+async def generate_join_sql(tables: str, company_code: str = "BINARY"):
+    """
+    테이블 목록에서 자동으로 JOIN SQL 생성
+    
+    Args:
+        tables: 콤마 구분 테이블명 (예: product_master,bom_master)
+        company_code: 회사 코드
+    """
+    try:
+        from infrastructure.database.init_knowledge_graph import init_extended_knowledge_graph
+        
+        ekg = init_extended_knowledge_graph(use_cache=True)
+        table_list = [t.strip() for t in tables.split(",") if t.strip()]
+        
+        sql = ekg.generate_join_sql(table_list, company_code)
+        
+        return {
+            "status": "success",
+            "tables": table_list,
+            "company_code": company_code,
+            "sql": sql
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"JOIN SQL 생성 오류: {str(e)}")
+
+
 @app.get("/api/graph/production-flow")
 async def get_production_flow_visualization(yyyymm: str = "202410", scenario: str = "ACTUAL-2024"):
     """

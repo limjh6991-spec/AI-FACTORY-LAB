@@ -148,6 +148,42 @@ def init_knowledge_graph(use_cache: bool = True) -> KnowledgeGraph:
     return kg
 
 
+def init_extended_knowledge_graph(use_cache: bool = True):
+    """
+    확장 Knowledge Graph 초기화
+    
+    기본 KG를 초기화한 후, 확장 로직(JOIN, UI, Process)을 주입합니다.
+    
+    Args:
+        use_cache: True면 캐시 사용 시도
+    
+    Returns:
+        확장된 ExtendedKnowledgeGraph 인스턴스
+    """
+    from infrastructure.knowledge_graph_extended import (
+        get_extended_knowledge_graph,
+        reset_extended_knowledge_graph
+    )
+    
+    # 기본 KG 초기화
+    kg = init_knowledge_graph(use_cache=use_cache)
+    
+    # 확장 KG 초기화 (기존 인스턴스 리셋)
+    reset_extended_knowledge_graph()
+    print("🔄 확장 Knowledge Graph 구축 중...")
+    
+    ekg = get_extended_knowledge_graph(kg, inject_defaults=True)
+    
+    stats = ekg.get_extended_stats()
+    print(f"✅ 확장 Knowledge Graph 구축 완료")
+    print(f"   JOIN_KEY: {stats.get('JOIN_KEY', 0)}개")
+    print(f"   UI_COMPONENT: {stats.get('UI_COMPONENT', 0)}개")
+    print(f"   PROCESS: {stats.get('PROCESS', 0)}개")
+    print(f"   ACTIVITY: {stats.get('ACTIVITY', 0)}개")
+    
+    return ekg
+
+
 # ============================================
 # CLI 테스트
 # ============================================

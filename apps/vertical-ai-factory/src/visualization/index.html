@@ -220,6 +220,82 @@
             background: #ec4899;
         }
 
+        /* Extended Graph Specific */
+        .legend-dot.join_key {
+            background: #f472b6;
+        }
+
+        .legend-dot.ui_component {
+            background: #22d3ee;
+        }
+
+        .legend-dot.process {
+            background: #a3e635;
+        }
+
+        .legend-dot.activity {
+            background: #fbbf24;
+        }
+
+        /* Extended Panel Cards */
+        .ext-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .ext-card {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .ext-card h3 {
+            margin-bottom: 15px;
+            color: var(--accent-light);
+            font-size: 1.1rem;
+        }
+
+        .ext-card table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .ext-card th,
+        .ext-card td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ext-card th {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .process-flow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .process-step {
+            background: var(--bg-secondary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .process-arrow {
+            color: var(--accent-light);
+            font-size: 1.2rem;
+        }
+
         /* Tooltip */
         .tooltip {
             position: absolute;
@@ -314,6 +390,9 @@
             <button class="tab-btn" data-tab="knowledge">
                 🕸️ Knowledge Graph
             </button>
+            <button class="tab-btn" data-tab="extended">
+                🧠 확장 그래프
+            </button>
             <button class="tab-btn" data-tab="production">
                 🏭 생산수불 흐름
             </button>
@@ -359,6 +438,24 @@
                 <div class="loading">
                     <div class="spinner"></div>
                     Knowledge Graph 로딩 중...
+                </div>
+            </div>
+        </div>
+
+        <!-- Extended Graph Panel (NEW) -->
+        <div id="extended" class="panel">
+            <h2 style="margin-bottom: 20px;">🧠 확장 Knowledge Graph - 논리적 추론</h2>
+            <div class="legend">
+                <div class="legend-item"><span class="legend-dot ui_component"></span> UI 컴포넌트</div>
+                <div class="legend-item"><span class="legend-dot join_key"></span> JOIN 관계</div>
+                <div class="legend-item"><span class="legend-dot process"></span> 프로세스</div>
+                <div class="legend-item"><span class="legend-dot activity"></span> 활동</div>
+            </div>
+            <div class="stats-bar" id="extended-stats"></div>
+            <div class="ext-cards" id="extended-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    확장 그래프 로딩 중...
                 </div>
             </div>
         </div>
@@ -886,11 +983,137 @@
         }
 
         // =============================================
+        // Extended Graph Visualization (NEW)
+        // =============================================
+        let extendedData = null;
+
+        async function loadExtendedGraph() {
+            const container = document.getElementById('extended-content');
+            const statsBar = document.getElementById('extended-stats');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/graph/extended`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    extendedData = data;
+
+                    // Stats
+                    statsBar.innerHTML = `
+                        <div class="stat-item">
+                            <div class="label">총 노드</div>
+                            <div class="value">${data.stats.total_nodes}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">UI 컴포넌트</div>
+                            <div class="value">${data.stats.UI_COMPONENT || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">JOIN 관계</div>
+                            <div class="value">${data.stats.JOIN_KEY || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">프로세스</div>
+                            <div class="value">${data.stats.PROCESS || 0}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">활동</div>
+                            <div class="value">${data.stats.ACTIVITY || 0}</div>
+                        </div>
+                    `;
+
+                    // Render cards
+                    renderExtendedCards(data);
+                } else {
+                    throw new Error('Failed to load Extended Graph');
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ 확장 그래프 로드 실패: ${error.message}</div>`;
+                console.error('Extended graph error:', error);
+            }
+        }
+
+        function renderExtendedCards(data) {
+            const container = document.getElementById('extended-content');
+
+            let html = '';
+
+            // UI Components Card
+            if (data.ui_components && data.ui_components.length > 0) {
+                html += `
+                    <div class="ext-card">
+                        <h3>🎨 UI 컴포넌트 패턴</h3>
+                        <table>
+                            <tr><th>컴포넌트</th><th>기본 Props</th></tr>
+                            ${data.ui_components.map(c => `
+                                <tr>
+                                    <td><strong>${c.name}</strong></td>
+                                    <td>${JSON.stringify(c.props) !== '{}' ? JSON.stringify(c.props) : '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                `;
+            }
+
+            // JOIN Relations Card
+            if (data.join_relations && data.join_relations.length > 0) {
+                html += `
+                    <div class="ext-card">
+                        <h3>🔗 JOIN 관계</h3>
+                        <table>
+                            <tr><th>Source → Target</th><th>JOIN Key</th><th>Type</th></tr>
+                            ${data.join_relations.map(j => `
+                                <tr>
+                                    <td>${j.source_table} → ${j.target_table}</td>
+                                    <td>${j.source_column} = ${j.target_column}</td>
+                                    <td>${j.join_type}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Processes Card
+            if (data.processes && data.processes.length > 0) {
+                html += `
+                    <div class="ext-card" style="grid-column: 1 / -1;">
+                        <h3>📋 업무 프로세스 흐름</h3>
+                        ${data.processes.map(p => {
+                    const flow = data.process_flows[p.id] || [];
+                    return `
+                                <div style="margin-bottom: 20px;">
+                                    <strong>${p.name}</strong> <span style="color: var(--text-secondary);">(${p.category})</span>
+                                    <div class="process-flow">
+                                        ${flow.map((act, i) => `
+                                            <span class="process-step">${act.name}</span>
+                                            ${i < flow.length - 1 ? '<span class="process-arrow">→</span>' : ''}
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                }).join('')}
+                    </div>
+                `;
+            }
+
+            // If no data
+            if (!html) {
+                html = '<div class="loading">데이터가 없습니다.</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // =============================================
         // Initialize
         // =============================================
         document.addEventListener('DOMContentLoaded', () => {
             loadLangGraph();
             loadKnowledgeGraph();
+            loadExtendedGraph();
         });
     </script>
 </body>

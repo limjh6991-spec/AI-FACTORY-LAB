@@ -1,93 +1,107 @@
-# 생산수불 표준화 프로젝트 - 후속 작업 프롬프트
+# Knowledge Graph 확장 프로젝트 - 후속 작업 프롬프트
 
 > 작성일: 2025-12-27
 > 이전 채팅 요약 및 후속 작업 안내
 
 ---
 
-## 1. 완료된 작업
+## 1. 이번 세션 완료 작업 (2025-12-27)
 
-### 1.1 문서화
+### 1.1 Knowledge Graph 확장 스키마 구현 ✅
+
+**목표:** 단순 데이터 사전 → 논리적 추론 가능한 KG 확장
+
+| 항목 | 이전 | 이후 |
+|------|------|------|
+| 총 노드 | 131개 | **170개** (+39) |
+| 총 엣지 | 111개 | **164개** (+53) |
+| Node Types | 4개 | **10개** |
+| 로직 레이어 | 1개 | **4개** |
+
+**구현된 3가지 로직 레이어:**
+
+| 레이어 | 용도 | 신규 노드 |
+|--------|------|----------|
+| **Relational Logic** | SQL JOIN 자동 생성 | JOIN_KEY (4개) |
+| **UI Logic** | 화면 컴포넌트 추천 | UI_COMPONENT (7), UI_PATTERN (11) |
+| **Process Logic** | 업무 흐름 정의 | PROCESS (3), ACTIVITY (12) |
+
+### 1.2 신규 파일 생성
+
+```
+apps/vertical-ai-factory/src/infrastructure/
+├── knowledge_graph_extended.py       # 확장 KG 클래스 (500+ lines) - NEW
+├── test_knowledge_graph_extended.py  # 테스트 스크립트 - NEW
+└── database/
+    └── init_knowledge_graph.py       # 확장 초기화 함수 추가
+
+apps/vertical-ai-factory/src/
+├── api_server.py                     # 3개 API 엔드포인트 추가
+└── visualization/
+    └── index.html                    # 확장 그래프 탭 추가 (+205 lines)
+```
+
+### 1.3 신규 API 엔드포인트
+
+| 엔드포인트 | 용도 |
+|-----------|------|
+| `GET /api/graph/extended` | 확장 그래프 전체 (UI, JOIN, Process) |
+| `GET /api/graph/ui-component?column_name=order_date` | UI 컴포넌트 추천 |
+| `GET /api/graph/join-sql?tables=product_master,bom_master` | JOIN SQL 자동 생성 |
+
+### 1.4 시각화 페이지 업데이트
+
+- **🧠 확장 그래프** 탭 추가 (4번째 탭)
+- Stats Bar: 노드/UI/JOIN/프로세스/활동 통계
+- UI 컴포넌트 매핑 테이블
+- JOIN 관계 테이블
+- 프로세스 흐름도 (수주-출하, 구매-지급, 생산수불)
+
+---
+
+## 2. 이전 세션 완료 작업
+
+### 2.1 문서화
 - **manufacturing_logic_research.md** - 제조업 비즈니스 로직 리서치
-  - 원가계산, 재고평가, 생산수불, KPI
-  - WIP 평가, 제조간접비 배부 (ABC costing)
-  - 회계 전표 (Journal Entries)
-  - 설비 가동시간 (OEE, MTBF, MTTR)
-  
 - **production_inventory_standard.md** - 생산수불 표준 정의서
-  - 공정간 흐름 (Rework 포함)
-  - 트랜잭션 코드 표준 (IN/OUT/LOSS/BONUS)
-  - BOH/EOH 개념
-  - DEFECT/HOLD 처리 흐름
-  - 조정(Adjustment) 처리 프로세스
-
 - **production_table_schema.md** - 테이블 설계 문서
 
-### 1.2 PostgreSQL 테이블 생성 (ai_factory_db)
+### 2.2 PostgreSQL 테이블 생성 (ai_factory_db)
 ```
 bi_src_mes_production  - MES 원천 데이터
-bi_mst_product         - 제품 마스터 (3 rows)
-bi_mst_process         - 공정 마스터 (7 rows, area_ord 포함)
-bi_mst_scenario        - 시나리오 마스터 (ACTUAL/FORECAST/PLAN)
-bi_trx_prod_inventory  - 생산수불 (월별 집계, 3 rows)
+bi_mst_product         - 제품 마스터
+bi_mst_process         - 공정 마스터
+bi_mst_scenario        - 시나리오 마스터
+bi_trx_prod_inventory  - 생산수불
 bi_hst_process_movement - 공정간 이력
 bi_err_inventory_check  - 에러 체크
 ```
 
-### 1.3 시각화 페이지 추가
-- **새 탭**: 🏭 생산수불 흐름
-- **API**: `/api/graph/production-flow?yyyymm=202410&scenario=ACTUAL-2024`
-- **D3.js 공정 흐름도**: 공정간 수량 이동 시각화
-- **필터**: 년월, 시나리오 선택
-
----
-
-## 2. 현재 파일 위치
-
-```
-apps/vertical-ai-factory/
-├── docs/
-│   ├── manufacturing_logic_research.md  # 제조 로직 리서치
-│   ├── production_inventory_standard.md  # 생산수불 표준
-│   └── production_table_schema.md        # 테이블 설계
-├── sql/
-│   ├── create_production_tables.sql      # DDL 스크립트
-│   └── run_create_tables.py              # 테이블 생성 Python
-├── src/
-│   ├── api_server.py                     # API 서버 (production-flow 추가됨)
-│   └── visualization/
-│       └── index.html                    # 시각화 (897줄, 32KB - 분리 필요)
-```
+### 2.3 생산수불 시각화
+- **🏭 생산수불 흐름** 탭
+- `/api/graph/production-flow` API
+- D3.js Sankey 다이어그램
 
 ---
 
 ## 3. 후속 작업 목록
 
-### 3.1 우선순위 높음
-- [ ] **index.html 파일 분리** (897줄 → 모듈화)
-  - styles.css (CSS 분리)
-  - langgraph.js
-  - knowledge-graph.js
-  - production-flow.js
+### 3.1 우선순위 높음 ✅ (완료)
+- [x] Knowledge Graph 확장 스키마 구현
+- [x] 시각화 페이지 통합
+
+### 3.2 남은 작업
+- [ ] **Writer Agent에서 JOIN SQL 생성 활용**
+  - `generate_join_sql()` 함수를 Writer Agent에서 호출
+  - 다중 테이블 질문 시 자동 JOIN SQL 생성
+
+- [ ] **화면 생성기에서 UI 컴포넌트 추천 활용**
+  - `get_ui_component()` 함수로 컬럼별 적합 UI 추천
+  - Screen Generator 템플릿에 반영
+
+- [ ] **index.html 파일 분리** (1100줄+ → 모듈화)
 
 - [ ] **재고수불 표준 문서 작성**
-  - 창고별 재고 관리
-  - 입출고 트랜잭션
-  - 생산수불 ↔ 재고수불 연계
-
-### 3.2 중간 우선순위
-- [ ] **ETL 프로세스 정의**
-  - MES → bi_src_mes_production
-  - bi_src_mes_production → bi_trx_prod_inventory
-  
-- [ ] **Knowledge Graph 확장**
-  - bi_common_code (현재: 131노드)에 생산 테이블 추가
-  - 또는 별도 Production Graph 구성
-
-### 3.3 추후 작업
-- [ ] 보고서 생성 기능
-- [ ] 에러 체크 자동화 배치
-- [ ] 시뮬레이션 연동 (OR-Tools)
 
 ---
 
@@ -95,21 +109,23 @@ apps/vertical-ai-factory/
 
 | 항목 | 값 |
 |------|-----|
-| 총 노드 | 131개 |
-| 총 엣지 | 111개 |
+| 총 노드 | **170개** |
+| 총 엣지 | **164개** |
 | COLUMN | 39 |
 | TABLE | 20 |
 | COMPANY_COLUMN | 45 |
 | COMPANY_TABLE | 27 |
-
-**데이터 출처**: `bi_common_code` 테이블 (BINARY, DOU, DOU_MES 회사 매핑)
+| **UI_COMPONENT** | 7 |
+| **UI_PATTERN** | 11 |
+| **JOIN_KEY** | 4 |
+| **PROCESS** | 3 |
+| **ACTIVITY** | 12 |
 
 ---
 
 ## 5. 시각화 페이지 접속
 
 ```bash
-# API 서버 시작
 cd apps/vertical-ai-factory/src
 ../venv/bin/python api_server.py
 
@@ -117,39 +133,31 @@ cd apps/vertical-ai-factory/src
 http://localhost:8100/visualization/
 ```
 
+**탭 구성:**
+1. ⚡ LangGraph 워크플로우
+2. 🕸️ Knowledge Graph
+3. 🧠 확장 그래프 (NEW)
+4. 🏭 생산수불 흐름
+
 ---
 
-## 6. 다음 채팅에서 사용할 프롬프트 예시
+## 6. 테스트 방법
 
-### 파일 분리 요청
-```
-visualization/index.html 파일이 897줄로 커졌어. 
-CSS와 JavaScript를 별도 파일로 분리해줘:
-- styles.css
-- langgraph.js  
-- knowledge-graph.js
-- production-flow.js
-```
+```bash
+# 확장 KG 테스트
+cd apps/vertical-ai-factory/src
+../venv/bin/python -m infrastructure.test_knowledge_graph_extended
 
-### 재고수불 표준 요청
-```
-생산수불 표준은 완료됐어.
-이제 재고수불 표준을 작성해줘.
-production_inventory_standard.md 참고해서 
-창고 재고 관리, 입출고 트랜잭션 정의해줘.
-```
-
-### 전체 현황 확인
-```
-apps/vertical-ai-factory/docs 폴더의 문서들을 확인하고
-현재 진행 상황을 요약해줘.
+# API 테스트
+curl "http://localhost:8100/api/graph/ui-component?column_name=order_date"
+curl "http://localhost:8100/api/graph/join-sql?tables=product_master,bom_master"
 ```
 
 ---
 
 ## 7. 참고 파일
 
+- [knowledge_graph_extended.py](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/src/infrastructure/knowledge_graph_extended.py)
+- [api_server.py](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/src/api_server.py)
+- [index.html](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/src/visualization/index.html)
 - [manufacturing_logic_research.md](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/docs/manufacturing_logic_research.md)
-- [production_inventory_standard.md](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/docs/production_inventory_standard.md)
-- [production_table_schema.md](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/docs/production_table_schema.md)
-- [visualization/index.html](file:///home/roarm_m3/ai-factory-lab/apps/vertical-ai-factory/src/visualization/index.html)
