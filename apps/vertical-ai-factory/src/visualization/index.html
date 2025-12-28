@@ -792,13 +792,12 @@
             const typeFilter = document.getElementById('type-filter').value;
 
             // 항상 원본 데이터에서 deep copy로 시작 (D3 시뮬레이션이 mutate하므로)
-            let filteredNodes = JSON.parse(JSON.stringify(originalGraphData.nodes));
-            let filteredLinks = JSON.parse(JSON.stringify(originalGraphData.links));
+            let allNodes = JSON.parse(JSON.stringify(originalGraphData.nodes));
+            let allLinks = JSON.parse(JSON.stringify(originalGraphData.links));
 
-            // Filter nodes by company
+            // Step 1: 회사 필터 적용
             if (companyFilter !== 'all') {
-                filteredNodes = filteredNodes.filter(n =>
-                    // 회사 코드가 없거나, 선택한 회사와 일치하거나, 표준 타입인 경우 포함
+                allNodes = allNodes.filter(n =>
                     !n.company_code ||
                     n.company_code === companyFilter ||
                     n.type === 'TABLE' ||
@@ -806,20 +805,48 @@
                 );
             }
 
-            // Filter nodes by type
+            // Step 2: 타입 필터 - 확장 방식 (연결된 노드도 포함)
+            let filteredNodes = allNodes;
+            let filteredLinks = allLinks;
+
             if (typeFilter !== 'all') {
-                filteredNodes = filteredNodes.filter(n => n.type === typeFilter);
+                // 먼저 선택한 타입의 노드만 추출
+                const primaryNodes = allNodes.filter(n => n.type === typeFilter);
+                const primaryNodeIds = new Set(primaryNodes.map(n => n.id));
+
+                // 선택한 노드와 연결된 노드 찾기
+                const connectedNodeIds = new Set(primaryNodeIds);
+
+                allLinks.forEach(l => {
+                    const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                    const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+
+                    if (primaryNodeIds.has(sourceId)) {
+                        connectedNodeIds.add(targetId);
+                    }
+                    if (primaryNodeIds.has(targetId)) {
+                        connectedNodeIds.add(sourceId);
+                    }
+                });
+
+                // 연결된 노드 포함하여 필터링
+                filteredNodes = allNodes.filter(n => connectedNodeIds.has(n.id));
+
+                // 연결선은 양쪽이 모두 포함된 경우만
+                filteredLinks = allLinks.filter(l => {
+                    const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                    const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                    return connectedNodeIds.has(sourceId) && connectedNodeIds.has(targetId);
+                });
+            } else {
+                // 모든 타입: 회사 필터만 적용된 노드 기준으로 링크 필터링
+                const nodeIds = new Set(filteredNodes.map(n => n.id));
+                filteredLinks = allLinks.filter(l => {
+                    const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                    const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                    return nodeIds.has(sourceId) && nodeIds.has(targetId);
+                });
             }
-
-            // Filter links to only include connected nodes
-            const nodeIds = new Set(filteredNodes.map(n => n.id));
-
-            // links의 source/target은 문자열 ID이거나 객체일 수 있음
-            filteredLinks = filteredLinks.filter(l => {
-                const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
-                const targetId = typeof l.target === 'object' ? l.target.id : l.target;
-                return nodeIds.has(sourceId) && nodeIds.has(targetId);
-            });
 
             // Re-render with new data
             document.getElementById('d3-container').innerHTML = '';
