@@ -782,33 +782,40 @@
             const companyFilter = document.getElementById('company-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
 
-            let filteredNodes = graphData.nodes;
-            let filteredLinks = graphData.links;
+            // 원본 데이터에서 deep copy로 시작 (D3 시뮬레이션이 mutate하므로)
+            let filteredNodes = JSON.parse(JSON.stringify(graphData.nodes));
+            let filteredLinks = JSON.parse(JSON.stringify(graphData.links));
 
-            // Filter nodes
+            // Filter nodes by company
             if (companyFilter !== 'all') {
                 filteredNodes = filteredNodes.filter(n =>
-                    !n.company_code || n.company_code === companyFilter || n.type === 'category' || n.type === 'standard'
+                    // 회사 코드가 없거나, 선택한 회사와 일치하거나, 표준 타입인 경우 포함
+                    !n.company_code ||
+                    n.company_code === companyFilter ||
+                    n.type === 'TABLE' ||
+                    n.type === 'COLUMN'
                 );
             }
 
+            // Filter nodes by type
             if (typeFilter !== 'all') {
                 filteredNodes = filteredNodes.filter(n => n.type === typeFilter);
             }
 
             // Filter links to only include connected nodes
             const nodeIds = new Set(filteredNodes.map(n => n.id));
-            filteredLinks = graphData.links.filter(l =>
-                nodeIds.has(l.source.id || l.source) && nodeIds.has(l.target.id || l.target)
-            );
 
-            // Re-render
+            // links의 source/target은 문자열 ID이거나 객체일 수 있음
+            filteredLinks = filteredLinks.filter(l => {
+                const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                return nodeIds.has(sourceId) && nodeIds.has(targetId);
+            });
+
+            // Re-render with new data
             document.getElementById('d3-container').innerHTML = '';
             if (simulation) simulation.stop();
-            renderD3Graph(
-                JSON.parse(JSON.stringify(filteredNodes)),
-                JSON.parse(JSON.stringify(filteredLinks))
-            );
+            renderD3Graph(filteredNodes, filteredLinks);
         }
 
         // =============================================
