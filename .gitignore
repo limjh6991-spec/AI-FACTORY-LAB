@@ -58,3 +58,4 @@ venv/
 __pycache__/
 *.pyc
 *.pyo
+*.pptx
