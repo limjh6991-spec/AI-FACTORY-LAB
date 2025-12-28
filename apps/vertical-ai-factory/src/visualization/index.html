@@ -624,13 +624,26 @@
             const width = container.clientWidth;
             const height = container.clientHeight;
 
-            // Color scale by type
+            // Color scale by type (matches API node_type values)
             const colorScale = {
-                'standard': '#7c3aed',
-                'category': '#10b981',
-                'company_table': '#f59e0b',
-                'column': '#06b6d4',
-                'standard_column': '#ec4899',
+                // Layer 1: Schema (기존)
+                'TABLE': '#7c3aed',           // 표준 테이블 - 보라색
+                'COLUMN': '#06b6d4',          // 표준 컬럼 - 청록색
+                'COMPANY_TABLE': '#f59e0b',   // 회사 테이블 - 주황색
+                'COMPANY_COLUMN': '#ec4899',  // 회사 컬럼 - 핑크색
+                // Layer 2: Logic
+                'JOIN_KEY': '#14b8a6',        // JOIN 키 - 틸
+                'UI_COMPONENT': '#8b5cf6',    // UI 컴포넌트 - 바이올렛
+                'UI_PATTERN': '#a855f7',      // UI 패턴
+                'PROCESS': '#22c55e',         // 프로세스 - 녹색
+                'ACTIVITY': '#84cc16',        // 활동 - 라임
+                // Layer 3: Semantic
+                'BUSINESS_CONCEPT': '#ef4444', // 비즈니스 개념 - 빨강
+                'UI_TEMPLATE': '#3b82f6',      // UI 템플릿 - 파랑
+                'AGGREGATION_RULE': '#f97316', // 집계 규칙 - 오렌지
+                'INTENT_PATTERN': '#eab308',   // 의도 패턴 - 노랑
+                'REPORT_COLUMN': '#06b6d4',    // 리포트 컬럼 - 청록
+                // Fallback
                 'unknown': '#6b7280'
             };
 
@@ -667,7 +680,12 @@
                 .selectAll('circle')
                 .data(nodes)
                 .join('circle')
-                .attr('r', d => d.type === 'category' ? 15 : d.type === 'standard' ? 12 : 8)
+                .attr('r', d => {
+                    // 노드 타입별 크기 설정
+                    if (d.type === 'TABLE' || d.type === 'BUSINESS_CONCEPT' || d.type === 'PROCESS') return 15;
+                    if (d.type === 'COLUMN' || d.type === 'UI_TEMPLATE' || d.type === 'UI_COMPONENT') return 12;
+                    return 8;
+                })
                 .attr('fill', d => colorScale[d.type] || colorScale['unknown'])
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.5)
@@ -684,10 +702,10 @@
                     const parts = d.label.split(':');
                     return parts[parts.length - 1] || d.label;
                 })
-                .attr('font-size', d => d.type === 'category' ? 11 : 9)
+                .attr('font-size', d => (d.type === 'TABLE' || d.type === 'BUSINESS_CONCEPT') ? 11 : 9)
                 .attr('fill', '#e8e8e8')
                 .attr('text-anchor', 'middle')
-                .attr('dy', d => d.type === 'category' ? -20 : -12)
+                .attr('dy', d => (d.type === 'TABLE' || d.type === 'BUSINESS_CONCEPT') ? -20 : -12)
                 .style('pointer-events', 'none')
                 .style('text-shadow', '0 0 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.6)');
 

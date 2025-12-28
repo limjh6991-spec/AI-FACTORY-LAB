@@ -15,6 +15,7 @@ from .knowledge_graph import KnowledgeGraph, get_knowledge_graph
 # ============================================
 # 확장 Node Type 상수
 # ============================================
+# Layer 2: Logic (기존)
 NODE_JOIN_KEY = "JOIN_KEY"
 NODE_UI_COMPONENT = "UI_COMPONENT"
 NODE_UI_PATTERN = "UI_PATTERN"
@@ -22,14 +23,32 @@ NODE_PROCESS = "PROCESS"
 NODE_ACTIVITY = "ACTIVITY"
 NODE_FORMULA = "FORMULA"
 
+# Layer 3: Semantic (Text-to-Report 확장)
+NODE_BUSINESS_CONCEPT = "BUSINESS_CONCEPT"
+NODE_UI_TEMPLATE = "UI_TEMPLATE"
+NODE_AGGREGATION_RULE = "AGGREGATION_RULE"
+NODE_INTENT_PATTERN = "INTENT_PATTERN"
+NODE_REPORT_COLUMN = "REPORT_COLUMN"
+
 # ============================================
 # 확장 Edge Type 상수
 # ============================================
+# Layer 2: Logic (기존)
 EDGE_JOINABLE_WITH = "joinable_with"
 EDGE_RENDERS_AS = "renders_as"
 EDGE_PATTERN_MATCH = "pattern_match"
 EDGE_NEXT_STEP = "next_step"
 EDGE_BELONGS_TO = "belongs_to"
+
+# Layer 3: Semantic (Text-to-Report 확장)
+EDGE_MATCHES_INTENT = "matches_intent"
+EDGE_REQUIRES_COLUMN = "requires_column"
+EDGE_REQUIRES_TABLE = "requires_table"
+EDGE_HAS_AGGREGATION = "has_aggregation"
+EDGE_GROUPS_BY = "groups_by"
+EDGE_PIVOTS_BY = "pivots_by"
+EDGE_VALUES_FROM = "values_from"
+EDGE_MAPS_TO = "maps_to"
 
 
 # ============================================
@@ -214,9 +233,13 @@ class ExtendedKnowledgeGraph:
             # 가장 가까운 방문한 테이블에서 경로 찾기
             best_path = None
             for visited_table in visited:
-                joins = self.get_join_path(visited_table, target_table)
-                if joins and (best_path is None or len(joins) < len(best_path)):
-                    best_path = joins
+                try:
+                    joins = self.get_join_path(visited_table, target_table)
+                    if joins and (best_path is None or len(joins) < len(best_path)):
+                        best_path = joins
+                except Exception:
+                    # 경로를 찾을 수 없는 경우 무시
+                    pass
             
             if best_path:
                 for join in best_path:
@@ -447,6 +470,460 @@ class ExtendedKnowledgeGraph:
         return next_steps
     
     # ========================================
+    # 4. Semantic Layer (Text-to-Report)
+    # ========================================
+    
+    def add_business_concept(
+        self,
+        concept_id: str,
+        name: str,
+        category: str,
+        keywords: List[str],
+        description: str = "",
+        required_tables: List[str] = None,
+        default_filters: Dict[str, Any] = None
+    ) -> None:
+        """
+        비즈니스 개념 추가
+        
+        Args:
+            concept_id: 개념 ID (예: cost_analysis_report)
+            name: 개념명 (예: 원가분석 리포트)
+            category: 카테고리 (COST, SALES, PRODUCTION, INVENTORY)
+            keywords: 키워드 리스트 (의도 매칭용)
+            description: 설명
+            required_tables: 필요 테이블 리스트
+            default_filters: 기본 필터 조건
+        """
+        node_id = f"BUSINESS_CONCEPT:{concept_id}"
+        
+        self.kg.graph.add_node(
+            node_id,
+            node_type=NODE_BUSINESS_CONCEPT,
+            concept_id=concept_id,
+            name=name,
+            category=category,
+            keywords=keywords or [],
+            description=description,
+            required_tables=required_tables or [],
+            default_filters=default_filters or {}
+        )
+    
+    def add_intent_pattern(
+        self,
+        pattern_id: str,
+        patterns: List[str],
+        concept_id: str,
+        examples: List[str] = None
+    ) -> None:
+        """
+        의도 패턴 추가 및 비즈니스 개념과 연결
+        
+        Args:
+            pattern_id: 패턴 ID
+            patterns: 정규식 패턴 리스트
+            concept_id: 연결할 비즈니스 개념 ID
+            examples: 예시 문장
+        """
+        node_id = f"INTENT_PATTERN:{pattern_id}"
+        concept_node = f"BUSINESS_CONCEPT:{concept_id}"
+        
+        self.kg.graph.add_node(
+            node_id,
+            node_type=NODE_INTENT_PATTERN,
+            pattern_id=pattern_id,
+            patterns=patterns,
+            examples=examples or [],
+            compiled_patterns=[re.compile(p, re.IGNORECASE) for p in patterns]
+        )
+        
+        # 의도 → 비즈니스 개념 연결
+        self.kg.graph.add_edge(
+            node_id, concept_node,
+            edge_type=EDGE_MATCHES_INTENT
+        )
+    
+    def add_ui_template(
+        self,
+        template_id: str,
+        name: str,
+        component: str,
+        layout_type: str,
+        features: List[str] = None,
+        default_props: Dict[str, Any] = None,
+        suitable_for: List[str] = None
+    ) -> None:
+        """
+        UI 템플릿 추가
+        
+        Args:
+            template_id: 템플릿 ID (예: aggrid_pivot)
+            name: 템플릿명
+            component: 컴포넌트명 (예: AgGridReact)
+            layout_type: 레이아웃 유형 (SIMPLE, PIVOT, MASTER_DETAIL)
+            features: 지원 기능 리스트
+            default_props: 기본 props
+            suitable_for: 적합한 카테고리 리스트
+        """
+        node_id = f"UI_TEMPLATE:{template_id}"
+        
+        self.kg.graph.add_node(
+            node_id,
+            node_type=NODE_UI_TEMPLATE,
+            template_id=template_id,
+            name=name,
+            component=component,
+            layout_type=layout_type,
+            features=features or [],
+            default_props=default_props or {},
+            suitable_for=suitable_for or []
+        )
+    
+    def add_aggregation_rule(
+        self,
+        rule_id: str,
+        name: str,
+        function: str,
+        agg_func: str,
+        applies_to: List[str] = None,
+        format_type: str = "number",
+        decimal_places: int = 0
+    ) -> None:
+        """
+        집계 규칙 추가
+        
+        Args:
+            rule_id: 규칙 ID (예: sum_qty)
+            name: 규칙명 (예: 수량 합계)
+            function: SQL 함수 (SUM, AVG, COUNT)
+            agg_func: AG Grid aggFunc
+            applies_to: 적용 가능한 컬럼 패턴
+            format_type: 포맷 타입
+            decimal_places: 소수점 자릿수
+        """
+        node_id = f"AGGREGATION_RULE:{rule_id}"
+        
+        self.kg.graph.add_node(
+            node_id,
+            node_type=NODE_AGGREGATION_RULE,
+            rule_id=rule_id,
+            name=name,
+            function=function,
+            agg_func=agg_func,
+            applies_to=applies_to or [],
+            format_type=format_type,
+            decimal_places=decimal_places
+        )
+    
+    def add_report_column(
+        self,
+        column_id: str,
+        source_column: str,
+        display_name: str,
+        role: str,
+        concept_id: str,
+        width: int = 100,
+        pinned: str = None,
+        aggregation_rule: str = None,
+        lookup_table: str = None,
+        lookup_display: str = None
+    ) -> None:
+        """
+        리포트 컬럼 정의 추가
+        
+        Args:
+            column_id: 컬럼 ID
+            source_column: 원본 컬럼명
+            display_name: 표시명
+            role: 역할 (GROUP, PIVOT, VALUE, FILTER)
+            concept_id: 연결할 비즈니스 개념 ID
+            width: 컬럼 너비
+            pinned: 고정 위치 (left, right)
+            aggregation_rule: 적용할 집계 규칙 ID
+            lookup_table: 참조 테이블
+            lookup_display: 참조 표시 컬럼
+        """
+        node_id = f"REPORT_COLUMN:{column_id}"
+        concept_node = f"BUSINESS_CONCEPT:{concept_id}"
+        
+        self.kg.graph.add_node(
+            node_id,
+            node_type=NODE_REPORT_COLUMN,
+            column_id=column_id,
+            source_column=source_column,
+            display_name=display_name,
+            role=role,
+            width=width,
+            pinned=pinned,
+            lookup_table=lookup_table,
+            lookup_display=lookup_display
+        )
+        
+        # 역할에 따른 엣지 연결
+        edge_type_map = {
+            "GROUP": EDGE_GROUPS_BY,
+            "PIVOT": EDGE_PIVOTS_BY,
+            "VALUE": EDGE_VALUES_FROM,
+            "FILTER": EDGE_REQUIRES_COLUMN
+        }
+        edge_type = edge_type_map.get(role, EDGE_REQUIRES_COLUMN)
+        
+        self.kg.graph.add_edge(
+            concept_node, node_id,
+            edge_type=edge_type
+        )
+        
+        # 집계 규칙 연결
+        if aggregation_rule:
+            agg_node = f"AGGREGATION_RULE:{aggregation_rule}"
+            if self.kg.graph.has_node(agg_node):
+                self.kg.graph.add_edge(
+                    node_id, agg_node,
+                    edge_type=EDGE_HAS_AGGREGATION
+                )
+    
+    def link_concept_to_template(
+        self,
+        concept_id: str,
+        template_id: str
+    ) -> None:
+        """비즈니스 개념과 UI 템플릿 연결"""
+        concept_node = f"BUSINESS_CONCEPT:{concept_id}"
+        template_node = f"UI_TEMPLATE:{template_id}"
+        
+        self.kg.graph.add_edge(
+            concept_node, template_node,
+            edge_type=EDGE_RENDERS_AS
+        )
+    
+    # ----------------------------------------
+    # Text-to-Report: 추론 메서드
+    # ----------------------------------------
+    
+    def match_intent(self, user_input: str) -> Optional[Dict[str, Any]]:
+        """
+        사용자 입력에서 의도 매칭
+        
+        Args:
+            user_input: 사용자 자연어 입력
+        
+        Returns:
+            매칭된 비즈니스 개념 정보 또는 None
+        """
+        for node_id, data in self.kg.graph.nodes(data=True):
+            if data.get("node_type") == NODE_INTENT_PATTERN:
+                compiled = data.get("compiled_patterns", [])
+                for pattern in compiled:
+                    if pattern.search(user_input):
+                        # 연결된 비즈니스 개념 찾기
+                        for _, target, edge in self.kg.graph.out_edges(node_id, data=True):
+                            if edge.get("edge_type") == EDGE_MATCHES_INTENT:
+                                concept_data = self.kg.graph.nodes.get(target, {})
+                                return {
+                                    "pattern_id": data.get("pattern_id"),
+                                    "concept_id": concept_data.get("concept_id"),
+                                    "concept_name": concept_data.get("name"),
+                                    "category": concept_data.get("category"),
+                                    "matched_input": user_input
+                                }
+        return None
+    
+    def get_report_definition(self, concept_id: str) -> Dict[str, Any]:
+        """
+        비즈니스 개념에서 리포트 정의 추론
+        
+        Args:
+            concept_id: 비즈니스 개념 ID
+        
+        Returns:
+            리포트 정의 (컬럼, 템플릿, 집계 등)
+        """
+        concept_node = f"BUSINESS_CONCEPT:{concept_id}"
+        
+        if not self.kg.graph.has_node(concept_node):
+            return {}
+        
+        concept_data = self.kg.graph.nodes[concept_node]
+        
+        # 연결된 컬럼 수집
+        columns = {"groups": [], "pivots": [], "values": [], "filters": []}
+        template = None
+        
+        for _, target, edge in self.kg.graph.out_edges(concept_node, data=True):
+            edge_type = edge.get("edge_type")
+            target_data = self.kg.graph.nodes.get(target, {})
+            
+            if edge_type == EDGE_GROUPS_BY:
+                col_info = self._extract_column_info(target, target_data)
+                columns["groups"].append(col_info)
+            elif edge_type == EDGE_PIVOTS_BY:
+                col_info = self._extract_column_info(target, target_data)
+                columns["pivots"].append(col_info)
+            elif edge_type == EDGE_VALUES_FROM:
+                col_info = self._extract_column_info(target, target_data)
+                columns["values"].append(col_info)
+            elif edge_type == EDGE_REQUIRES_COLUMN:
+                col_info = self._extract_column_info(target, target_data)
+                columns["filters"].append(col_info)
+            elif edge_type == EDGE_RENDERS_AS:
+                template = {
+                    "id": target_data.get("template_id"),
+                    "name": target_data.get("name"),
+                    "component": target_data.get("component"),
+                    "layout_type": target_data.get("layout_type"),
+                    "default_props": target_data.get("default_props", {})
+                }
+        
+        return {
+            "concept_id": concept_id,
+            "concept_name": concept_data.get("name"),
+            "category": concept_data.get("category"),
+            "description": concept_data.get("description"),
+            "required_tables": concept_data.get("required_tables", []),
+            "default_filters": concept_data.get("default_filters", {}),
+            "columns": columns,
+            "template": template
+        }
+    
+    def _extract_column_info(self, node_id: str, data: Dict) -> Dict[str, Any]:
+        """리포트 컬럼 정보 추출"""
+        col_info = {
+            "id": data.get("column_id"),
+            "source": data.get("source_column"),
+            "display": data.get("display_name"),
+            "role": data.get("role"),
+            "width": data.get("width", 100),
+            "pinned": data.get("pinned"),
+            "lookup": None,
+            "aggregation": None
+        }
+        
+        # Lookup 정보
+        if data.get("lookup_table"):
+            col_info["lookup"] = {
+                "table": data.get("lookup_table"),
+                "display": data.get("lookup_display")
+            }
+        
+        # 집계 규칙 조회
+        for _, agg_target, agg_edge in self.kg.graph.out_edges(node_id, data=True):
+            if agg_edge.get("edge_type") == EDGE_HAS_AGGREGATION:
+                agg_data = self.kg.graph.nodes.get(agg_target, {})
+                col_info["aggregation"] = {
+                    "function": agg_data.get("function"),
+                    "agg_func": agg_data.get("agg_func"),
+                    "format": agg_data.get("format_type"),
+                    "decimals": agg_data.get("decimal_places")
+                }
+        
+        return col_info
+    
+    def generate_report_from_text(self, user_input: str) -> Dict[str, Any]:
+        """
+        사용자 텍스트에서 리포트 정의 생성 (Text-to-Report 핵심)
+        
+        Args:
+            user_input: 사용자 자연어 입력
+        
+        Returns:
+            완전한 리포트 정의 (SQL, AG Grid 설정 포함)
+        """
+        # Step 1: 의도 매칭
+        intent = self.match_intent(user_input)
+        if not intent:
+            return {"error": "의도를 파악할 수 없습니다", "input": user_input}
+        
+        # Step 2: 리포트 정의 추론
+        report_def = self.get_report_definition(intent["concept_id"])
+        if not report_def:
+            return {"error": "리포트 정의를 찾을 수 없습니다", "concept": intent["concept_id"]}
+        
+        # Step 3: AG Grid columnDefs 생성
+        column_defs = self._generate_column_defs(report_def)
+        
+        # Step 4: SQL 생성 (필요 테이블 기반)
+        tables = report_def.get("required_tables", [])
+        sql = self.generate_join_sql(tables) if tables else ""
+        
+        return {
+            "status": "success",
+            "intent": intent,
+            "report": report_def,
+            "column_defs": column_defs,
+            "sql": sql
+        }
+    
+    def _generate_column_defs(self, report_def: Dict) -> List[Dict[str, Any]]:
+        """AG Grid columnDefs 생성"""
+        column_defs = []
+        columns = report_def.get("columns", {})
+        
+        # Group 컬럼
+        for col in columns.get("groups", []):
+            col_def = {
+                "field": col["source"],
+                "headerName": col["display"],
+                "rowGroup": True,
+                "hide": True,
+                "width": col.get("width", 120)
+            }
+            if col.get("pinned"):
+                col_def["pinned"] = col["pinned"]
+            if col.get("lookup"):
+                col_def["valueGetter"] = f"lookup_{col['lookup']['table']}"
+            column_defs.append(col_def)
+        
+        # Pivot 컬럼
+        for col in columns.get("pivots", []):
+            column_defs.append({
+                "field": col["source"],
+                "headerName": col["display"],
+                "pivot": True,
+                "hide": True
+            })
+        
+        # Value 컬럼
+        for col in columns.get("values", []):
+            col_def = {
+                "field": col["source"],
+                "headerName": col["display"],
+                "width": col.get("width", 100)
+            }
+            if col.get("aggregation"):
+                col_def["aggFunc"] = col["aggregation"].get("agg_func", "sum")
+            column_defs.append(col_def)
+        
+        return column_defs
+    
+    def get_all_business_concepts(self) -> List[Dict[str, Any]]:
+        """모든 비즈니스 개념 조회"""
+        concepts = []
+        for node_id, data in self.kg.graph.nodes(data=True):
+            if data.get("node_type") == NODE_BUSINESS_CONCEPT:
+                concepts.append({
+                    "id": data.get("concept_id"),
+                    "name": data.get("name"),
+                    "category": data.get("category"),
+                    "keywords": data.get("keywords", []),
+                    "description": data.get("description")
+                })
+        return concepts
+    
+    def get_all_ui_templates(self) -> List[Dict[str, Any]]:
+        """모든 UI 템플릿 조회"""
+        templates = []
+        for node_id, data in self.kg.graph.nodes(data=True):
+            if data.get("node_type") == NODE_UI_TEMPLATE:
+                templates.append({
+                    "id": data.get("template_id"),
+                    "name": data.get("name"),
+                    "component": data.get("component"),
+                    "layout_type": data.get("layout_type"),
+                    "features": data.get("features", [])
+                })
+        return templates
+
+    # ========================================
     # 초기화 및 헬퍼
     # ========================================
     
@@ -522,6 +999,160 @@ class ExtendedKnowledgeGraph:
             self.add_process(proc["id"], proc["name"], proc["category"], proc["activities"])
             stats["processes"] += 1
         
+        # ========================================
+        # Semantic Layer 기본 데이터 주입 (Text-to-Report)
+        # ========================================
+        stats["business_concepts"] = 0
+        stats["ui_templates"] = 0
+        stats["aggregation_rules"] = 0
+        
+        # 집계 규칙 등록
+        aggregation_rules = [
+            ("sum", "합계", "SUM", "sum", ["qty", "amt", "amount", "cost", "price"], "number", 0),
+            ("avg", "평균", "AVG", "avg", ["rate", "pct", "ratio"], "number", 2),
+            ("count", "건수", "COUNT", "count", [], "number", 0),
+            ("sum_currency", "금액 합계", "SUM", "sum", ["amt", "amount", "cost", "price"], "currency", 0),
+        ]
+        
+        for rule_id, name, fn, agg_fn, applies, fmt, decimals in aggregation_rules:
+            self.add_aggregation_rule(rule_id, name, fn, agg_fn, applies, fmt, decimals)
+            stats["aggregation_rules"] += 1
+        
+        # UI 템플릿 등록
+        ui_templates = [
+            {
+                "id": "aggrid_pivot",
+                "name": "피벗 그리드",
+                "component": "AgGridReact",
+                "layout": "PIVOT",
+                "features": ["rowGrouping", "aggregation", "pivotMode", "filtering", "excelExport"],
+                "props": {"pivotMode": True, "groupDefaultExpanded": 1, "animateRows": True},
+                "suitable": ["COST", "SALES", "SUMMARY"]
+            },
+            {
+                "id": "aggrid_simple",
+                "name": "기본 그리드",
+                "component": "AgGridReact",
+                "layout": "SIMPLE",
+                "features": ["sorting", "filtering", "excelExport"],
+                "props": {"animateRows": True},
+                "suitable": ["MASTER", "LIST"]
+            },
+            {
+                "id": "aggrid_master_detail",
+                "name": "마스터-디테일",
+                "component": "AgGridReact",
+                "layout": "MASTER_DETAIL",
+                "features": ["masterDetail", "rowGrouping"],
+                "props": {"masterDetail": True},
+                "suitable": ["ORDER", "PRODUCTION"]
+            },
+        ]
+        
+        for tmpl in ui_templates:
+            self.add_ui_template(
+                tmpl["id"], tmpl["name"], tmpl["component"], tmpl["layout"],
+                tmpl["features"], tmpl["props"], tmpl["suitable"]
+            )
+            stats["ui_templates"] += 1
+        
+        # 비즈니스 개념 및 리포트 정의
+        business_concepts = [
+            {
+                "id": "cost_analysis_report",
+                "name": "원가분석 리포트",
+                "category": "COST",
+                "keywords": ["원가", "비용", "원가분석", "제조원가", "cost", "원가현황"],
+                "description": "제품별/계정별 원가 현황을 분석하는 리포트",
+                "tables": ["bi_trx_cost_summary", "bi_mst_product", "bi_mst_account"],
+                "filters": {"base_month": "current_month", "scenario_code": "ACTUAL"},
+                "template": "aggrid_pivot",
+                "columns": [
+                    ("rc_cost_base_month", "base_month", "기준월", "FILTER", 100, None, None),
+                    ("rc_cost_scenario", "scenario_code", "시나리오", "FILTER", 100, None, None),
+                    ("rc_cost_product", "product_code", "제품", "GROUP", 150, "left", "bi_mst_product:product_name"),
+                    ("rc_cost_account", "account_code", "계정", "PIVOT", 120, None, "bi_mst_account:account_name"),
+                    ("rc_cost_qty", "qty", "수량", "VALUE", 100, None, "sum"),
+                    ("rc_cost_amt", "cost_amt", "원가", "VALUE", 120, None, "sum_currency"),
+                ]
+            },
+            {
+                "id": "sales_report",
+                "name": "매출현황 리포트",
+                "category": "SALES",
+                "keywords": ["매출", "판매", "매출현황", "매출분석", "sales", "revenue"],
+                "description": "제품별/거래처별 매출 현황을 분석하는 리포트",
+                "tables": ["order_header", "order_detail", "customer_master"],
+                "filters": {"order_date": "current_month"},
+                "template": "aggrid_pivot",
+                "columns": [
+                    ("rc_sales_date", "order_date", "주문일", "FILTER", 100, None, None),
+                    ("rc_sales_customer", "customer_code", "거래처", "GROUP", 150, "left", "customer_master:customer_name"),
+                    ("rc_sales_product", "product_code", "제품", "PIVOT", 120, None, "bi_mst_product:product_name"),
+                    ("rc_sales_qty", "order_qty", "수량", "VALUE", 100, None, "sum"),
+                    ("rc_sales_amt", "order_amt", "금액", "VALUE", 120, None, "sum_currency"),
+                ]
+            },
+            {
+                "id": "production_inventory_report",
+                "name": "생산수불 리포트",
+                "category": "PRODUCTION",
+                "keywords": ["생산", "수불", "생산수불", "생산현황", "재공", "production", "inventory"],
+                "description": "공정별/제품별 생산수불 현황 리포트",
+                "tables": ["bi_trx_prod_inventory", "bi_mst_process", "bi_mst_product"],
+                "filters": {"yyyymm": "current_month", "scenario_code": "ACTUAL"},
+                "template": "aggrid_pivot",
+                "columns": [
+                    ("rc_prod_month", "yyyymm", "년월", "FILTER", 100, None, None),
+                    ("rc_prod_process", "process_code", "공정", "GROUP", 150, "left", "bi_mst_process:process_name"),
+                    ("rc_prod_product", "product_code", "제품", "GROUP", 150, None, "bi_mst_product:product_name"),
+                    ("rc_prod_boh", "boh_qty", "기초재고", "VALUE", 100, None, "sum"),
+                    ("rc_prod_in", "in_qty", "입고", "VALUE", 100, None, "sum"),
+                    ("rc_prod_out", "out_qty", "출고", "VALUE", 100, None, "sum"),
+                    ("rc_prod_eoh", "eoh_qty", "기말재고", "VALUE", 100, None, "sum"),
+                ]
+            },
+        ]
+        
+        for concept in business_concepts:
+            # 비즈니스 개념 등록
+            self.add_business_concept(
+                concept["id"], concept["name"], concept["category"],
+                concept["keywords"], concept["description"],
+                concept["tables"], concept["filters"]
+            )
+            
+            # 의도 패턴 등록
+            patterns = [f".*{kw}.*리포트.*|.*{kw}.*보여.*|.*{kw}.*조회.*|.*{kw}.*분석.*" 
+                       for kw in concept["keywords"][:3]]
+            self.add_intent_pattern(
+                f"intent_{concept['id']}", patterns, concept["id"],
+                [f"{concept['name']} 보여줘", f"{concept['keywords'][0]} 분석해줘"]
+            )
+            
+            # UI 템플릿 연결
+            self.link_concept_to_template(concept["id"], concept["template"])
+            
+            # 리포트 컬럼 등록
+            for col in concept["columns"]:
+                col_id, source, display, role, width, pinned, extra = col
+                lookup_table = None
+                lookup_display = None
+                agg_rule = None
+                
+                if extra:
+                    if ":" in str(extra):
+                        lookup_table, lookup_display = extra.split(":")
+                    else:
+                        agg_rule = extra
+                
+                self.add_report_column(
+                    col_id, source, display, role, concept["id"],
+                    width, pinned, agg_rule, lookup_table, lookup_display
+                )
+            
+            stats["business_concepts"] += 1
+        
         return stats
     
     def get_extended_stats(self) -> Dict[str, int]:
@@ -530,11 +1161,18 @@ class ExtendedKnowledgeGraph:
         
         # 확장 노드 타입별 카운트
         extended_counts = {
+            # Layer 2: Logic
             NODE_JOIN_KEY: 0,
             NODE_UI_COMPONENT: 0,
             NODE_UI_PATTERN: 0,
             NODE_PROCESS: 0,
             NODE_ACTIVITY: 0,
+            # Layer 3: Semantic
+            NODE_BUSINESS_CONCEPT: 0,
+            NODE_UI_TEMPLATE: 0,
+            NODE_AGGREGATION_RULE: 0,
+            NODE_INTENT_PATTERN: 0,
+            NODE_REPORT_COLUMN: 0,
         }
         
         for _, data in self.kg.graph.nodes(data=True):

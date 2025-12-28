@@ -240,12 +240,24 @@ async def get_knowledge_graph_visualization():
         # NetworkX 그래프를 D3.js 형식으로 변환
         nodes = []
         for node_id, attrs in kg.graph.nodes(data=True):
+            # node_type 또는 type 속성 사용
+            node_type = attrs.get("node_type") or attrs.get("type", "unknown")
+            
+            # 라벨 결정: standard_name, table_name, column_name 순으로 확인
+            label = (attrs.get("standard_name") or 
+                    attrs.get("table_name") or 
+                    attrs.get("column_name") or 
+                    attrs.get("label") or 
+                    node_id.split(":")[-1] if ":" in node_id else node_id)
+            
             nodes.append({
                 "id": node_id,
-                "label": attrs.get("label", node_id),
-                "type": attrs.get("type", "unknown"),
+                "label": label,
+                "type": node_type,
                 "category": attrs.get("category", ""),
                 "company_code": attrs.get("company_code", ""),
+                "schema": attrs.get("schema", ""),
+                "data_type": attrs.get("data_type", ""),
             })
         
         links = []
@@ -253,7 +265,7 @@ async def get_knowledge_graph_visualization():
             links.append({
                 "source": source,
                 "target": target,
-                "type": attrs.get("type", ""),
+                "type": attrs.get("edge_type") or attrs.get("type", ""),
                 "label": attrs.get("label", "")
             })
         
