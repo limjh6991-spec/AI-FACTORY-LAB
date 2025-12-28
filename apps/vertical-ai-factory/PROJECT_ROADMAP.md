@@ -112,16 +112,43 @@ http://localhost:8100/visualization/
 ┌─────────────────────────────────────────────┐
 │  🔮 Vertical AI Factory - Graph Viewer      │
 ├─────────────────────────────────────────────┤
-│ [⚡ LangGraph 워크플로우] [🕸️ Knowledge Graph] │
+│ [⚡ LangGraph] [🕸️ Knowledge Graph]          │
+│ [🧠 확장 그래프] [🏭 생산수불 흐름]           │
 ├─────────────────────────────────────────────┤
 │  • Mermaid.js: 에이전트 워크플로우 다이어그램  │
 │  • D3.js Force: 테이블/컬럼 관계 그래프       │
+│  • 확장 그래프: UI/JOIN/Process 로직          │
+│  • Sankey: 생산수불 흐름도                    │
 └─────────────────────────────────────────────┘
+```
+
+### Phase 12: Text-to-Report Semantic Layer ✅ 완료 (2025-12-28)
+> 자연어 → 리포트 화면 자동 생성을 위한 Semantic Layer 구현
+
+- [x] BUSINESS_CONCEPT, UI_TEMPLATE, AGGREGATION_RULE 노드 타입 추가
+- [x] INTENT_PATTERN, REPORT_COLUMN 노드 타입 추가
+- [x] 의도 매칭 메서드 (`match_intent()`)
+- [x] 리포트 정의 추론 (`get_report_definition()`)
+- [x] Text-to-Report 핵심 (`generate_report_from_text()`)
+- [x] 기본 리포트 정의: 원가분석, 매출현황, 생산수불
+- [x] Knowledge Graph 시각화 필터 버그 수정
+
+**Knowledge Graph 통계:**
+```
+이전: 170 노드, 164 엣지
+이후: 201 노드, 196 엣지 (+31 노드, +32 엣지)
+```
+
+**테스트 예시:**
+```python
+ekg.generate_report_from_text("원가분석 리포트 만들어줘")
+# → 의도 매칭: 원가분석 리포트 (COST)
+# → 템플릿: 피벗 그리드 (PIVOT)
+# → AG Grid columnDefs 자동 생성
 ```
 
 ---
 
 **작성일**: 2024-12-19  
-**마지막 업데이트**: 2025-12-27  
+**마지막 업데이트**: 2025-12-28  
 **프로젝트**: Vertical AI Factory
-
