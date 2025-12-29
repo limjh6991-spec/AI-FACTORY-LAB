@@ -1,13 +1,64 @@
-# Knowledge Graph 확장 프로젝트 - Text-to-Report 구현 완료
+# Knowledge Graph 확장 프로젝트 - 화면 설계 기능 구현 완료
 
-> 작성일: 2025-12-28
-> 주요 업데이트: Text-to-Report Semantic Layer 구현 완료
+> 작성일: 2025-12-29
+> 주요 업데이트: KG 기반 화면 설계 + DOU dw 스키마 통합
 
 ---
 
-## 1. 최신 세션 완료 작업 (2025-12-28)
+## 1. 최신 세션 완료 작업 (2025-12-29)
 
-### 1.1 Text-to-Report Semantic Layer 구현 ✅
+### 1.1 KG 기반 화면 설계 기능 구현 ✅
+
+**목표:** 자연어 요청 → Knowledge Graph 분석 → RealGrid 화면 구조 JSON 생성
+
+```
+"도우회사의 생산실적 표현 화면 설계"
+        ↓ parse_screen_request()
+{ company: DOU, domain: production }
+        ↓ find_screen_related_nodes()
+{ tables: 38, columns: 24, processes: 1 }
+        ↓ build_screen_context()
+{ selected_tables, join_keys, template }
+        ↓ generate_realgrid_screen()
+{ screenId, grid: { columns, dataSource } }
+```
+
+**신규 API:** `POST /api/screen/design`
+
+**시각화 탭:** 🎨 화면 설계 (http://localhost:8100/visualization/)
+
+### 1.2 DOU dw 스키마 통합 ✅
+
+**bi_common_code에 54개 레코드 추가**
+
+| 카테고리 | 테이블 수 | 컬럼 수 | 대표 테이블 |
+|----------|----------|---------|------------|
+| PRODUCTION | 4 | 7 | dw_일별_공정별_생산집계_base, dw_생산일보집계 |
+| PROCESS | 4 | 8 | dw_process_mast, dw_step_mast, dw_line_mast |
+| EQUIPMENT | 3 | 6 | dw_equipment_mast, dw_설비현황 |
+| INVENTORY | 6 | 12 | dw_raw_mat_proc_stock, dw_재공재고집계 |
+| QUALITY | 3 | 5 | dw_품질검사, dw_품질검사내역 |
+| MATERIAL | 2 | 4 | dw_material_mast, dw_mat_category |
+| PRODUCT | 4 | 8 | dw_product_process, dw_model_mast_input |
+
+**Knowledge Graph 확장:**
+
+| 항목 | 이전 | 이후 | 증가 |
+|------|------|------|------|
+| 노드 | 201 | **237** | +36 |
+| DOU 테이블 | 6 | **28** | +22 |
+| DOU 컬럼 | 4 | **30** | +26 |
+
+### 1.3 코드 수정
+
+- `knowledge_graph.py`: COMPANY_TABLE/COLUMN 노드에 category 속성 추가
+- `knowledge_graph_extended.py`: 화면 설계 메서드 5개 (+480 lines)
+- `api_server.py`: POST /api/screen/design 엔드포인트 추가
+- `visualization/index.html`: 🎨 화면 설계 탭 추가
+
+---
+
+## 2. 이전 세션 작업 (2025-12-28)
 
 **목표:** 사용자 자연어 → 리포트 화면 자동 생성
 
