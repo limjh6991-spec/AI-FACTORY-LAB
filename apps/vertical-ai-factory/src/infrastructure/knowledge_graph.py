@@ -73,7 +73,8 @@ class KnowledgeGraph:
                     node_type=NODE_TYPE_COMPANY_TABLE,
                     company_code=company_code,
                     schema=company_schema,
-                    table_name=company_table
+                    table_name=company_table,
+                    category=category  # category 추가
                 )
                 
                 # 매핑 엣지 생성
@@ -121,7 +122,8 @@ class KnowledgeGraph:
                     company_code=company_code,
                     table_name=company_table,
                     column_name=company_column,
-                    is_pk=is_pk
+                    is_pk=is_pk,
+                    category=category  # category 추가
                 )
                 
                 # 표준 컬럼 → 회사 컬럼 엣지 (resolves_to)
