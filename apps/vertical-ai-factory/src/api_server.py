@@ -50,6 +50,10 @@ class QueryRequest(BaseModel):
     provider: str = "gemini"       # gemini, ollama
 
 
+class ScreenDesignRequest(BaseModel):
+    text: str  # 자연어 화면 설계 요청
+
+
 class AgentOutput(BaseModel):
     thought: Optional[str] = None
     plan: Optional[str] = None
@@ -374,6 +378,36 @@ async def generate_join_sql(tables: str, company_code: str = "BINARY"):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"JOIN SQL 생성 오류: {str(e)}")
+
+
+@app.post("/api/screen/design")
+async def design_screen_from_kg(request: ScreenDesignRequest):
+    """
+    Knowledge Graph 기반 화면 설계
+    
+    자연어 요청을 분석하여 RealGrid 형식의 화면 구조 JSON 생성
+    
+    Args:
+        request.text: "도우회사의 생산실적 표현 화면 설계"
+    
+    Returns:
+        {
+            "status": "success",
+            "parsed": {...},
+            "related_nodes": {...},
+            "context": {...},
+            "screen": {...}
+        }
+    """
+    try:
+        from infrastructure.database.init_knowledge_graph import init_extended_knowledge_graph
+        
+        ekg = init_extended_knowledge_graph(use_cache=True)
+        result = ekg.design_screen(request.text)
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"화면 설계 오류: {str(e)}")
 
 
 @app.get("/api/graph/production-flow")

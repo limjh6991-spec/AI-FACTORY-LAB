@@ -924,6 +924,479 @@ class ExtendedKnowledgeGraph:
         return templates
 
     # ========================================
+    # KG-Based Screen Designer
+    # ========================================
+    
+    # 회사 코드 매핑
+    COMPANY_ALIASES = {
+        "도우": "DOU", "도우회사": "DOU", "dou": "DOU",
+        "도우mes": "DOU_MES", "도우 mes": "DOU_MES",
+        "바이너리": "BINARY", "바이너리소프트": "BINARY", "binary": "BINARY",
+    }
+    
+    # 도메인 키워드 매핑 (키는 영어 domain, 값은 매칭할 키워드들)
+    DOMAIN_KEYWORDS = {
+        "production": ["생산", "생산실적", "생산수불", "공정", "production"],
+        "cost": ["원가", "원가분석", "cost"],
+        "sales": ["매출", "매출현황", "sales"],
+        "inventory": ["재고", "재고현황", "inventory"],
+        "equipment": ["설비", "장비", "equipment"],
+        "quality": ["품질", "불량", "quality"],
+    }
+    
+    def parse_screen_request(self, text: str) -> Dict[str, Any]:
+        """
+        자연어 화면 설계 요청 파싱
+        
+        Args:
+            text: "도우회사의 생산실적 표현 화면 설계"
+            
+        Returns:
+            {
+                "company": "DOU",
+                "domain": "production",
+                "keywords": ["생산실적", "생산수불"],
+                "raw_text": "..."
+            }
+        """
+        result = {
+            "company": None,
+            "domain": None,
+            "keywords": [],
+            "raw_text": text
+        }
+        
+        text_lower = text.lower()
+        
+        # 회사 추출
+        for alias, code in self.COMPANY_ALIASES.items():
+            if alias in text_lower:
+                result["company"] = code
+                break
+        
+        # 도메인 추출
+        for domain, keywords in self.DOMAIN_KEYWORDS.items():
+            for kw in keywords:
+                if kw in text_lower or kw in text:
+                    result["domain"] = domain
+                    result["keywords"].append(kw)
+        
+        # 추가 키워드 추출 (공정, 월별, 당월 등)
+        extra_keywords = ["공정", "월별", "당월", "일별", "주간", "누적"]
+        for kw in extra_keywords:
+            if kw in text:
+                result["keywords"].append(kw)
+        
+        return result
+    
+    def find_screen_related_nodes(self, company: str, domain: str) -> Dict[str, List[Dict]]:
+        """
+        회사와 도메인에 관련된 KG 노드 검색
+        
+        Args:
+            company: "DOU", "BINARY" 등
+            domain: "production", "sales" 등
+            
+        Returns:
+            {
+                "tables": [...],
+                "columns": [...],
+                "processes": [...],
+                "ui_templates": [...],
+                "business_concepts": [...]
+            }
+        """
+        result = {
+            "tables": [],
+            "columns": [],
+            "processes": [],
+            "ui_templates": [],
+            "business_concepts": []
+        }
+        
+        # 도메인별 관련 카테고리 매핑
+        domain_categories = {
+            "production": ["PRODUCTION", "PROCESS", "PRODUCT", "INVENTORY"],
+            "sales": ["SALES", "ORDER", "CUSTOMER"],
+            "cost": ["COST", "ACCOUNT", "PRODUCTION"],
+            "inventory": ["INVENTORY", "PRODUCT", "WAREHOUSE"],
+            "equipment": ["EQUIPMENT", "PROCESS"],
+            "quality": ["QUALITY", "PRODUCTION", "PRODUCT"],
+        }
+        
+        related_categories = domain_categories.get(domain, [])
+        
+        # 모든 노드 순회하며 관련 노드 수집
+        for node_id, data in self.kg.graph.nodes(data=True):
+            node_type = data.get("node_type")
+            node_company = data.get("company_code", "")
+            category = data.get("category", "")
+            
+            # 회사 테이블 검색
+            if node_type == "COMPANY_TABLE":
+                if node_company == company:
+                    table_name = data.get("table_name", "")
+                    # 카테고리 또는 테이블명으로 필터링
+                    if category in related_categories or any(cat.lower() in table_name.lower() for cat in related_categories):
+                        result["tables"].append({
+                            "node_id": node_id,
+                            "table_name": table_name,
+                            "category": category,
+                            "company": node_company
+                        })
+            
+            # 회사 컬럼 검색
+            elif node_type == "COMPANY_COLUMN":
+                if node_company == company:
+                    col_name = data.get("column_name", "")
+                    parent_table = node_id.split(":")[2] if len(node_id.split(":")) > 2 else ""
+                    # 관련 테이블의 컬럼만
+                    for tbl in result["tables"]:
+                        if tbl["table_name"] in node_id or parent_table:
+                            result["columns"].append({
+                                "node_id": node_id,
+                                "column_name": col_name,
+                                "table_name": parent_table,
+                                "company": node_company
+                            })
+                            break
+            
+            # 프로세스 검색
+            elif node_type == NODE_PROCESS:
+                process_category = data.get("category", "")
+                if process_category in related_categories or domain in data.get("name", "").lower():
+                    result["processes"].append({
+                        "node_id": node_id,
+                        "name": data.get("name", ""),
+                        "category": process_category,
+                        "description": data.get("description", "")
+                    })
+            
+            # UI 템플릿 검색
+            elif node_type == NODE_UI_TEMPLATE:
+                result["ui_templates"].append({
+                    "template_id": data.get("template_id"),
+                    "name": data.get("name"),
+                    "component": data.get("component"),
+                    "layout_type": data.get("layout_type")
+                })
+            
+            # 비즈니스 개념 검색
+            elif node_type == NODE_BUSINESS_CONCEPT:
+                concept_category = data.get("category", "")
+                if concept_category == domain.upper() or any(kw in data.get("name", "").lower() for kw in [domain]):
+                    result["business_concepts"].append({
+                        "concept_id": data.get("concept_id"),
+                        "name": data.get("name"),
+                        "category": concept_category,
+                        "required_tables": data.get("required_tables", [])
+                    })
+        
+        # 표준 테이블도 추가 검색
+        for node_id, data in self.kg.graph.nodes(data=True):
+            node_type = data.get("node_type")
+            if node_type == "TABLE":
+                category = data.get("category", "")
+                if category in related_categories:
+                    result["tables"].append({
+                        "node_id": node_id,
+                        "table_name": data.get("standard_name", ""),
+                        "category": category,
+                        "company": "STANDARD"
+                    })
+        
+        return result
+    
+    def build_screen_context(self, parsed_request: Dict, related_nodes: Dict) -> Dict[str, Any]:
+        """
+        화면 컨텍스트 구성
+        
+        관련 노드들을 조합하여 화면 구성에 필요한 정보 생성
+        """
+        context = {
+            "company": parsed_request.get("company"),
+            "domain": parsed_request.get("domain"),
+            "keywords": parsed_request.get("keywords", []),
+            "selected_tables": [],
+            "selected_columns": [],
+            "join_keys": [],
+            "suggested_template": None,
+            "process_flow": None
+        }
+        
+        # 회사 테이블 우선 선택 (없으면 표준 테이블)
+        company_tables = [t for t in related_nodes["tables"] if t["company"] == parsed_request.get("company")]
+        if company_tables:
+            context["selected_tables"] = company_tables[:3]  # 최대 3개
+        else:
+            standard_tables = [t for t in related_nodes["tables"] if t["company"] == "STANDARD"]
+            context["selected_tables"] = standard_tables[:3]
+        
+        # 컬럼 선택 (선택된 테이블 기준)
+        selected_table_names = [t["table_name"] for t in context["selected_tables"]]
+        for col in related_nodes["columns"]:
+            if col["table_name"] in selected_table_names or any(t in col["node_id"] for t in selected_table_names):
+                context["selected_columns"].append(col)
+        
+        # JOIN 키 추론 (테이블 간 공통 컬럼)
+        common_keys = ["process_code", "product_code", "order_no", "yyyymm"]
+        col_names = [c["column_name"] for c in context["selected_columns"]]
+        context["join_keys"] = [k for k in common_keys if k in col_names or any(k.upper() in c.upper() for c in col_names)]
+        
+        # 템플릿 추천
+        if related_nodes["ui_templates"]:
+            # 도메인별 추천
+            if parsed_request.get("domain") in ["production", "cost"]:
+                pivot_templates = [t for t in related_nodes["ui_templates"] if "pivot" in t.get("name", "").lower()]
+                context["suggested_template"] = pivot_templates[0] if pivot_templates else related_nodes["ui_templates"][0]
+            else:
+                context["suggested_template"] = related_nodes["ui_templates"][0]
+        
+        # 프로세스 플로우 생성
+        if related_nodes["processes"]:
+            context["process_flow"] = self._generate_process_mermaid(related_nodes["processes"][0] if related_nodes["processes"] else None)
+        
+        return context
+    
+    def _generate_process_mermaid(self, process: Optional[Dict]) -> Optional[str]:
+        """프로세스 Mermaid 다이어그램 생성"""
+        if not process:
+            # 기본 생산 프로세스 플로우
+            return "graph LR; A[원자재입고] --> B[가공] --> C[조립] --> D[검사] --> E[출하]"
+        
+        # 프로세스 노드에서 액티비티 검색
+        activities = []
+        for node_id, data in self.kg.graph.nodes(data=True):
+            if data.get("node_type") == NODE_ACTIVITY and process["node_id"] in node_id:
+                activities.append({
+                    "name": data.get("name", ""),
+                    "sequence": data.get("sequence", 0)
+                })
+        
+        if activities:
+            activities.sort(key=lambda x: x["sequence"])
+            nodes = [f"{chr(65+i)}[{a['name']}]" for i, a in enumerate(activities)]
+            arrows = " --> ".join(nodes)
+            return f"graph LR; {arrows}"
+        
+        return "graph LR; A[시작] --> B[처리] --> C[완료]"
+    
+    def generate_realgrid_screen(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        RealGrid 기반 화면 구조 JSON 생성
+        
+        Args:
+            context: build_screen_context() 결과
+            
+        Returns:
+            RealGrid 화면 구조 JSON
+        """
+        company = context.get("company", "")
+        domain = context.get("domain", "")
+        
+        # 화면 ID 생성
+        screen_id = f"sc_{company.lower()}_{domain}"
+        
+        # 타이틀 생성
+        domain_titles = {
+            "production": "생산실적 현황",
+            "sales": "매출 현황",
+            "cost": "원가 분석",
+            "inventory": "재고 현황",
+            "equipment": "설비 현황",
+            "quality": "품질 현황"
+        }
+        title = f"{company} {domain_titles.get(domain, '데이터 현황')}"
+        
+        # 검색 필드 생성
+        search_fields = [
+            {"field": "yyyymm", "label": "년월", "type": "month", "component": "DatePicker"},
+        ]
+        if context.get("keywords") and "공정" in context["keywords"]:
+            search_fields.append({"field": "process_code", "label": "공정", "type": "select", "component": "BiSelect"})
+        
+        # 그리드 컬럼 생성
+        grid_columns = []
+        for col in context.get("selected_columns", [])[:10]:  # 최대 10개
+            col_name = col.get("column_name", "")
+            col_def = {
+                "fieldName": col_name,
+                "header": self._korean_column_name(col_name),
+                "width": 120
+            }
+            # 수량/금액 컬럼 포맷팅
+            if "qty" in col_name.lower() or "amt" in col_name.lower():
+                col_def["numberFormat"] = "#,##0"
+                col_def["width"] = 100
+            grid_columns.append(col_def)
+        
+        # 기본 컬럼 추가 (컬럼이 없는 경우)
+        if not grid_columns:
+            grid_columns = [
+                {"fieldName": "process_code", "header": "공정코드", "width": 100},
+                {"fieldName": "process_name", "header": "공정명", "width": 150},
+                {"fieldName": "product_code", "header": "제품코드", "width": 100},
+                {"fieldName": "product_name", "header": "제품명", "width": 150},
+                {"fieldName": "qty", "header": "수량", "width": 100, "numberFormat": "#,##0"},
+            ]
+        
+        # SQL 생성
+        tables = context.get("selected_tables", [])
+        sql = self._generate_screen_sql(tables, context.get("join_keys", []))
+        
+        # 최종 화면 구조
+        screen = {
+            "screenId": screen_id,
+            "title": title,
+            "company": company,
+            "domain": domain,
+            "searchFields": search_fields,
+            "grid": {
+                "type": "RealGrid",
+                "columns": grid_columns,
+                "options": {
+                    "editable": False,
+                    "sortable": True,
+                    "filterable": True
+                },
+                "dataSource": {
+                    "tables": [t["table_name"] for t in tables],
+                    "joinKeys": context.get("join_keys", []),
+                    "sql": sql
+                }
+            },
+            "processFlow": {
+                "type": "mermaid",
+                "diagram": context.get("process_flow", "")
+            },
+            "metadata": {
+                "selectedNodes": {
+                    "tables": len(tables),
+                    "columns": len(context.get("selected_columns", [])),
+                    "template": context.get("suggested_template", {}).get("name") if context.get("suggested_template") else None
+                },
+                "generatedAt": None  # API에서 채움
+            }
+        }
+        
+        return screen
+    
+    def _korean_column_name(self, col_name: str) -> str:
+        """컬럼명을 한국어로 변환"""
+        mapping = {
+            "process_code": "공정코드",
+            "process_name": "공정명",
+            "product_code": "제품코드",
+            "product_name": "제품명",
+            "qty": "수량",
+            "in_qty": "입고수량",
+            "out_qty": "출고수량",
+            "loss_qty": "손실수량",
+            "amt": "금액",
+            "cost": "원가",
+            "unit_cost": "단가",
+            "yyyymm": "년월",
+            "order_no": "주문번호",
+            "customer_code": "고객코드",
+            "customer_name": "고객명",
+        }
+        return mapping.get(col_name.lower(), col_name)
+    
+    def _generate_screen_sql(self, tables: List[Dict], join_keys: List[str]) -> str:
+        """화면용 SQL 생성"""
+        if not tables:
+            return "SELECT * FROM dual"
+        
+        main_table = tables[0]["table_name"]
+        
+        if len(tables) == 1:
+            return f"SELECT * FROM {main_table} WHERE yyyymm = :yyyymm"
+        
+        # JOIN SQL
+        select_parts = ["a.*"]
+        from_part = f"{main_table} a"
+        join_parts = []
+        
+        for i, tbl in enumerate(tables[1:], start=1):
+            alias = chr(98 + i - 1)  # b, c, d...
+            if join_keys:
+                join_key = join_keys[0]
+                join_parts.append(f"LEFT JOIN {tbl['table_name']} {alias} ON a.{join_key} = {alias}.{join_key}")
+        
+        sql = f"SELECT {', '.join(select_parts)} FROM {from_part}"
+        if join_parts:
+            sql += " " + " ".join(join_parts)
+        sql += " WHERE a.yyyymm = :yyyymm"
+        
+        return sql
+    
+    def design_screen(self, text: str) -> Dict[str, Any]:
+        """
+        화면 설계 통합 메서드
+        
+        Args:
+            text: 자연어 화면 설계 요청
+            
+        Returns:
+            {
+                "status": "success",
+                "parsed": {...},
+                "related_nodes": {...},
+                "context": {...},
+                "screen": {...}
+            }
+        """
+        # Step 1: 요청 파싱
+        parsed = self.parse_screen_request(text)
+        
+        if not parsed.get("company"):
+            return {
+                "status": "error",
+                "message": "회사 정보를 찾을 수 없습니다. (예: 도우회사, 바이너리소프트)",
+                "parsed": parsed
+            }
+        
+        if not parsed.get("domain"):
+            return {
+                "status": "error", 
+                "message": "도메인 정보를 찾을 수 없습니다. (예: 생산실적, 매출현황, 원가분석)",
+                "parsed": parsed
+            }
+        
+        # Step 2: 관련 노드 검색
+        related_nodes = self.find_screen_related_nodes(
+            parsed["company"], 
+            parsed["domain"]
+        )
+        
+        # Step 3: 컨텍스트 구성
+        context = self.build_screen_context(parsed, related_nodes)
+        
+        # Step 4: 화면 구조 생성
+        from datetime import datetime
+        screen = self.generate_realgrid_screen(context)
+        screen["metadata"]["generatedAt"] = datetime.now().isoformat()
+        
+        return {
+            "status": "success",
+            "parsed": parsed,
+            "related_nodes": {
+                "tables": len(related_nodes["tables"]),
+                "columns": len(related_nodes["columns"]),
+                "processes": len(related_nodes["processes"]),
+                "templates": len(related_nodes["ui_templates"]),
+                "concepts": len(related_nodes["business_concepts"])
+            },
+            "context": {
+                "selected_tables": context["selected_tables"],
+                "selected_columns_count": len(context["selected_columns"]),
+                "join_keys": context["join_keys"],
+                "template": context.get("suggested_template", {}).get("name") if context.get("suggested_template") else None
+            },
+            "screen": screen
+        }
+
+    # ========================================
     # 초기화 및 헬퍼
     # ========================================
     

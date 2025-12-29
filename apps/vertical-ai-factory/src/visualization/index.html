@@ -396,6 +396,9 @@
             <button class="tab-btn" data-tab="production">
                 🏭 생산수불 흐름
             </button>
+            <button class="tab-btn" data-tab="screen-designer">
+                🎨 화면 설계
+            </button>
         </div>
 
         <!-- LangGraph Panel -->
@@ -489,6 +492,49 @@
                 <div class="loading">
                     <div class="spinner"></div>
                     데이터를 조회하려면 조회 버튼을 클릭하세요
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen Designer Panel (NEW) -->
+        <div id="screen-designer" class="panel">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="label">기능</div>
+                    <div class="value">KG 기반 화면 설계</div>
+                </div>
+            </div>
+
+            <div class="filter-controls" style="margin-bottom: 20px;">
+                <input type="text" id="screen-request-input" placeholder="예: 도우회사의 생산실적 표현 화면 설계"
+                    style="flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid #374151; background: #1f2937; color: #e5e7eb; font-size: 14px;">
+                <button id="design-btn" onclick="designScreen()"
+                    style="padding: 12px 24px; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    🎨 화면 설계
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: calc(100% - 140px);">
+                <!-- Left: Selected Nodes & Context -->
+                <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; overflow-y: auto;">
+                    <h3 style="color: #a78bfa; margin-bottom: 16px;">📊 선택된 노드</h3>
+                    <div id="selected-nodes-container">
+                        <p style="color: #9ca3af;">화면 설계 요청을 입력하세요</p>
+                    </div>
+
+                    <h3 style="color: #60a5fa; margin-top: 24px; margin-bottom: 16px;">🔄 프로세스 플로우</h3>
+                    <div id="process-flow-container">
+                        <pre class="mermaid" id="process-mermaid" style="background: transparent;"></pre>
+                    </div>
+                </div>
+
+                <!-- Right: Generated Screen JSON -->
+                <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; overflow-y: auto;">
+                    <h3 style="color: #34d399; margin-bottom: 16px;">🖥️ 생성된 화면 구조 (RealGrid)</h3>
+                    <pre id="screen-json-container"
+                        style="color: #e5e7eb; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-all;">
+화면 설계 결과가 여기에 표시됩니다
+                    </pre>
                 </div>
             </div>
         </div>
@@ -1167,6 +1213,113 @@
 
             container.innerHTML = html;
         }
+
+        // =============================================
+        // Screen Designer
+        // =============================================
+        async function designScreen() {
+            const input = document.getElementById('screen-request-input');
+            const text = input.value.trim();
+
+            if (!text) {
+                alert('화면 설계 요청을 입력하세요.\n예: 도우회사의 생산실적 표현 화면 설계');
+                return;
+            }
+
+            const nodesContainer = document.getElementById('selected-nodes-container');
+            const jsonContainer = document.getElementById('screen-json-container');
+            const flowContainer = document.getElementById('process-mermaid');
+
+            nodesContainer.innerHTML = '<div class="loading"><div class="spinner"></div>분석 중...</div>';
+            jsonContainer.textContent = '생성 중...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/screen/design`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderScreenResult(data, nodesContainer, jsonContainer, flowContainer);
+                } else {
+                    nodesContainer.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                    jsonContainer.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                nodesContainer.innerHTML = `<div class="error">❌ API 오류: ${error.message}</div>`;
+                jsonContainer.textContent = error.message;
+            }
+        }
+
+        function renderScreenResult(data, nodesContainer, jsonContainer, flowContainer) {
+            // Render selected nodes
+            let nodesHtml = `
+                <div style="margin-bottom: 16px;">
+                    <span style="color: #9ca3af;">파싱 결과:</span>
+                    <span style="color: #34d399;">${data.parsed.company}</span> / 
+                    <span style="color: #60a5fa;">${data.parsed.domain}</span>
+                </div>
+                <div style="display: grid; gap: 12px;">
+            `;
+
+            // Related nodes summary
+            nodesHtml += `
+                <div style="background: rgba(124, 58, 237, 0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #7c3aed;">
+                    <div style="color: #a78bfa; font-weight: 600;">📊 관련 노드</div>
+                    <div style="color: #e5e7eb; font-size: 13px; margin-top: 8px;">
+                        테이블: ${data.related_nodes.tables}개 | 
+                        컬럼: ${data.related_nodes.columns}개 | 
+                        프로세스: ${data.related_nodes.processes}개
+                    </div>
+                </div>
+            `;
+
+            // Selected tables
+            if (data.context.selected_tables && data.context.selected_tables.length > 0) {
+                nodesHtml += `
+                    <div style="background: rgba(245, 158, 11, 0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <div style="color: #fbbf24; font-weight: 600;">📁 선택된 테이블</div>
+                        <ul style="color: #e5e7eb; font-size: 13px; margin: 8px 0 0 16px;">
+                            ${data.context.selected_tables.map(t => `<li>${t.table_name} (${t.category})</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Template
+            if (data.context.template) {
+                nodesHtml += `
+                    <div style="background: rgba(52, 211, 153, 0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #34d399;">
+                        <div style="color: #34d399; font-weight: 600;">🖥️ 추천 템플릿</div>
+                        <div style="color: #e5e7eb; font-size: 13px; margin-top: 8px;">${data.context.template}</div>
+                    </div>
+                `;
+            }
+
+            nodesHtml += '</div>';
+            nodesContainer.innerHTML = nodesHtml;
+
+            // Render JSON
+            jsonContainer.textContent = JSON.stringify(data.screen, null, 2);
+
+            // Render process flow with Mermaid
+            if (data.screen.processFlow && data.screen.processFlow.diagram) {
+                flowContainer.textContent = data.screen.processFlow.diagram;
+                // Re-render mermaid
+                if (typeof mermaid !== 'undefined') {
+                    mermaid.init(undefined, flowContainer);
+                }
+            }
+        }
+
+        // Enter key support for screen design input
+        document.getElementById('screen-request-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') designScreen();
+        });
 
         // =============================================
         // Initialize
