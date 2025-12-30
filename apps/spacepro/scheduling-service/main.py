@@ -437,6 +437,226 @@ async def calculate_mrp(request: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ====================================
+# Routing Simulation APIs
+# ====================================
+
+from solvers.routing_simulator import (
+    RoutingSimulator, 
+    RoutingSimulationService,
+    SimulationOrder,
+    RoutingStep,
+    BomProcess,
+    MachineReliability,
+    YieldCompensator
+)
+
+
+@app.get("/routing/items")
+async def get_routing_items():
+    """라우팅이 등록된 품목 목록 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT DISTINCT item_code, revision, status,
+                           MIN(effective_from) as effective_from
+                    FROM spacepro.tb_routing_mst
+                    WHERE status = 'ACTIVE'
+                    GROUP BY item_code, revision, status
+                    ORDER BY item_code
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/routing/{item_code}")
+async def get_routing(item_code: str, revision: str = "1.0"):
+    """품목별 라우팅 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 라우팅 조회
+                cur.execute("""
+                    SELECT op_seq, op_name, workcenter_code, machine_code,
+                           setup_time, cycle_time, process_yield, queue_time, move_time
+                    FROM spacepro.tb_routing_mst
+                    WHERE item_code = %s AND revision = %s AND status = 'ACTIVE'
+                    ORDER BY op_seq
+                """, (item_code, revision))
+                routing = cur.fetchall()
+                
+                # BOM 조회
+                for step in routing:
+                    cur.execute("""
+                        SELECT child_item, qty_per, material_yield, scrap_rate
+                        FROM spacepro.tb_bom_process
+                        WHERE parent_item = %s AND op_seq = %s AND routing_rev = %s
+                    """, (item_code, step['op_seq'], revision))
+                    step['materials'] = cur.fetchall()
+                
+                return {
+                    'item_code': item_code,
+                    'revision': revision,
+                    'routing': routing
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/routing/yield-analysis")
+async def analyze_yield(request: dict):
+    """
+    수율 분석 API
+    
+    Request:
+    {
+        "item_code": "METAL-001",
+        "target_quantity": 1000,
+        "revision": "1.0"
+    }
+    """
+    try:
+        item_code = request.get('item_code')
+        target_qty = request.get('target_quantity', 1000)
+        revision = request.get('revision', '1.0')
+        
+        if not item_code:
+            raise HTTPException(status_code=400, detail="item_code is required")
+        
+        with get_db_connection() as conn:
+            service = RoutingSimulationService(conn)
+            routing = service.load_routing_from_db(item_code, revision)
+            
+            if not routing:
+                raise HTTPException(status_code=404, detail=f"Routing not found for {item_code}")
+            
+            yield_comp = YieldCompensator()
+            analysis = yield_comp.get_yield_analysis(target_qty, routing)
+            input_qtys = yield_comp.calculate_input_quantity(target_qty, routing)
+            
+            # 자재 소요량 계산
+            material_reqs = {}
+            for step in routing:
+                qty = input_qtys.get(step.op_seq, 0)
+                mat_reqs = yield_comp.calculate_material_requirements(qty, step.materials)
+                for item, amount in mat_reqs.items():
+                    material_reqs[item] = material_reqs.get(item, 0) + amount
+            
+            return {
+                'item_code': item_code,
+                'revision': revision,
+                'target_quantity': target_qty,
+                'first_op_input': input_qtys.get(min(input_qtys.keys()), target_qty),
+                'yield_analysis': analysis,
+                'material_requirements': material_reqs
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/routing/simulate")
+async def simulate_routing(request: dict):
+    """
+    라우팅 기반 시뮬레이션 실행
+    
+    Request:
+    {
+        "orders": [
+            {"order_id": "ORD-001", "item_code": "METAL-001", "quantity": 1000}
+        ],
+        "enable_failures": true,
+        "random_seed": 42,
+        "time_horizon_days": 7
+    }
+    """
+    try:
+        orders_data = request.get('orders', [])
+        enable_failures = request.get('enable_failures', True)
+        random_seed = request.get('random_seed', None)
+        time_horizon_days = request.get('time_horizon_days', 7)
+        
+        if not orders_data:
+            raise HTTPException(status_code=400, detail="orders is required")
+        
+        with get_db_connection() as conn:
+            service = RoutingSimulationService(conn)
+            
+            # 주문 및 라우팅 로드
+            orders = []
+            routings = {}
+            
+            for o in orders_data:
+                item_code = o.get('item_code')
+                revision = o.get('revision', '1.0')
+                
+                orders.append(SimulationOrder(
+                    order_id=o.get('order_id', f"ORD-{len(orders)+1}"),
+                    item_code=item_code,
+                    quantity=o.get('quantity', 100),
+                    due_date=o.get('due_date'),
+                    priority=o.get('priority', 1)
+                ))
+                
+                if item_code not in routings:
+                    routing = service.load_routing_from_db(item_code, revision)
+                    if routing:
+                        routings[item_code] = routing
+            
+            # 시뮬레이터 설정
+            simulator = RoutingSimulator(
+                enable_failures=enable_failures,
+                random_seed=random_seed
+            )
+            
+            # 설비 신뢰성 등록
+            machine_codes = set()
+            for r_list in routings.values():
+                for step in r_list:
+                    if step.machine_code:
+                        machine_codes.add(step.machine_code)
+            
+            for mc in machine_codes:
+                reliability = service.load_machine_reliability(mc)
+                simulator.register_machine(mc, 1, reliability)
+            
+            # 시뮬레이션 실행
+            time_horizon_min = time_horizon_days * 24 * 60
+            result = simulator.run_simulation(orders, routings, time_horizon_min)
+            
+            return result
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/routing/machines/reliability")
+async def get_machine_reliability():
+    """설비별 신뢰성 정보 (MTBF/MTTR) 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT machine_code, 
+                           AVG(mtbf_hours) as mtbf_hours,
+                           AVG(mttr_hours) as mttr_hours,
+                           AVG(failure_rate) as failure_rate,
+                           COUNT(*) FILTER (WHERE event_type = 'BREAKDOWN') as breakdown_count
+                    FROM spacepro.tb_machine_event
+                    GROUP BY machine_code
+                    ORDER BY machine_code
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+

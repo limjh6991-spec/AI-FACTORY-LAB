@@ -174,9 +174,10 @@ async function main() {
     // 생산계획 하위 메뉴
     const planChildren = [
         { code: 'PLAN_MONTHLY', name: '월별 계획', path: '/plan/monthly', icon: 'CalendarDays' },
-        { code: 'PLAN_WEEKLY', name: '주별 계획', path: '/plan/weekly', icon: 'CalendarRange' },
-        { code: 'PLAN_DAILY', name: '일별 계획', path: '/plan/daily', icon: 'CalendarCheck' },
-        { code: 'PLAN_ALLOCATION', name: '설비 배분', path: '/plan/allocation', icon: 'GitMerge' },
+        { code: 'PLAN_PSI', name: 'PSI 계획', path: '/plan/psi', icon: 'TrendingUp' },
+        { code: 'PLAN_MRP', name: 'MRP 계산', path: '/plan/mrp', icon: 'Calculator' },
+        { code: 'PLAN_CAPACITY', name: 'Capacity 시뮬레이션', path: '/plan/capacity', icon: 'Gauge' },
+        { code: 'PLAN_ROUTING', name: '공정 흐름 분석', path: '/plan/routing', icon: 'GitBranch' },
     ];
 
     for (let i = 0; i < planChildren.length; i++) {
@@ -541,6 +542,24 @@ async function main() {
     }
 
     console.log('✅ Project Standard menu seeding completed!');
+
+    // ============================================
+    // AI Demo 메뉴
+    // ============================================
+    await prisma.menu.create({
+        data: {
+            menuCode: 'AI_DEMO',
+            menuName: 'AI Demo',
+            menuNameEn: 'AI Demo',
+            menuPath: '/ai-demo',
+            menuIcon: 'Bot',
+            menuLevel: 1,
+            sortOrder: 12,
+            menuType: 'MENU',
+        },
+    });
+
+    console.log('✅ AI Demo menu seeding completed!');
 }
 
 main()
