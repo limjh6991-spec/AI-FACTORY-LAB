@@ -80,9 +80,15 @@ interface SimulationResult {
         workcenter_name: string;
         workcenter_type: string;
         total_demand: number;
+        adjusted_demand?: number;
         available_capacity: number;
+        adjusted_capacity?: number;  // 수율/비가동 적용된 생산 가능량
         uph: number;
         efficiency: number;
+        yield_rate?: number;
+        rework_rate?: number;
+        downtime_hours?: number;
+        manpower?: number;
         work_hours: number;
         utilization: number;
         gap: number;
@@ -743,6 +749,7 @@ export default function CapacitySimulationPage() {
                                     <th className="px-4 py-3 text-left font-medium" style={{ color: colors.gray600 }}>작업장</th>
                                     <th className="px-4 py-3 text-center font-medium" style={{ color: colors.gray600 }}>유형</th>
                                     <th className="px-4 py-3 text-right font-medium" style={{ color: colors.gray600 }}>수요</th>
+                                    <th className="px-4 py-3 text-right font-medium" style={{ color: colors.success }}>생산 가능량</th>
                                     <th className="px-4 py-3 text-right font-medium" style={{ color: colors.gray600 }}>가용 케파</th>
                                     <th className="px-4 py-3 text-right font-medium" style={{ color: colors.gray600 }}>UPH</th>
                                     <th className="px-4 py-3 text-right font-medium" style={{ color: colors.gray600 }}>효율</th>
@@ -764,6 +771,9 @@ export default function CapacitySimulationPage() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-right font-medium" style={{ color: colors.primary }}>{wc.total_demand.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-right font-bold" style={{ color: colors.success }}>
+                                            {(wc.adjusted_capacity || wc.available_capacity).toLocaleString()}
+                                        </td>
                                         <td className="px-4 py-3 text-right" style={{ color: colors.gray700 }}>{wc.available_capacity.toLocaleString()}</td>
                                         <td className="px-4 py-3 text-right" style={{ color: colors.gray600 }}>{wc.uph}</td>
                                         <td className="px-4 py-3 text-right" style={{ color: colors.gray600 }}>{wc.efficiency}%</td>
