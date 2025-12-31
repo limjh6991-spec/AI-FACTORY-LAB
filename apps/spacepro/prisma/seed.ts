@@ -137,6 +137,8 @@ async function main() {
     const masterChildren = [
         { code: 'MASTER_ITEM', name: '품목 관리', path: '/master/item', icon: 'Package' },
         { code: 'MASTER_BOM', name: 'BOM 관리', path: '/master/bom', icon: 'GitBranch' },
+        { code: 'MASTER_ROUTING', name: '공정 라우팅', path: '/master/routing', icon: 'Route' },
+        { code: 'MASTER_ROUTEC', name: '라우팅(Carbon)', path: '/master/routing-carbon', icon: 'Layers' },
         { code: 'MASTER_PROCESS', name: '공정 관리', path: '/master/process', icon: 'Workflow' },
         { code: 'MASTER_MACHINE', name: '설비 관리', path: '/master/machine', icon: 'Cpu' },
         { code: 'MASTER_WORKER', name: '작업자 관리', path: '/master/worker', icon: 'Users' },
@@ -178,6 +180,7 @@ async function main() {
         { code: 'PLAN_MRP', name: 'MRP 계산', path: '/plan/mrp', icon: 'Calculator' },
         { code: 'PLAN_CAPACITY', name: 'Capacity 시뮬레이션', path: '/plan/capacity', icon: 'Gauge' },
         { code: 'PLAN_ROUTING', name: '공정 흐름 분석', path: '/plan/routing', icon: 'GitBranch' },
+        { code: 'PLAN_SIM', name: '생산 시뮬레이션', path: '/plan/simulation', icon: 'Play' },
     ];
 
     for (let i = 0; i < planChildren.length; i++) {

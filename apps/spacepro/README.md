@@ -121,9 +121,13 @@ http://localhost:3000
 - [x] 월간 생산계획 (`/plan/monthly`)
 - [x] AI Demo 페이지 (`/ai-demo`)
 - [x] Scheduling Service (Python OR-Tools)
+- [x] 공정 라우팅 마스터 (`/master/routing`) - CRUD
+- [x] 생산 시뮬레이션 (`/plan/simulation`) - OR-Tools/SPT/FIFO
+- [x] MRP 계산 (`/plan/mrp`)
+- [x] **scheduling-service 라우터 분리** (2025-12-31)
 
 ### 🔄 진행 중
-- [ ] 마스터 데이터 관리 화면 (품목, BOM, 공정)
+- [ ] 품목/BOM 마스터 관리
 - [ ] 생산 오더 관리
 
 ## 📁 관련 문서
