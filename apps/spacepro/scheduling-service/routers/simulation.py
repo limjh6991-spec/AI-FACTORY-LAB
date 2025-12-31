@@ -205,3 +205,124 @@ async def schedule_multi_product(request: dict):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ====================================
+# Scenario CRUD APIs
+# ====================================
+
+@router.get("/scenarios")
+async def list_scenarios():
+    """저장된 시나리오 목록 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT scenario_id, scenario_name, description, algorithm, 
+                           created_at, updated_at
+                    FROM spacepro.tb_simulation_scenario
+                    ORDER BY updated_at DESC
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/scenarios/{scenario_id}")
+async def get_scenario(scenario_id: int):
+    """시나리오 상세 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT * FROM spacepro.tb_simulation_scenario
+                    WHERE scenario_id = %s
+                """, (scenario_id,))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Scenario not found")
+                return dict(row)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/scenarios")
+async def create_scenario(request: dict):
+    """시나리오 저장"""
+    try:
+        import json
+        name = request.get('scenario_name', '새 시나리오')
+        description = request.get('description', '')
+        orders = request.get('orders', [])
+        algorithm = request.get('algorithm', 'OR_TOOLS')
+        result = request.get('result')
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO spacepro.tb_simulation_scenario 
+                    (scenario_name, description, orders, algorithm, result)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING scenario_id
+                """, (name, description, json.dumps(orders), algorithm, 
+                      json.dumps(result) if result else None))
+                scenario_id = cur.fetchone()[0]
+                conn.commit()
+        
+        return {"success": True, "scenario_id": scenario_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/scenarios/{scenario_id}")
+async def update_scenario(scenario_id: int, request: dict):
+    """시나리오 수정"""
+    try:
+        import json
+        name = request.get('scenario_name')
+        description = request.get('description')
+        orders = request.get('orders')
+        algorithm = request.get('algorithm')
+        result = request.get('result')
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE spacepro.tb_simulation_scenario SET
+                        scenario_name = COALESCE(%s, scenario_name),
+                        description = COALESCE(%s, description),
+                        orders = COALESCE(%s, orders),
+                        algorithm = COALESCE(%s, algorithm),
+                        result = COALESCE(%s, result),
+                        updated_at = NOW()
+                    WHERE scenario_id = %s
+                """, (name, description, 
+                      json.dumps(orders) if orders else None,
+                      algorithm,
+                      json.dumps(result) if result else None,
+                      scenario_id))
+                conn.commit()
+        
+        return {"success": True, "scenario_id": scenario_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/scenarios/{scenario_id}")
+async def delete_scenario(scenario_id: int):
+    """시나리오 삭제"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    DELETE FROM spacepro.tb_simulation_scenario
+                    WHERE scenario_id = %s
+                """, (scenario_id,))
+                deleted = cur.rowcount
+                conn.commit()
+        
+        return {"success": True, "deleted": deleted}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

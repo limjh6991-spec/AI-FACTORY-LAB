@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     Play, RotateCcw, Package, AlertTriangle, Clock, CheckCircle,
-    Calendar, TrendingUp, Layers, Settings
+    Calendar, TrendingUp, Layers, Settings, Save, FolderOpen, Trash2, Edit
 } from 'lucide-react';
 
 const colors = {
@@ -78,11 +78,18 @@ export default function SimulationPage() {
     const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
     const [solveTime, setSolveTime] = useState(0);
 
+    // 시나리오 관리
+    const [scenarios, setScenarios] = useState<{ scenario_id: number; scenario_name: string }[]>([]);
+    const [currentScenarioId, setCurrentScenarioId] = useState<number | null>(null);
+    const [scenarioName, setScenarioName] = useState('');
+    const [showSaveModal, setShowSaveModal] = useState(false);
+
     const API_BASE = 'http://localhost:8000';
 
-    // 제품 목록 로드
+    // 제품 및 시나리오 목록 로드
     useEffect(() => {
         fetchItems();
+        fetchScenarios();
     }, []);
 
     const fetchItems = async () => {
@@ -92,6 +99,89 @@ export default function SimulationPage() {
                 const data = await res.json();
                 setItems(data.filter((d: any) => d.item_code.startsWith('PROD-')).map((d: any) => d.item_code));
             }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchScenarios = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/simulation/scenarios`);
+            if (res.ok) setScenarios(await res.json());
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const loadScenario = async (id: number) => {
+        try {
+            const res = await fetch(`${API_BASE}/simulation/scenarios/${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentScenarioId(id);
+                setScenarioName(data.scenario_name);
+                setAlgorithm(data.algorithm || 'OR_TOOLS');
+                // orders 복원 - routing 정보 다시 로드
+                const loadedOrders: ProductOrder[] = [];
+                for (const o of data.orders || []) {
+                    const routingRes = await fetch(`${API_BASE}/routing/${o.item_code}`);
+                    if (routingRes.ok) {
+                        const routingData = await routingRes.json();
+                        loadedOrders.push({
+                            item_code: o.item_code,
+                            quantity: o.quantity,
+                            routing: routingData.routing || [],
+                            color: productColors[loadedOrders.length % productColors.length]
+                        });
+                    }
+                }
+                setOrders(loadedOrders);
+                setSimulationResult(null);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const saveScenario = async () => {
+        if (!scenarioName.trim()) return alert('시나리오 이름을 입력하세요');
+        try {
+            const payload = {
+                scenario_name: scenarioName,
+                orders: orders.map(o => ({ item_code: o.item_code, quantity: o.quantity })),
+                algorithm,
+                result: simulationResult
+            };
+            const method = currentScenarioId ? 'PUT' : 'POST';
+            const url = currentScenarioId
+                ? `${API_BASE}/simulation/scenarios/${currentScenarioId}`
+                : `${API_BASE}/simulation/scenarios`;
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setCurrentScenarioId(data.scenario_id);
+                setShowSaveModal(false);
+                fetchScenarios();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const deleteScenario = async (id: number) => {
+        if (!confirm('시나리오를 삭제하시겠습니까?')) return;
+        try {
+            await fetch(`${API_BASE}/simulation/scenarios/${id}`, { method: 'DELETE' });
+            if (currentScenarioId === id) {
+                setCurrentScenarioId(null);
+                setScenarioName('');
+            }
+            fetchScenarios();
         } catch (err) {
             console.error(err);
         }
@@ -231,7 +321,15 @@ export default function SimulationPage() {
                             <Play className="w-4 h-4" /> 시뮬레이션 실행
                         </button>
                         <button
-                            onClick={() => { setOrders([]); setSimulationResult(null); }}
+                            onClick={() => setShowSaveModal(true)}
+                            disabled={orders.length === 0}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white"
+                            style={{ background: orders.length === 0 ? colors.gray400 : colors.primary }}
+                        >
+                            <Save className="w-4 h-4" /> 저장
+                        </button>
+                        <button
+                            onClick={() => { setOrders([]); setSimulationResult(null); setCurrentScenarioId(null); setScenarioName(''); }}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium"
                             style={{ background: colors.gray200, color: colors.gray700 }}
                         >
@@ -239,6 +337,29 @@ export default function SimulationPage() {
                         </button>
                     </div>
                 </div>
+
+                {/* 시나리오 불러오기 */}
+                {scenarios.length > 0 && (
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: colors.gray200 }}>
+                        <FolderOpen className="w-4 h-4" style={{ color: colors.gray500 }} />
+                        <span className="text-sm" style={{ color: colors.gray600 }}>저장된 시나리오:</span>
+                        <div className="flex flex-wrap gap-2">
+                            {scenarios.map(s => (
+                                <div key={s.scenario_id} className="flex items-center gap-1 px-2 py-1 rounded text-sm"
+                                    style={{ background: currentScenarioId === s.scenario_id ? colors.primary + '15' : colors.gray200 }}>
+                                    <button onClick={() => loadScenario(s.scenario_id)}
+                                        className="hover:underline" style={{ color: currentScenarioId === s.scenario_id ? colors.primary : colors.gray700 }}>
+                                        {s.scenario_name}
+                                    </button>
+                                    <button onClick={() => deleteScenario(s.scenario_id)}
+                                        className="ml-1 p-0.5 rounded hover:bg-red-100">
+                                        <Trash2 className="w-3 h-3" style={{ color: colors.danger }} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* 제품 추가 */}
                 <div className="flex gap-4 items-end">
@@ -459,6 +580,44 @@ export default function SimulationPage() {
                     <p className="text-sm" style={{ color: colors.gray500 }}>
                         위에서 제품을 선택하고 수량을 입력하여 시뮬레이션을 시작하세요
                     </p>
+                </div>
+            )}
+
+            {/* 저장 모달 */}
+            {showSaveModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-6 w-96" style={{ boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
+                        <h3 className="text-lg font-semibold mb-4" style={{ color: colors.gray900 }}>
+                            {currentScenarioId ? '시나리오 수정' : '시나리오 저장'}
+                        </h3>
+                        <input
+                            type="text"
+                            value={scenarioName}
+                            onChange={(e) => setScenarioName(e.target.value)}
+                            placeholder="시나리오 이름"
+                            className="w-full px-3 py-2 rounded-lg border text-sm mb-4"
+                            style={{ borderColor: colors.gray300 }}
+                        />
+                        <div className="text-sm mb-4" style={{ color: colors.gray600 }}>
+                            제품: {orders.length}개, 알고리즘: {algorithm}
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={saveScenario}
+                                className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
+                                style={{ background: colors.primary }}
+                            >
+                                저장
+                            </button>
+                            <button
+                                onClick={() => setShowSaveModal(false)}
+                                className="flex-1 py-2 rounded-lg text-sm font-medium"
+                                style={{ background: colors.gray200, color: colors.gray700 }}
+                            >
+                                취소
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
