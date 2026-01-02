@@ -253,7 +253,7 @@ export default function RoutingCarbonPage() {
                 <div className="flex flex-wrap gap-4">
                     {processGroups.map((group, idx) => (
                         <div key={idx} className="flex items-center gap-2">
-                            {'colors' in group ? (
+                            {'colors' in group && group.colors ? (
                                 <div className="flex">
                                     {group.colors.map((c, i) => (
                                         <div key={i} className="w-6 h-6" style={{ background: c, marginLeft: i > 0 ? -4 : 0 }} />

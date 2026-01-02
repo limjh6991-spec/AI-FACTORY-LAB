@@ -48,6 +48,7 @@ interface ProductOrder {
     quantity: number;
     routing: RoutingStep[];
     color: string;
+    priority: 'NORMAL' | 'HIGH' | 'URGENT';
 }
 
 interface ScheduledTask {
@@ -78,19 +79,42 @@ export default function SimulationPage() {
     const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
     const [solveTime, setSolveTime] = useState(0);
 
+    // 계획월
+    const [planMonth, setPlanMonth] = useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    });
+
     // 시나리오 관리
-    const [scenarios, setScenarios] = useState<{ scenario_id: number; scenario_name: string }[]>([]);
+    const [scenarios, setScenarios] = useState<{
+        scenario_id: number;
+        scenario_name: string;
+        algorithm: string;
+        created_at: string;
+        order_count: number;
+        has_result: boolean;
+        plan_month: string;
+    }[]>([]);
     const [currentScenarioId, setCurrentScenarioId] = useState<number | null>(null);
     const [scenarioName, setScenarioName] = useState('');
     const [showSaveModal, setShowSaveModal] = useState(false);
+    const [saveAsNew, setSaveAsNew] = useState(true);
 
     const API_BASE = 'http://localhost:8000';
 
     // 제품 및 시나리오 목록 로드
     useEffect(() => {
         fetchItems();
-        fetchScenarios();
     }, []);
+
+    // 계획월 변경 시 시나리오 재로드
+    useEffect(() => {
+        fetchScenarios();
+        setCurrentScenarioId(null);
+        setScenarioName('');
+        setOrders([]);
+        setSimulationResult(null);
+    }, [planMonth]);
 
     const fetchItems = async () => {
         try {
@@ -106,7 +130,7 @@ export default function SimulationPage() {
 
     const fetchScenarios = async () => {
         try {
-            const res = await fetch(`${API_BASE}/simulation/scenarios`);
+            const res = await fetch(`${API_BASE}/simulation/scenarios?plan_month=${planMonth}`);
             if (res.ok) setScenarios(await res.json());
         } catch (err) {
             console.error(err);
@@ -114,6 +138,7 @@ export default function SimulationPage() {
     };
 
     const loadScenario = async (id: number) => {
+        setIsLoading(true);
         try {
             const res = await fetch(`${API_BASE}/simulation/scenarios/${id}`);
             if (res.ok) {
@@ -121,6 +146,7 @@ export default function SimulationPage() {
                 setCurrentScenarioId(id);
                 setScenarioName(data.scenario_name);
                 setAlgorithm(data.algorithm || 'OR_TOOLS');
+
                 // orders 복원 - routing 정보 다시 로드
                 const loadedOrders: ProductOrder[] = [];
                 for (const o of data.orders || []) {
@@ -131,16 +157,38 @@ export default function SimulationPage() {
                             item_code: o.item_code,
                             quantity: o.quantity,
                             routing: routingData.routing || [],
-                            color: productColors[loadedOrders.length % productColors.length]
+                            color: productColors[loadedOrders.length % productColors.length],
+                            priority: o.priority || 'NORMAL'
                         });
                     }
                 }
                 setOrders(loadedOrders);
-                setSimulationResult(null);
+
+                // 저장된 시뮬레이션 결과 복원
+                if (data.result && data.result.schedule) {
+                    const restoredSchedule = data.result.schedule.map((task: any, idx: number) => ({
+                        ...task,
+                        color: loadedOrders.find(o => o.item_code === task.item_code)?.color || productColors[idx % productColors.length],
+                        hasConflict: task.hasConflict || false
+                    }));
+                    setSimulationResult({
+                        schedule: restoredSchedule,
+                        totalTime: data.result.totalTime || 0,
+                        conflicts: data.result.conflicts || [],
+                        machineUtilization: data.result.machineUtilization || []
+                    });
+                    setSolveTime(0);  // 이전 결과 로드 표시
+                } else {
+                    setSimulationResult(null);
+                }
+            } else {
+                alert('시나리오를 불러올 수 없습니다.');
             }
         } catch (err) {
             console.error(err);
+            alert('시나리오 불러오기 실패');
         }
+        setIsLoading(false);
     };
 
     const saveScenario = async () => {
@@ -148,12 +196,15 @@ export default function SimulationPage() {
         try {
             const payload = {
                 scenario_name: scenarioName,
-                orders: orders.map(o => ({ item_code: o.item_code, quantity: o.quantity })),
+                orders: orders.map(o => ({ item_code: o.item_code, quantity: o.quantity, priority: o.priority })),
                 algorithm,
-                result: simulationResult
+                result: simulationResult,
+                plan_month: planMonth
             };
-            const method = currentScenarioId ? 'PUT' : 'POST';
-            const url = currentScenarioId
+            // saveAsNew가 true이면 항상 POST(새로 저장), false이고 currentScenarioId가 있으면 PUT(덩어쓰기)
+            const isUpdate = !saveAsNew && currentScenarioId;
+            const method = isUpdate ? 'PUT' : 'POST';
+            const url = isUpdate
                 ? `${API_BASE}/simulation/scenarios/${currentScenarioId}`
                 : `${API_BASE}/simulation/scenarios`;
 
@@ -167,6 +218,7 @@ export default function SimulationPage() {
                 setCurrentScenarioId(data.scenario_id);
                 setShowSaveModal(false);
                 fetchScenarios();
+                alert(isUpdate ? '시나리오가 수정되었습니다.' : '새 시나리오가 저장되었습니다.');
             }
         } catch (err) {
             console.error(err);
@@ -187,6 +239,55 @@ export default function SimulationPage() {
         }
     };
 
+    // 시나리오 확정 (진행 추적 시작)
+    const confirmScenario = async () => {
+        if (!currentScenarioId) return alert('시나리오를 먼저 저장하세요');
+        try {
+            const res = await fetch(`${API_BASE}/simulation/scenarios/${currentScenarioId}/confirm`, { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                alert(`${data.confirmed_orders}개 오더가 확정되었습니다.`);
+                fetchScenarios();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // 이월 오더 가져오기
+    const fetchCarryOver = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/simulation/carry-over/${planMonth}`);
+            if (res.ok) {
+                const carryOvers = await res.json();
+                if (carryOvers.length === 0) {
+                    alert('이월할 오더가 없습니다.');
+                    return;
+                }
+                if (!confirm(`${carryOvers.length}개 이월 오더를 추가하시겠습니까?`)) return;
+
+                // 각 이월 오더를 추가
+                for (const c of carryOvers) {
+                    if (!orders.find(o => o.item_code === c.item_code)) {
+                        const routingRes = await fetch(`${API_BASE}/routing/${c.item_code}`);
+                        if (routingRes.ok) {
+                            const routingData = await routingRes.json();
+                            setOrders(prev => [...prev, {
+                                item_code: c.item_code,
+                                quantity: c.remaining_qty,
+                                routing: routingData.routing || [],
+                                color: productColors[prev.length % productColors.length],
+                                priority: c.priority
+                            }]);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     // 제품 추가
     const addProduct = async () => {
         if (!selectedItem || orders.find(o => o.item_code === selectedItem)) return;
@@ -199,7 +300,8 @@ export default function SimulationPage() {
                     item_code: selectedItem,
                     quantity,
                     routing: data.routing || [],
-                    color: productColors[orders.length % productColors.length]
+                    color: productColors[orders.length % productColors.length],
+                    priority: 'NORMAL'
                 }]);
                 setSelectedItem('');
             }
@@ -217,6 +319,10 @@ export default function SimulationPage() {
         setOrders(orders.map(o => o.item_code === code ? { ...o, quantity: qty } : o));
     };
 
+    const updatePriority = (code: string, priority: 'NORMAL' | 'HIGH' | 'URGENT') => {
+        setOrders(orders.map(o => o.item_code === code ? { ...o, priority } : o));
+    };
+
     // 시뮬레이션 실행 (API 호출)
     const runSimulation = async () => {
         setIsLoading(true);
@@ -225,7 +331,7 @@ export default function SimulationPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    orders: orders.map(o => ({ item_code: o.item_code, quantity: o.quantity })),
+                    orders: orders.map(o => ({ item_code: o.item_code, quantity: o.quantity, priority: o.priority })),
                     algorithm
                 })
             });
@@ -308,7 +414,19 @@ export default function SimulationPage() {
                         </div>
                         <div>
                             <h1 className="text-xl font-bold" style={{ color: colors.gray900 }}>생산 시뮬레이션</h1>
-                            <p className="text-sm" style={{ color: colors.gray500 }}>다중 제품 스케줄링 & 설비 충돌 분석</p>
+                            <p className="text-sm" style={{ color: colors.gray500 }}>다중 제품 스케줄링 &amp; 설비 충돌 분석</p>
+                        </div>
+                        {/* 계획월 선택 */}
+                        <div className="ml-6 flex items-center gap-2">
+                            <Calendar className="w-4 h-4" style={{ color: colors.gray500 }} />
+                            <span className="text-sm" style={{ color: colors.gray600 }}>계획월:</span>
+                            <input
+                                type="month"
+                                value={planMonth}
+                                onChange={(e) => setPlanMonth(e.target.value)}
+                                className="px-3 py-1.5 rounded-lg border text-sm font-medium"
+                                style={{ borderColor: colors.primary, color: colors.primary }}
+                            />
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -329,6 +447,23 @@ export default function SimulationPage() {
                             <Save className="w-4 h-4" /> 저장
                         </button>
                         <button
+                            onClick={confirmScenario}
+                            disabled={!currentScenarioId || !simulationResult}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white"
+                            style={{ background: (!currentScenarioId || !simulationResult) ? colors.gray400 : colors.info }}
+                            title="시나리오 확정 후 생산 진행"
+                        >
+                            <CheckCircle className="w-4 h-4" /> 확정
+                        </button>
+                        <button
+                            onClick={fetchCarryOver}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium"
+                            style={{ background: colors.warning + '15', color: colors.warning }}
+                            title="전월 미완료 오더 가져오기"
+                        >
+                            <Layers className="w-4 h-4" /> 이월 가져오기
+                        </button>
+                        <button
                             onClick={() => { setOrders([]); setSimulationResult(null); setCurrentScenarioId(null); setScenarioName(''); }}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium"
                             style={{ background: colors.gray200, color: colors.gray700 }}
@@ -338,28 +473,44 @@ export default function SimulationPage() {
                     </div>
                 </div>
 
-                {/* 시나리오 불러오기 */}
-                {scenarios.length > 0 && (
-                    <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: colors.gray200 }}>
-                        <FolderOpen className="w-4 h-4" style={{ color: colors.gray500 }} />
-                        <span className="text-sm" style={{ color: colors.gray600 }}>저장된 시나리오:</span>
-                        <div className="flex flex-wrap gap-2">
-                            {scenarios.map(s => (
-                                <div key={s.scenario_id} className="flex items-center gap-1 px-2 py-1 rounded text-sm"
-                                    style={{ background: currentScenarioId === s.scenario_id ? colors.primary + '15' : colors.gray200 }}>
-                                    <button onClick={() => loadScenario(s.scenario_id)}
-                                        className="hover:underline" style={{ color: currentScenarioId === s.scenario_id ? colors.primary : colors.gray700 }}>
-                                        {s.scenario_name}
-                                    </button>
-                                    <button onClick={() => deleteScenario(s.scenario_id)}
-                                        className="ml-1 p-0.5 rounded hover:bg-red-100">
-                                        <Trash2 className="w-3 h-3" style={{ color: colors.danger }} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                {/* 시나리오 불러오기 - 드롭다운 방식 */}
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: colors.gray200 }}>
+                    <FolderOpen className="w-4 h-4" style={{ color: colors.gray500 }} />
+                    <span className="text-sm" style={{ color: colors.gray600 }}>시나리오:</span>
+                    <select
+                        value={currentScenarioId || ''}
+                        onChange={(e) => {
+                            const id = parseInt(e.target.value);
+                            if (id) loadScenario(id);
+                            else {
+                                setCurrentScenarioId(null);
+                                setScenarioName('');
+                                setOrders([]);
+                                setSimulationResult(null);
+                            }
+                        }}
+                        className="px-3 py-2 rounded-lg border text-sm min-w-48"
+                        style={{ borderColor: colors.gray300 }}
+                        disabled={isLoading}
+                    >
+                        <option value="">-- 시나리오 선택 --</option>
+                        {scenarios.map(s => (
+                            <option key={s.scenario_id} value={s.scenario_id}>
+                                {s.scenario_name} ({s.algorithm}, 제품 {s.order_count}개{s.has_result ? ', 결과O' : ''})
+                            </option>
+                        ))}
+                    </select>
+                    {isLoading && <span className="text-xs" style={{ color: colors.gray500 }}>로딩중...</span>}
+                    {currentScenarioId && (
+                        <button
+                            onClick={() => deleteScenario(currentScenarioId)}
+                            className="text-xs px-2 py-1 rounded hover:bg-red-100"
+                            style={{ color: colors.danger }}
+                        >
+                            삭제
+                        </button>
+                    )}
+                </div>
 
                 {/* 제품 추가 */}
                 <div className="flex gap-4 items-end">
@@ -434,6 +585,20 @@ export default function SimulationPage() {
                                     className="w-20 px-2 py-1 rounded border text-sm text-center"
                                     style={{ borderColor: colors.gray300 }}
                                 />
+                                <select
+                                    value={order.priority}
+                                    onChange={(e) => updatePriority(order.item_code, e.target.value as 'NORMAL' | 'HIGH' | 'URGENT')}
+                                    className="text-xs px-2 py-1 rounded border font-medium"
+                                    style={{
+                                        borderColor: order.priority === 'URGENT' ? colors.danger : order.priority === 'HIGH' ? colors.warning : colors.gray300,
+                                        background: order.priority === 'URGENT' ? colors.danger + '15' : order.priority === 'HIGH' ? colors.warning + '15' : 'white',
+                                        color: order.priority === 'URGENT' ? colors.danger : order.priority === 'HIGH' ? colors.warning : colors.gray600
+                                    }}
+                                >
+                                    <option value="NORMAL">일반</option>
+                                    <option value="HIGH">높음</option>
+                                    <option value="URGENT">긴급</option>
+                                </select>
                                 <span className="text-xs" style={{ color: colors.gray500 }}>({order.routing.length} 공정)</span>
                                 <button
                                     onClick={() => removeProduct(order.item_code)}
@@ -588,8 +753,36 @@ export default function SimulationPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 w-96" style={{ boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
                         <h3 className="text-lg font-semibold mb-4" style={{ color: colors.gray900 }}>
-                            {currentScenarioId ? '시나리오 수정' : '시나리오 저장'}
+                            시나리오 저장
                         </h3>
+
+                        {/* 저장 모드 선택 */}
+                        {currentScenarioId && (
+                            <div className="mb-4 p-3 rounded-lg" style={{ background: colors.gray100 }}>
+                                <div className="text-xs mb-2" style={{ color: colors.gray600 }}>저장 방식:</div>
+                                <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="saveMode"
+                                        checked={saveAsNew}
+                                        onChange={() => setSaveAsNew(true)}
+                                    />
+                                    <span className="text-sm" style={{ color: colors.gray800 }}>새 시나리오로 저장</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="saveMode"
+                                        checked={!saveAsNew}
+                                        onChange={() => setSaveAsNew(false)}
+                                    />
+                                    <span className="text-sm" style={{ color: colors.gray800 }}>
+                                        기존 시나리오 덩어쓰기 ({scenarios.find(s => s.scenario_id === currentScenarioId)?.scenario_name})
+                                    </span>
+                                </label>
+                            </div>
+                        )}
+
                         <input
                             type="text"
                             value={scenarioName}
@@ -607,7 +800,7 @@ export default function SimulationPage() {
                                 className="flex-1 py-2 rounded-lg text-sm font-medium text-white"
                                 style={{ background: colors.primary }}
                             >
-                                저장
+                                {saveAsNew || !currentScenarioId ? '새로 저장' : '덩어쓰기'}
                             </button>
                             <button
                                 onClick={() => setShowSaveModal(false)}

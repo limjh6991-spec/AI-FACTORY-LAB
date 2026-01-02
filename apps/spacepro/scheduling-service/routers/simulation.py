@@ -52,6 +52,9 @@ async def schedule_multi_product(request: dict):
         
         # 라우팅 데이터 로드
         jobs = []
+        # 우선순위 값 매핑 (낮을수록 우선)
+        priority_order = {'URGENT': 0, 'HIGH': 1, 'NORMAL': 2}
+        
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 for order in orders:
@@ -66,8 +69,13 @@ async def schedule_multi_product(request: dict):
                     jobs.append({
                         'item_code': order['item_code'],
                         'quantity': order.get('quantity', 100),
+                        'priority': order.get('priority', 'NORMAL'),
+                        'priority_order': priority_order.get(order.get('priority', 'NORMAL'), 2),
                         'routing': routing
                     })
+        
+        # 우선순위 순으로 정렬 (URGENT → HIGH → NORMAL)
+        jobs.sort(key=lambda x: x['priority_order'])
         
         schedule = []
         total_time = 0
@@ -212,18 +220,42 @@ async def schedule_multi_product(request: dict):
 # ====================================
 
 @router.get("/scenarios")
-async def list_scenarios():
-    """저장된 시나리오 목록 조회"""
+async def list_scenarios(plan_month: str = None):
+    """저장된 시나리오 목록 조회 (orders 개수, result 유무, plan_month 필터 포함)"""
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    SELECT scenario_id, scenario_name, description, algorithm, 
-                           created_at, updated_at
-                    FROM spacepro.tb_simulation_scenario
-                    ORDER BY updated_at DESC
-                """)
-                return cur.fetchall()
+                if plan_month:
+                    cur.execute("""
+                        SELECT scenario_id, scenario_name, description, algorithm, plan_month,
+                               orders, result IS NOT NULL as has_result,
+                               created_at, updated_at
+                        FROM spacepro.tb_simulation_scenario
+                        WHERE plan_month = %s
+                        ORDER BY updated_at DESC
+                    """, (plan_month,))
+                else:
+                    cur.execute("""
+                        SELECT scenario_id, scenario_name, description, algorithm, plan_month,
+                               orders, result IS NOT NULL as has_result,
+                               created_at, updated_at
+                        FROM spacepro.tb_simulation_scenario
+                        ORDER BY updated_at DESC
+                    """)
+                rows = cur.fetchall()
+                # orders를 개수로 변환
+                result = []
+                for row in rows:
+                    item = dict(row)
+                    if item.get('orders'):
+                        import json
+                        orders_data = item['orders'] if isinstance(item['orders'], list) else json.loads(item['orders'])
+                        item['order_count'] = len(orders_data)
+                    else:
+                        item['order_count'] = 0
+                    del item['orders']  # 목록에서는 orders 상세 제외
+                    result.append(item)
+                return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -258,16 +290,17 @@ async def create_scenario(request: dict):
         orders = request.get('orders', [])
         algorithm = request.get('algorithm', 'OR_TOOLS')
         result = request.get('result')
+        plan_month = request.get('plan_month')  # YYYY-MM 형식
         
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     INSERT INTO spacepro.tb_simulation_scenario 
-                    (scenario_name, description, orders, algorithm, result)
-                    VALUES (%s, %s, %s, %s, %s)
+                    (scenario_name, description, orders, algorithm, result, plan_month)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING scenario_id
                 """, (name, description, json.dumps(orders), algorithm, 
-                      json.dumps(result) if result else None))
+                      json.dumps(result) if result else None, plan_month))
                 scenario_id = cur.fetchone()[0]
                 conn.commit()
         
@@ -326,3 +359,117 @@ async def delete_scenario(scenario_id: int):
         return {"success": True, "deleted": deleted}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ====================================
+# Progress & Carry-over APIs
+# ====================================
+
+@router.post("/scenarios/{scenario_id}/confirm")
+async def confirm_scenario(scenario_id: int):
+    """시나리오 확정 - 오더 진행 상태 테이블에 등록"""
+    try:
+        import json
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 시나리오 조회
+                cur.execute("SELECT orders FROM spacepro.tb_simulation_scenario WHERE scenario_id = %s", (scenario_id,))
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Scenario not found")
+                
+                orders = row['orders'] if isinstance(row['orders'], list) else json.loads(row['orders'] or '[]')
+                
+                # 기존 progress 삭제 후 새로 등록
+                cur.execute("DELETE FROM spacepro.tb_order_progress WHERE scenario_id = %s", (scenario_id,))
+                
+                for order in orders:
+                    cur.execute("""
+                        INSERT INTO spacepro.tb_order_progress (scenario_id, item_code, planned_qty, priority, status)
+                        VALUES (%s, %s, %s, %s, 'PLANNED')
+                    """, (scenario_id, order['item_code'], order['quantity'], order.get('priority', 'NORMAL')))
+                
+                # 시나리오 상태를 CONFIRMED로 변경
+                cur.execute("UPDATE spacepro.tb_simulation_scenario SET status = 'CONFIRMED' WHERE scenario_id = %s", (scenario_id,))
+                conn.commit()
+                
+        return {"success": True, "confirmed_orders": len(orders)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/scenarios/{scenario_id}/progress")
+async def get_scenario_progress(scenario_id: int):
+    """시나리오별 진행 현황 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT progress_id, item_code, planned_qty, produced_qty, status, priority,
+                           ROUND(produced_qty::numeric / NULLIF(planned_qty, 0) * 100, 1) as progress_pct
+                    FROM spacepro.tb_order_progress
+                    WHERE scenario_id = %s
+                    ORDER BY 
+                        CASE priority WHEN 'URGENT' THEN 0 WHEN 'HIGH' THEN 1 ELSE 2 END,
+                        item_code
+                """, (scenario_id,))
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/progress/{progress_id}")
+async def update_progress(progress_id: int, request: dict):
+    """오더 진행률 업데이트"""
+    try:
+        produced_qty = request.get('produced_qty')
+        status = request.get('status')  # IN_PROGRESS, COMPLETED, CARRIED_OVER
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE spacepro.tb_order_progress SET
+                        produced_qty = COALESCE(%s, produced_qty),
+                        status = COALESCE(%s, status),
+                        updated_at = NOW()
+                    WHERE progress_id = %s
+                """, (produced_qty, status, progress_id))
+                conn.commit()
+        
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/carry-over/{plan_month}")
+async def get_carry_over_suggestions(plan_month: str):
+    """이월 대상 오더 조회 (전월 미완료분)"""
+    try:
+        # 전월 계산
+        year, month = map(int, plan_month.split('-'))
+        if month == 1:
+            prev_month = f"{year-1}-12"
+        else:
+            prev_month = f"{year}-{str(month-1).zfill(2)}"
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT p.progress_id, p.item_code, p.planned_qty, p.produced_qty, p.priority,
+                           (p.planned_qty - p.produced_qty) as remaining_qty,
+                           s.scenario_name, s.plan_month
+                    FROM spacepro.tb_order_progress p
+                    JOIN spacepro.tb_simulation_scenario s ON p.scenario_id = s.scenario_id
+                    WHERE s.plan_month = %s
+                      AND p.status IN ('PLANNED', 'IN_PROGRESS')
+                      AND p.produced_qty < p.planned_qty
+                    ORDER BY 
+                        CASE p.priority WHEN 'URGENT' THEN 0 WHEN 'HIGH' THEN 1 ELSE 2 END,
+                        remaining_qty DESC
+                """, (prev_month,))
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
