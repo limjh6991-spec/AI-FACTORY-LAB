@@ -228,7 +228,7 @@ async def list_scenarios(plan_month: str = None):
                 if plan_month:
                     cur.execute("""
                         SELECT scenario_id, scenario_name, description, algorithm, plan_month,
-                               orders, result IS NOT NULL as has_result,
+                               orders, result IS NOT NULL as has_result, status,
                                created_at, updated_at
                         FROM spacepro.tb_simulation_scenario
                         WHERE plan_month = %s
@@ -237,7 +237,7 @@ async def list_scenarios(plan_month: str = None):
                 else:
                     cur.execute("""
                         SELECT scenario_id, scenario_name, description, algorithm, plan_month,
-                               orders, result IS NOT NULL as has_result,
+                               orders, result IS NOT NULL as has_result, status,
                                created_at, updated_at
                         FROM spacepro.tb_simulation_scenario
                         ORDER BY updated_at DESC

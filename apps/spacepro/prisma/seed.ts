@@ -181,6 +181,7 @@ async function main() {
         { code: 'PLAN_CAPACITY', name: 'Capacity 시뮬레이션', path: '/plan/capacity', icon: 'Gauge' },
         { code: 'PLAN_ROUTING', name: '공정 흐름 분석', path: '/plan/routing', icon: 'GitBranch' },
         { code: 'PLAN_SIM', name: '생산 시뮬레이션', path: '/plan/simulation', icon: 'Play' },
+        { code: 'PLAN_RESULT', name: '생산 실적', path: '/plan/production', icon: 'BarChart3' },
     ];
 
     for (let i = 0; i < planChildren.length; i++) {
