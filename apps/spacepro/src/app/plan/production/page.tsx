@@ -24,16 +24,16 @@ const DELAY_REASONS = [
     { code: 'OTHER', label: '기타' }
 ];
 
-// Mock 공정별 데이터 (실제로는 API에서 가져올 수 있음)
-const getProcessProgress = (itemCode: string, overallProgress: number) => {
-    const processes = [
-        { op_seq: 1, op_name: '절단', machine: 'MC-001', planned: 100, actual: Math.round(overallProgress * 1.1), status: 'COMPLETED' },
-        { op_seq: 2, op_name: '성형', machine: 'MC-002', planned: 100, actual: overallProgress, status: overallProgress >= 100 ? 'COMPLETED' : 'IN_PROGRESS' },
-        { op_seq: 3, op_name: '조립', machine: 'MC-003', planned: 100, actual: Math.round(overallProgress * 0.9), status: overallProgress >= 100 ? 'COMPLETED' : overallProgress > 50 ? 'IN_PROGRESS' : 'WAITING' },
-        { op_seq: 4, op_name: '검사', machine: 'MC-004', planned: 100, actual: Math.round(overallProgress * 0.8), status: overallProgress >= 100 ? 'COMPLETED' : 'WAITING' },
-    ];
-    return processes;
-};
+interface ProcessProgress {
+    id: number;
+    op_seq: number;
+    op_name: string;
+    machine_code: string;
+    planned_qty: number;
+    produced_qty: number;
+    status: string;
+    progress_pct: number;
+}
 
 export default function ProductionResultsPage() {
     const [planMonth, setPlanMonth] = useState(() => {
@@ -42,12 +42,14 @@ export default function ProductionResultsPage() {
     });
     const [scenarios, setScenarios] = useState<ScenarioSummary[]>([]);
     const [selectedScenarioId, setSelectedScenarioId] = useState<number | null>(null);
-    const [progress, setProgress] = useState<(OrderProgress & { delay_reason?: string })[]>([]);
+    const [progress, setProgress] = useState<(OrderProgress & { delay_reason?: string; delay_note?: string })[]>([]);
+    const [processData, setProcessData] = useState<ProcessProgress[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editQty, setEditQty] = useState(0);
     const [editReason, setEditReason] = useState('');
+    const [editNote, setEditNote] = useState('');
 
     useEffect(() => {
         fetchScenarios();
@@ -106,6 +108,51 @@ export default function ProductionResultsPage() {
         }
     };
 
+    // 공정별 진행 현황 조회
+    const fetchProcessProgress = async (progressId: number) => {
+        try {
+            const res = await fetch(`${API_BASE}/simulation/progress/${progressId}/processes`);
+            if (res.ok) {
+                setProcessData(await res.json());
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // 지연 사유 저장
+    const saveDelayReason = async () => {
+        const item = progress.find(p => p.item_code === selectedProduct);
+        if (!item) return;
+
+        try {
+            await fetch(`${API_BASE}/simulation/progress/${item.progress_id}/delay`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ delay_reason: editReason, delay_note: editNote })
+            });
+            fetchProgress();
+            alert('지연 사유가 저장되었습니다.');
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // 제품 선택 시 공정 데이터 로드
+    const handleSelectProduct = (itemCode: string | null) => {
+        setSelectedProduct(itemCode);
+        if (itemCode) {
+            const item = progress.find(p => p.item_code === itemCode);
+            if (item) {
+                fetchProcessProgress(item.progress_id);
+                setEditReason(item.delay_reason || '');
+                setEditNote(item.delay_note || '');
+            }
+        } else {
+            setProcessData([]);
+        }
+    };
+
     // 전체 요약 계산
     const summary = {
         totalPlanned: progress.reduce((sum, p) => sum + p.planned_qty, 0),
@@ -135,9 +182,6 @@ export default function ProductionResultsPage() {
     };
 
     const selectedProductData = progress.find(p => p.item_code === selectedProduct);
-    const processData = selectedProduct && selectedProductData
-        ? getProcessProgress(selectedProduct, Math.round((selectedProductData.produced_qty / selectedProductData.planned_qty) * 100))
-        : [];
 
     return (
         <div className="min-h-screen p-6" style={{ background: colors.gray100 }}>
@@ -248,12 +292,11 @@ export default function ProductionResultsPage() {
                                         return (
                                             <div
                                                 key={p.progress_id}
-                                                onClick={() => setSelectedProduct(isSelected ? null : p.item_code)}
+                                                onClick={() => handleSelectProduct(isSelected ? null : p.item_code)}
                                                 className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${isSelected ? 'ring-2' : ''}`}
                                                 style={{
                                                     borderColor: isSelected ? colors.primary : colors.gray200,
                                                     background: isSelected ? colors.primary + '05' : 'white',
-                                                    ringColor: colors.primary
                                                 }}
                                             >
                                                 <div className="w-3 h-12 rounded" style={{ background: productColors[idx % productColors.length] }} />
@@ -344,7 +387,7 @@ export default function ProductionResultsPage() {
                                                 <div className="flex justify-between items-center mb-2">
                                                     <div>
                                                         <span className="font-medium text-sm">{proc.op_seq}. {proc.op_name}</span>
-                                                        <span className="text-xs ml-2" style={{ color: colors.gray500 }}>({proc.machine})</span>
+                                                        <span className="text-xs ml-2" style={{ color: colors.gray500 }}>({proc.machine_code})</span>
                                                     </div>
                                                     <span
                                                         className="text-xs px-2 py-0.5 rounded"
@@ -358,11 +401,11 @@ export default function ProductionResultsPage() {
                                                 </div>
                                                 <div className="h-2 rounded-full" style={{ background: colors.gray300 }}>
                                                     <div className="h-full rounded-full" style={{
-                                                        width: `${Math.min(proc.actual, 100)}%`,
+                                                        width: `${Math.min(proc.progress_pct || 0, 100)}%`,
                                                         background: proc.status === 'COMPLETED' ? colors.success : colors.primary
                                                     }} />
                                                 </div>
-                                                <div className="text-xs mt-1 text-right" style={{ color: colors.gray500 }}>{proc.actual}%</div>
+                                                <div className="text-xs mt-1 text-right" style={{ color: colors.gray500 }}>{proc.progress_pct || 0}%</div>
                                             </div>
                                         ))}
                                     </div>
@@ -387,12 +430,15 @@ export default function ProductionResultsPage() {
                                             ))}
                                         </select>
                                         <textarea
+                                            value={editNote}
+                                            onChange={(e) => setEditNote(e.target.value)}
                                             placeholder="상세 사유 입력..."
                                             className="w-full px-3 py-2 rounded border text-sm"
                                             style={{ borderColor: colors.gray300 }}
                                             rows={2}
                                         />
                                         <button
+                                            onClick={saveDelayReason}
                                             className="mt-2 w-full px-3 py-2 rounded text-sm font-medium text-white"
                                             style={{ background: colors.danger }}
                                         >

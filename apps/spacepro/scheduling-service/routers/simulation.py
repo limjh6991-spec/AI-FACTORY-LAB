@@ -385,9 +385,11 @@ async def confirm_scenario(scenario_id: int):
                 
                 for order in orders:
                     cur.execute("""
-                        INSERT INTO spacepro.tb_order_progress (scenario_id, item_code, planned_qty, priority, status)
-                        VALUES (%s, %s, %s, %s, 'PLANNED')
-                    """, (scenario_id, order['item_code'], order['quantity'], order.get('priority', 'NORMAL')))
+                        INSERT INTO spacepro.tb_order_progress 
+                        (scenario_id, item_code, planned_qty, priority, status, source_progress_id)
+                        VALUES (%s, %s, %s, %s, 'PLANNED', %s)
+                    """, (scenario_id, order['item_code'], order['quantity'], 
+                          order.get('priority', 'NORMAL'), order.get('source_progress_id')))
                 
                 # 시나리오 상태를 CONFIRMED로 변경
                 cur.execute("UPDATE spacepro.tb_simulation_scenario SET status = 'CONFIRMED' WHERE scenario_id = %s", (scenario_id,))
@@ -473,3 +475,43 @@ async def get_carry_over_suggestions(plan_month: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.get("/progress/{progress_id}/processes")
+async def get_process_progress(progress_id: int):
+    """공정별 진행 현황 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT id, op_seq, op_name, machine_code, planned_qty, produced_qty, status,
+                           ROUND(produced_qty::numeric / NULLIF(planned_qty, 0) * 100, 1) as progress_pct
+                    FROM spacepro.tb_process_progress
+                    WHERE progress_id = %s
+                    ORDER BY op_seq
+                """, (progress_id,))
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/progress/{progress_id}/delay")
+async def update_delay_reason(progress_id: int, request: dict):
+    """지연 사유 저장"""
+    try:
+        delay_reason = request.get('delay_reason')
+        delay_note = request.get('delay_note')
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE spacepro.tb_order_progress SET
+                        delay_reason = %s,
+                        delay_note = %s,
+                        updated_at = NOW()
+                    WHERE progress_id = %s
+                """, (delay_reason, delay_note, progress_id))
+                conn.commit()
+        
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

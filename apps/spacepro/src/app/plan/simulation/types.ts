@@ -40,6 +40,7 @@ export interface ProductOrder {
     routing: RoutingStep[];
     color: string;
     priority: 'NORMAL' | 'HIGH' | 'URGENT';
+    source_progress_id?: number;  // 이월 원본 progress_id (null이면 신규 오더)
 }
 
 export interface ScheduledTask {
