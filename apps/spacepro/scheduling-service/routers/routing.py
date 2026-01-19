@@ -44,13 +44,14 @@ async def get_routing_items():
 
 @router.get("/{item_code}")
 async def get_routing(item_code: str, revision: Optional[str] = "1.0"):
-    """특정 품목의 라우팅 정보 조회"""
+    """특정 품목의 라우팅 정보 조회 (세부공정 포함)"""
     try:
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 1. 메인 라우팅 조회
                 cur.execute("""
                     SELECT 
-                        op_seq, op_name, workcenter_code, machine_code,
+                        op_seq, op_name, prcode, workcenter_code, machine_code,
                         setup_time, cycle_time, process_yield,
                         queue_time, move_time
                     FROM spacepro.tb_routing_mst
@@ -62,6 +63,18 @@ async def get_routing(item_code: str, revision: Optional[str] = "1.0"):
                 for row in cur.fetchall():
                     step = dict(row)
                     step['materials'] = []
+                    
+                    # 2. 세부공정 조회
+                    cur.execute("""
+                        SELECT sub_seq, sub_op_name, workers, work_time, equipment,
+                               material_code, material_name, qty, unit, 
+                               lead_time_days, outsource_yn
+                        FROM spacepro.tb_routing_detail
+                        WHERE item_code = %s AND revision = %s AND op_seq = %s
+                        ORDER BY sub_seq
+                    """, (item_code, revision, step['op_seq']))
+                    
+                    step['sub_operations'] = [dict(sub) for sub in cur.fetchall()]
                     routing.append(step)
                 
                 return {
@@ -155,10 +168,18 @@ async def update_routing(item_code: str, request: dict):
 
 @router.delete("/{item_code}")
 async def delete_routing(item_code: str, revision: Optional[str] = "1.0"):
-    """라우팅 삭제"""
+    """라우팅 삭제 (세부공정 포함)"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
+                # 세부공정 먼저 삭제
+                cur.execute("""
+                    DELETE FROM spacepro.tb_routing_detail 
+                    WHERE item_code = %s AND revision = %s
+                """, (item_code, revision))
+                deleted_details = cur.rowcount
+                
+                # 메인 라우팅 삭제
                 cur.execute("""
                     DELETE FROM spacepro.tb_routing_mst 
                     WHERE item_code = %s AND revision = %s
@@ -166,6 +187,43 @@ async def delete_routing(item_code: str, revision: Optional[str] = "1.0"):
                 deleted = cur.rowcount
                 conn.commit()
         
-        return {"success": True, "item_code": item_code, "deleted_steps": deleted}
+        return {"success": True, "item_code": item_code, "deleted_steps": deleted, "deleted_details": deleted_details}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{item_code}/details")
+async def get_routing_details(item_code: str, revision: Optional[str] = "1.0"):
+    """세부공정만 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT d.op_seq, m.op_name, m.prcode, d.sub_seq, d.sub_op_name, 
+                           d.workers, d.work_time, d.equipment,
+                           d.material_code, d.material_name, d.qty, d.unit,
+                           d.lead_time_days, d.outsource_yn
+                    FROM spacepro.tb_routing_detail d
+                    JOIN spacepro.tb_routing_mst m 
+                        ON d.item_code = m.item_code 
+                        AND d.revision = m.revision 
+                        AND d.op_seq = m.op_seq
+                    WHERE d.item_code = %s AND d.revision = %s
+                    ORDER BY d.op_seq, d.sub_seq
+                """, (item_code, revision))
+                
+                details = [dict(row) for row in cur.fetchall()]
+                
+                # 통계 계산
+                total_time = sum(float(d['work_time'] or 0) for d in details)
+                total_workers = sum(int(d['workers'] or 0) for d in details)
+                
+                return {
+                    'item_code': item_code,
+                    'revision': revision,
+                    'total_sub_operations': len(details),
+                    'total_work_time': total_time,
+                    'details': details
+                }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

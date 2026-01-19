@@ -1,0 +1,81 @@
+{# API 라우트 템플릿 #}
+/**
+ * {{ table_name }} API Route
+ * 자동 생성됨
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@/generated/prisma';
+
+const prisma = new PrismaClient();
+
+// GET - 목록 조회
+export async function GET(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const keyword = searchParams.get('keyword') || '';
+
+    try {
+        const data = await prisma.$queryRawUnsafe(`
+            SELECT * FROM spacepro.{{ table_name }}
+            WHERE 1=1
+            ${keyword ? `AND (
+                {% for col in columns %}
+                {{ col.name }}::text ILIKE '%${keyword}%'{% if not loop.last %} OR{% endif %}
+                {% endfor %}
+            )` : ''}
+            ORDER BY id DESC
+        `);
+
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('조회 오류:', error);
+        return NextResponse.json({ error: '조회 실패' }, { status: 500 });
+    }
+}
+
+// POST - 저장 (Insert/Update)
+export async function POST(request: NextRequest) {
+    try {
+        const rows = await request.json();
+
+        for (const row of rows) {
+            if (row.id) {
+                // Update
+                await prisma.$executeRawUnsafe(`
+                    UPDATE spacepro.{{ table_name }}
+                    SET {% for col in columns %}{{ col.name }} = ${{ loop.index + 1 }}{% if not loop.last %}, {% endif %}{% endfor %},
+                        updated_at = NOW()
+                    WHERE id = $1
+                `, row.id, {% for col in columns %}row.{{ col.name }}{% if not loop.last %}, {% endif %}{% endfor %});
+            } else {
+                // Insert
+                await prisma.$executeRawUnsafe(`
+                    INSERT INTO spacepro.{{ table_name }} ({% for col in columns %}{{ col.name }}{% if not loop.last %}, {% endif %}{% endfor %})
+                    VALUES ({% for col in columns %}${{ loop.index }}{% if not loop.last %}, {% endif %}{% endfor %})
+                `, {% for col in columns %}row.{{ col.name }}{% if not loop.last %}, {% endif %}{% endfor %});
+            }
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('저장 오류:', error);
+        return NextResponse.json({ error: '저장 실패' }, { status: 500 });
+    }
+}
+
+// DELETE - 삭제
+export async function DELETE(request: NextRequest) {
+    try {
+        const { ids } = await request.json();
+
+        await prisma.$executeRawUnsafe(`
+            DELETE FROM spacepro.{{ table_name }}
+            WHERE id = ANY($1::int[])
+        `, ids);
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('삭제 오류:', error);
+        return NextResponse.json({ error: '삭제 실패' }, { status: 500 });
+    }
+}

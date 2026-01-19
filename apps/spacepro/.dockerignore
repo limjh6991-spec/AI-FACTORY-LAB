@@ -1,0 +1,44 @@
+# SpacePro Docker Ignore File
+# 빌드 시 제외할 파일/디렉토리
+
+# Dependencies
+node_modules
+scheduling-service/venv
+scheduling-service/__pycache__
+
+# Build outputs
+.next
+out
+dist
+
+# Cache
+.cache
+*.log
+
+# Environment files (빌드 시 제외, 런타임에 주입)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+
+# Tests
+coverage
+.nyc_output
+
+# Documentation
+docs/*.pptx
+docs/*.xlsx
+docs/*.pdf
+*.pptx
+
+# Misc
+*.md
+!README.md
+Makefile

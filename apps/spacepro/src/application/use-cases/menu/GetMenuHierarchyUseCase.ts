@@ -3,8 +3,8 @@
  * Clean Architecture: Application Layer
  */
 
-import { Menu, MenuDTO } from '../../domain/entities/Menu';
-import { IMenuRepository } from '../../domain/repositories/IMenuRepository';
+import { Menu, MenuDTO } from '../../../domain/entities/Menu';
+import { IMenuRepository } from '../../../domain/repositories/IMenuRepository';
 
 export interface GetMenuHierarchyOutput {
     menus: MenuDTO[];

@@ -109,7 +109,7 @@ export function AreaChartComponent({
                 {showTooltip && (
                     <Tooltip
                         contentStyle={tooltipStyle}
-                        formatter={(value: number) => formatNumber(value)}
+                        formatter={(value) => formatNumber(value as number)}
                     />
                 )}
 

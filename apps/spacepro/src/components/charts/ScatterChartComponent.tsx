@@ -128,7 +128,7 @@ export function ScatterChartComponent({
                 {showTooltip && (
                     <Tooltip
                         contentStyle={tooltipStyle}
-                        formatter={(value: number) => formatNumber(value)}
+                        formatter={(value) => formatNumber(value as number)}
                         cursor={{ strokeDasharray: '3 3' }}
                     />
                 )}

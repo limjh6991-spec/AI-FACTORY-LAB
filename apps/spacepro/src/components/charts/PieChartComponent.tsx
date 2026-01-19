@@ -129,9 +129,9 @@ export function PieChartComponent({
                 {showTooltip && (
                     <Tooltip
                         contentStyle={tooltipStyle}
-                        formatter={(value: number, name: string) => [
-                            `${formatNumber(value)} (${formatPercent((value / total) * 100)})`,
-                            name,
+                        formatter={(value, name) => [
+                            `${formatNumber(value as number)} (${formatPercent(((value as number) / total) * 100)})`,
+                            name as string,
                         ]}
                     />
                 )}

@@ -1,0 +1,91 @@
+# =====================================================
+# SpacePro MES/MRP - Docker Compose Configuration
+# 폐쇄망 배포용 전체 서비스 오케스트레이션
+# =====================================================
+
+services:
+  # -------------------------------------------------
+  # PostgreSQL Database
+  # -------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: spacepro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-spacepro}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - spacepro-db-data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-spacepro}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spacepro-network
+
+  # -------------------------------------------------
+  # FastAPI Backend (OR-Tools Scheduling Service)
+  # -------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: spacepro-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-spacepro}
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - spacepro-network
+
+  # -------------------------------------------------
+  # Next.js Frontend
+  # -------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: spacepro-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-spacepro}?schema=spacepro
+      NEXT_PUBLIC_BACKEND_URL: http://backend:8000
+      # 브라우저에서 접근할 Backend URL (외부에서 접근 가능한 주소)
+      NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-8000}
+    ports:
+      - "${FRONTEND_PORT:-3001}:3001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - spacepro-network
+
+# -------------------------------------------------
+# Networks
+# -------------------------------------------------
+networks:
+  spacepro-network:
+    driver: bridge
+
+# -------------------------------------------------
+# Volumes (데이터 영속화)
+# -------------------------------------------------
+volumes:
+  spacepro-db-data:
+    driver: local

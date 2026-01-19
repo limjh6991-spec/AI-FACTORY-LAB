@@ -3,8 +3,8 @@
  * Clean Architecture: Application Layer
  */
 
-import { ItemDTO } from '../../domain/entities/Item';
-import { IItemRepository, ItemFilter } from '../../domain/repositories/IItemRepository';
+import { ItemDTO } from '../../../domain/entities/Item';
+import { IItemRepository, ItemFilter } from '../../../domain/repositories/IItemRepository';
 
 export interface GetItemListInput {
     itemType?: string;

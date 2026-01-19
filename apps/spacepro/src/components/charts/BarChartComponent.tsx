@@ -122,7 +122,7 @@ export function BarChartComponent({
                 {showTooltip && (
                     <Tooltip
                         contentStyle={tooltipStyle}
-                        formatter={(value: number) => formatNumber(value)}
+                        formatter={(value) => formatNumber(value as number)}
                         cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                     />
                 )}
