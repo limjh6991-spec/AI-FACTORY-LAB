@@ -7,6 +7,7 @@ from .worker import router as worker_router
 from .capacity import router as capacity_router
 from .mrp import router as mrp_router
 from .schedule import router as schedule_router
+from .master import router as master_router
 
 __all__ = [
     'routing_router', 
@@ -14,5 +15,7 @@ __all__ = [
     'worker_router',
     'capacity_router',
     'mrp_router',
-    'schedule_router'
+    'schedule_router',
+    'master_router'
 ]
+

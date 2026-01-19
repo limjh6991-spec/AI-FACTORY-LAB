@@ -36,7 +36,8 @@ from routers import (
     worker_router,
     capacity_router,
     mrp_router,
-    schedule_router
+    schedule_router,
+    master_router
 )
 
 # 기본 라우터 (헬스체크, 스케줄 최적화)
@@ -48,6 +49,7 @@ app.include_router(simulation_router)   # /simulation/*
 app.include_router(worker_router)       # /worker/*
 app.include_router(capacity_router)     # /capacity/*
 app.include_router(mrp_router)          # /mrp/*
+app.include_router(master_router)       # /master/*
 
 
 if __name__ == "__main__":
