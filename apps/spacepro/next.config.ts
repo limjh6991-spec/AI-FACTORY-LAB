@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   experimental: {
     // Prisma 등 서버 컴포넌트 최적화
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_BACKEND_URL
+          ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/:path*`
+          : 'http://backend:8000/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

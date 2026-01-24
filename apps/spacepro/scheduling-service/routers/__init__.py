@@ -8,6 +8,7 @@ from .capacity import router as capacity_router
 from .mrp import router as mrp_router
 from .schedule import router as schedule_router
 from .master import router as master_router
+from .dashboard import router as dashboard_router
 
 __all__ = [
     'routing_router', 

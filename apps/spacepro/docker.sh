@@ -77,14 +77,27 @@ case "$1" in
         print_status "이미지가 ./docker-images/ 에 저장되었습니다."
         print_status "폐쇄망 전송 후 'docker load' 명령으로 로드하세요."
         ;;
+    "")
+        # 인자 없이 실행 시 빌드 + 시작
+        print_status "Docker 이미지 빌드 및 서비스 시작 중..."
+        docker compose up -d --build
+        print_status "서비스가 시작되었습니다."
+        echo ""
+        docker compose ps
+        echo ""
+        echo "  Frontend: http://localhost:3002"
+        echo "  Backend:  http://localhost:8001"
+        echo "  API Docs: http://localhost:8001/docs"
+        ;;
     *)
         echo "SpacePro Docker 관리 스크립트"
         echo ""
         echo "사용법: $0 {command}"
         echo ""
         echo "Commands:"
-        echo "  build    - Docker 이미지 빌드"
-        echo "  up       - 서비스 시작 (백그라운드)"
+        echo "  (없음)   - 빌드 + 서비스 시작 (기본)"
+        echo "  build    - Docker 이미지 빌드만"
+        echo "  up       - 서비스 시작 (빌드 없이)"
         echo "  down     - 서비스 중지"
         echo "  logs     - 로그 확인 (예: $0 logs backend)"
         echo "  restart  - 서비스 재시작"

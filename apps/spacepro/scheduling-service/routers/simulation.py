@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 import psycopg2
+import os
 
 try:
     from ortools.sat.python import cp_model
@@ -14,12 +15,17 @@ except ImportError:
 
 router = APIRouter(prefix="/simulation", tags=["simulation"])
 
-# Database connection
+# Database connection - Docker 환경 지원
 @contextmanager
 def get_db_connection():
+    # Docker 환경에서는 DATABASE_URL 사용
+    db_host = os.environ.get('DATABASE_HOST', 'db' if os.environ.get('DATABASE_URL') else 'localhost')
+    db_name = os.environ.get('DATABASE_NAME', 'spacepro')
+    db_port = os.environ.get('DATABASE_PORT', '5432')
     conn = psycopg2.connect(
-        host="localhost",
-        database="ai_factory_db",
+        host=db_host,
+        port=db_port,
+        database=db_name,
         user="postgres",
         password="postgres"
     )
@@ -29,16 +35,247 @@ def get_db_connection():
         conn.close()
 
 
+# ====================================
+# 계약 기반 생산 시뮬레이션 API (O궁)
+# ====================================
+
+@router.get("/contracts")
+async def get_contracts_for_simulation():
+    """
+    계약정보 조회 - 시뮬레이션 입력용
+    sp_contract_info + sp_macode_info + sp_pr_detail JOIN
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT DISTINCT c.contno, c.macode, m.maname
+                    FROM spacepro.sp_contract_info c
+                    LEFT JOIN spacepro.sp_macode_info m 
+                        ON c.contno = m.contno AND c.macode = m.macode
+                    ORDER BY c.contno, c.macode
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/contracts/{contno}/processes")
+async def get_contract_processes(contno: str):
+    """
+    계약별 공정 목록 조회 (세부공정 포함)
+    정렬: prname 알파벳 오름차순 → prname_detail 숫자 오름차순
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        c.contno, c.macode, c.prcode, c.prname, c.price, c.prcd_ratio,
+                        c.contracted_man_hours, c.site,
+                        p.id as detail_id, p.prname_detail, p.working_day, 
+                        p.worker, p.working_time, p.eqp_id
+                    FROM spacepro.sp_contract_info c
+                    LEFT JOIN spacepro.sp_pr_detail p ON LOWER(c.prname) = p.prname
+                    WHERE c.contno = %s
+                    ORDER BY c.prcode, p.prname, p.prname_detail
+                """, (contno,))
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/contracts/{contno}/full-detail")
+async def get_contract_full_detail(contno: str):
+    """
+    계약 상세 시뮬레이션 데이터 조회 (제품/자식제품/공정/세부공정)
+    
+    Returns:
+        List of process items with hierarchy:
+        - contno (Contract)
+        - maname (Main Product Name / Group)
+        - macode (Child Product Code)
+        - prname (Process)
+        - prname_detail (Detailed Process)
+        - working_day (Duration in days)
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 1. 계약에 포함된 모든 macode(자식제품) 및 공정 조회
+                # sp_prcode_detail_info 테이블이 상세 공정 정보를 모두 가지고 있음
+                query = """
+                    SELECT 
+                        d.contno, 
+                        d.macode, 
+                        m.maname,
+                        d.prcode, 
+                        d.prname, 
+                        d.prname_detail,
+                        d.wbs_vid,
+                        coalesce(d.working_day, 0) as working_day,
+                        coalesce(d.pr_detail_seq, 0) as detail_seq
+                    FROM spacepro.sp_prcode_detail_info d
+                    LEFT JOIN spacepro.sp_macode_info m 
+                        ON d.contno = m.contno AND d.macode = m.macode
+                    WHERE d.contno = %s
+                    ORDER BY 
+                        d.wbs_vid NULLS LAST, -- WBS ID 순 정렬 (Sheet5 형식)
+                        d.macode,             -- fallback
+                        d.prcode,     
+                        d.pr_detail_seq
+                """
+                cur.execute(query, (contno,))
+                cur.execute(query, (contno,))
+                # Explicitly convert to dict to ensure we can modify and serialize easily
+                rows = [dict(row) for row in cur.fetchall()]
+                print(f"DEBUG: Fetched {len(rows)} rows for contract {contno}")
+                
+                # 데이터 가공 (필요시)
+                # 시각화 테스트를 위한 가상 진척률 데이터 주입
+                import random
+                for row in rows:
+                    # Deterministic random based on prcode to keep reload consistent-ish
+                    seed = sum(ord(c) for c in (row['prcode'] or ''))
+                    random.seed(seed)
+                    
+                    # 0~100 사이 랜덤 진척률
+                    row['progress'] = random.randint(0, 10) * 10 
+                    
+                    # 상태 결정 로직 (간단화)
+                    if row['progress'] == 100:
+                        row['status'] = 'COMPLETED'
+                    elif row['progress'] > 0:
+                        row['status'] = 'IN_PROGRESS'
+                        # 30% 확률로 지연 상태
+                        if random.random() < 0.3:
+                            row['status'] = 'DELAYED'
+                    else:
+                        row['status'] = 'PLANNED'
+
+                return rows
+                
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/contract-schedule")
+async def schedule_contract_based(request: dict):
+    """
+    계약 기반 생산 스케줄링 (O궁 사이트용)
+    
+    Request:
+    {
+        "contno": "IAHANWCQ",
+        "plan_month": "2026-01",
+        "quantity": 1  // 제품 수량
+    }
+    
+    로직:
+    1. 계약 기준 우선순위
+    2. 세부공정 순서: prname(알파벳) → prname_detail(숫자) 오름차순
+    3. 설비별 병렬 처리 (동일 설비 내 세부공정은 순차)
+    """
+    try:
+        contno = request.get('contno')
+        quantity = request.get('quantity', 1)
+        
+        if not contno:
+            raise HTTPException(status_code=400, detail="contno is required")
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 공정 + 세부공정 조회
+                cur.execute("""
+                    SELECT 
+                        c.prcode, c.prname as process_name, c.price, c.prcd_ratio,
+                        c.contracted_man_hours,
+                        p.prname_detail, p.working_day, p.worker, p.working_time, p.eqp_id
+                    FROM spacepro.sp_contract_info c
+                    LEFT JOIN spacepro.sp_pr_detail p ON LOWER(c.prname) = p.prname
+                    WHERE c.contno = %s
+                    ORDER BY c.prcode, p.prname, p.prname_detail
+                """, (contno,))
+                rows = cur.fetchall()
+        
+        if not rows:
+            return {"schedule": [], "message": "No processes found for contract"}
+        
+        # 스케줄 생성 (순차 처리)
+        schedule = []
+        equipment_end_time = {}  # 설비별 종료 시간
+        current_time = 0
+        
+        for row in rows:
+            prcode = row['prcode']
+            prname_detail = row['prname_detail'] or row['process_name']
+            working_day = float(row['working_day'] or 0)
+            working_time = float(row['working_time'] or 0) if row['working_time'] else working_day * 8  # 일 → 시간 변환
+            worker_count = int(row['worker'] or 1)
+            eqp_id = row['eqp_id'] or 'GENERAL'
+            
+            # 작업 시간 계산 (시간 단위)
+            duration = working_time * quantity
+            
+            # 시작 시간: 이전 공정 종료 또는 설비 가용 시점
+            eqp_available = equipment_end_time.get(eqp_id, 0)
+            start_time = max(current_time, eqp_available)
+            end_time = start_time + duration
+            
+            schedule.append({
+                'prcode': prcode,
+                'operation': prname_detail,
+                'equipment': eqp_id,
+                'workers': worker_count,
+                'start_time': round(start_time, 2),
+                'end_time': round(end_time, 2),
+                'duration': round(duration, 2),
+                'prcd_ratio': row['prcd_ratio']
+            })
+            
+            # 설비 종료 시간 업데이트
+            equipment_end_time[eqp_id] = end_time
+            current_time = end_time
+        
+        # 총 작업 시간 및 설비 가동률 계산
+        total_time = max(equipment_end_time.values()) if equipment_end_time else 0
+        
+        equipment_util = []
+        for eqp_id, end_t in equipment_end_time.items():
+            work_time = sum(s['duration'] for s in schedule if s['equipment'] == eqp_id)
+            util = (work_time / total_time * 100) if total_time > 0 else 0
+            equipment_util.append({
+                'equipment': eqp_id,
+                'work_time': round(work_time, 2),
+                'utilization': round(util, 1)
+            })
+        
+        return {
+            'contno': contno,
+            'quantity': quantity,
+            'total_time_hours': round(total_time, 2),
+            'total_time_days': round(total_time / 8, 2),
+            'schedule': schedule,
+            'equipment_utilization': sorted(equipment_util, key=lambda x: -x['utilization'])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/schedule")
 async def schedule_multi_product(request: dict):
     """
-    다중 제품 생산 스케줄링
+    다중 제품(또는 계약) 생산 스케줄링
+    Multi-Product/Contract Scheduling
     
     Request:
     {
         "orders": [
-            {"item_code": "PROD-001", "quantity": 100},
-            {"item_code": "PROD-002", "quantity": 200}
+            {"item_code": "23D220097", "quantity": 1}, // item_code can be Contract No
+            {"item_code": "PROD-001", "quantity": 100}
         ],
         "algorithm": "OR_TOOLS" | "SPT" | "FIFO"
     }
@@ -58,21 +295,42 @@ async def schedule_multi_product(request: dict):
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 for order in orders:
+                    code = order['item_code']
+                    qty = order.get('quantity', 1)
+                    
+                    # 1. Try to fetch from Contract/Process Detail (sp_prcode_detail_info)
                     cur.execute("""
-                        SELECT op_seq, op_name, machine_code, setup_time, cycle_time, process_yield
-                        FROM spacepro.tb_routing_mst
-                        WHERE item_code = %s AND status = 'ACTIVE'
-                        ORDER BY op_seq
-                    """, (order['item_code'],))
+                        SELECT 
+                            d.prname_detail as op_name,
+                            d.eqp_id as machine_code,
+                            d.working_day * 8 as cycle_time, -- day to hours (approx)
+                            0 as setup_time,
+                            100 as process_yield,
+                            d.pr_detail_seq as op_seq
+                        FROM spacepro.sp_prcode_detail_info d
+                        WHERE d.contno = %s
+                        ORDER BY d.prcode, d.pr_detail_seq
+                    """, (code,))
                     routing = cur.fetchall()
                     
-                    jobs.append({
-                        'item_code': order['item_code'],
-                        'quantity': order.get('quantity', 100),
-                        'priority': order.get('priority', 'NORMAL'),
-                        'priority_order': priority_order.get(order.get('priority', 'NORMAL'), 2),
-                        'routing': routing
-                    })
+                    # 2. If no contract data, fallback to Item Routing Master (tb_routing_mst)
+                    if not routing:
+                        cur.execute("""
+                            SELECT op_seq, op_name, machine_code, setup_time, cycle_time, process_yield
+                            FROM spacepro.tb_routing_mst
+                            WHERE item_code = %s AND status = 'ACTIVE'
+                            ORDER BY op_seq
+                        """, (code,))
+                        routing = cur.fetchall()
+                    
+                    if routing:
+                        jobs.append({
+                            'item_code': code,
+                            'quantity': qty,
+                            'priority': order.get('priority', 'NORMAL'),
+                            'priority_order': priority_order.get(order.get('priority', 'NORMAL'), 2),
+                            'routing': routing
+                        })
         
         # 우선순위 순으로 정렬 (URGENT → HIGH → NORMAL)
         jobs.sort(key=lambda x: x['priority_order'])
@@ -92,14 +350,18 @@ async def schedule_multi_product(request: dict):
                 # 시간 범위 계산
                 for job in jobs:
                     for op in job['routing']:
+                        # cycle_time is per unit, but for contract(1 unit) it just works
                         duration = int(op['setup_time'] + op['cycle_time'] * job['quantity'])
+                        # Ensure minimal duration for visibility
+                        duration = max(duration, 1) 
                         horizon += duration
                 
                 # 변수 생성
                 for j_idx, job in enumerate(jobs):
                     for op in job['routing']:
-                        machine = op['machine_code']
+                        machine = op['machine_code'] or 'GENERAL'
                         duration = int(op['setup_time'] + op['cycle_time'] * job['quantity'])
+                        duration = max(duration, 1)
                         
                         suffix = f"_{j_idx}_{op['op_seq']}"
                         start_var = model.NewIntVar(0, horizon, f'start{suffix}')
@@ -118,10 +380,12 @@ async def schedule_multi_product(request: dict):
                 
                 # 공정 순서 제약
                 for j_idx, job in enumerate(jobs):
+                    # Sort by op_seq explicitly
                     ops = sorted(job['routing'], key=lambda x: x['op_seq'])
                     for i in range(len(ops) - 1):
                         prev_op = ops[i]['op_seq']
                         next_op = ops[i + 1]['op_seq']
+                        # key might be different if multiple ops have same op_seq (not expected in this schema)
                         if (j_idx, prev_op) in all_tasks and (j_idx, next_op) in all_tasks:
                             model.Add(all_tasks[(j_idx, next_op)][0] >= all_tasks[(j_idx, prev_op)][1])
                 
@@ -156,8 +420,8 @@ async def schedule_multi_product(request: dict):
                 else:
                     algorithm = 'FIFO'  # fallback
             except Exception as e:
-                algorithm = 'FIFO'  # fallback
                 print(f"OR-Tools error: {e}")
+                algorithm = 'FIFO'  # fallback
         
         if algorithm in ['SPT', 'FIFO'] or not schedule:
             # SPT: 짧은 작업 우선 / FIFO: 순차
@@ -171,8 +435,10 @@ async def schedule_multi_product(request: dict):
             for job in jobs:
                 product_end = 0
                 for op in job['routing']:
-                    machine = op['machine_code']
+                    machine = op['machine_code'] or 'GENERAL'
                     duration = op['setup_time'] + op['cycle_time'] * job['quantity']
+                    duration = max(duration, 1)
+                    
                     machine_available = machine_end_time.get(machine, 0)
                     start = max(product_end, machine_available)
                     end = start + duration
@@ -515,3 +781,66 @@ async def update_delay_reason(progress_id: int, request: dict):
         return {"success": True}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/resources/schedule")
+async def get_resource_schedule(plan_month: str = None):
+    """
+    설비 중심 스케줄 데이터 조회 (Resource-Centric View)
+    Y축: 설비 (eqp_id / eqp_name)
+    Data: 해당 설비에 할당된 모든 공정
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 1. 설비별 할당된 작업 조회
+                query = """
+                    SELECT 
+                        d.eqp_id,
+                        d.eqp_name,
+                        d.contno,
+                        d.macode,
+                        m.maname,
+                        d.prcode,
+                        d.prname,
+                        d.prname_detail,
+                        d.wbs_vid,
+                        coalesce(d.working_day, 0) as working_day,
+                        coalesce(d.pr_detail_seq, 0) as detail_seq
+                    FROM spacepro.sp_prcode_detail_info d
+                    LEFT JOIN spacepro.sp_macode_info m 
+                        ON d.contno = m.contno AND d.macode = m.macode
+                    WHERE d.eqp_id IS NOT NULL
+                """
+                
+                # if plan_month: query += " AND ..." 
+                
+                query += """
+                    ORDER BY 
+                        d.eqp_id,      -- 설비별 그룹핑
+                        d.contno,      -- 같은 설비 내에서는 계약순
+                        d.prcode
+                """
+                
+                cur.execute(query)
+                rows = [dict(row) for row in cur.fetchall()]
+                
+                # Mock Status Generation
+                import random
+                for row in rows:
+                    seed = sum(ord(c) for c in (row['prcode'] or '')) + sum(ord(c) for c in (row['macode'] or ''))
+                    random.seed(seed)
+                    row['progress'] = random.randint(0, 10) * 10 
+                    if row['progress'] == 100:
+                        row['status'] = 'COMPLETED'
+                    elif row['progress'] > 0:
+                        row['status'] = 'IN_PROGRESS'
+                        if random.random() < 0.3: row['status'] = 'DELAYED'
+                    else:
+                        row['status'] = 'PLANNED'
+
+                return rows
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

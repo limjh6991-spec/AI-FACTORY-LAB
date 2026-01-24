@@ -6,7 +6,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { productColors, ProductOrder, ScheduledTask, SimulationResult, ScenarioSummary } from './types';
 
-const API_BASE = 'http://localhost:8000';
+// 변경: 브라우저에서 직접호출 대신 Next.js Proxy(/api) 사용
+const API_BASE = '/api';
 
 export function useSimulation() {
     // 기본 상태
@@ -35,10 +36,14 @@ export function useSimulation() {
     // API 호출 함수들
     const fetchItems = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/routing/items`);
+            // 변경: 아이템(Routing) 대신 계약(Contract) 목록 조회
+            const res = await fetch(`${API_BASE}/simulation/contracts`);
             if (res.ok) {
                 const data = await res.json();
-                setItems(data.filter((d: any) => d.item_code.startsWith('PROD-')).map((d: any) => d.item_code));
+                // data format: [{contno, macode, maname}, ...]
+                // 고유한 계약 번호만 추출
+                const contracts = Array.from(new Set(data.map((d: any) => d.contno)));
+                setItems(contracts as string[]);
             }
         } catch (err) {
             console.error(err);
@@ -66,17 +71,14 @@ export function useSimulation() {
 
                 const loadedOrders: ProductOrder[] = [];
                 for (const o of data.orders || []) {
-                    const routingRes = await fetch(`${API_BASE}/routing/${o.item_code}`);
-                    if (routingRes.ok) {
-                        const routingData = await routingRes.json();
-                        loadedOrders.push({
-                            item_code: o.item_code,
-                            quantity: o.quantity,
-                            routing: routingData.routing || [],
-                            color: productColors[loadedOrders.length % productColors.length],
-                            priority: o.priority || 'NORMAL'
-                        });
-                    }
+                    // 구버전: routing fetch -> 신버전: 그냥 리스트에 추가 (backend 처리)
+                    loadedOrders.push({
+                        item_code: o.item_code, // 여기서는 contno가 들어감
+                        quantity: o.quantity,
+                        routing: [], // Frontend doesn't need routing details anymore
+                        color: productColors[loadedOrders.length % productColors.length],
+                        priority: o.priority || 'NORMAL'
+                    });
                 }
                 setOrders(loadedOrders);
 
@@ -184,21 +186,20 @@ export function useSimulation() {
                 if (!confirm(`${carryOvers.length}개 이월 오더를 추가하시겠습니까?`)) return;
 
                 for (const c of carryOvers) {
-                    const routingRes = await fetch(`${API_BASE}/routing/${c.item_code}`);
-                    if (routingRes.ok) {
-                        const routingData = await routingRes.json();
-                        setOrders(prev => {
-                            if (prev.find(o => o.item_code === c.item_code)) return prev;
-                            return [...prev, {
-                                item_code: c.item_code,
-                                quantity: c.remaining_qty,
-                                routing: routingData.routing || [],
-                                color: productColors[prev.length % productColors.length],
-                                priority: c.priority,
-                                source_progress_id: c.progress_id
-                            }];
-                        });
-                    }
+                    // Note: This fetchContract part might need adjustment if carry overs are items not contracts
+                    // Assuming they are compatible or this legacy logic handles items correctly for now
+                    // Ideally we should unify carry over to contracts too
+                    setOrders(prev => {
+                        if (prev.find(o => o.item_code === c.item_code)) return prev;
+                        return [...prev, {
+                            item_code: c.item_code,
+                            quantity: c.remaining_qty,
+                            routing: [], // No routing needed for frontend anymore
+                            color: productColors[prev.length % productColors.length],
+                            priority: c.priority,
+                            source_progress_id: c.progress_id
+                        }];
+                    });
                 }
             }
         } catch (err) {
@@ -209,22 +210,18 @@ export function useSimulation() {
     const addProduct = useCallback(async () => {
         if (!selectedItem || orders.find(o => o.item_code === selectedItem)) return;
 
-        try {
-            const res = await fetch(`${API_BASE}/routing/${selectedItem}`);
-            if (res.ok) {
-                const data = await res.json();
-                setOrders(prev => [...prev, {
-                    item_code: selectedItem,
-                    quantity,
-                    routing: data.routing || [],
-                    color: productColors[prev.length % productColors.length],
-                    priority: 'NORMAL'
-                }]);
-                setSelectedItem('');
-            }
-        } catch (err) {
-            console.error(err);
-        }
+        // Note: We don't fetch routing here anymore. 
+        // We just add the Contract ID to the list.
+        // The backend will expand this Contract ID into processes during simulation.
+
+        setOrders(prev => [...prev, {
+            item_code: selectedItem, // This is now ContNo
+            quantity, // Default 1 (Contract based usually 1 unit of contract?)
+            routing: [],
+            color: productColors[prev.length % productColors.length],
+            priority: 'NORMAL'
+        }]);
+        setSelectedItem('');
     }, [selectedItem, quantity, orders]);
 
     const removeProduct = useCallback((code: string) => {

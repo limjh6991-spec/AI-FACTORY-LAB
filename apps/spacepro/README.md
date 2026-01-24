@@ -1,146 +1,116 @@
 # SpacePro - MES/MRP 생산계획 관리 시스템
 
-> **Next.js 16 + TypeScript + Clean Architecture 기반 생산 모니터링 대시보드**
+> **Next.js 16 + TypeScript + Clean Architecture + Docker 기반 생산 모니터링 및 시뮬레이션 시스템**
 
 ## 🚀 프로젝트 개요
 
-SpacePro는 MES/MRP 기반의 **생산 진척현황 모니터링 대시보드** 시스템입니다.
-생산 플로우를 시각화하고, KPI를 모니터링하며, 실시간 알람 시스템을 제공합니다.
+SpacePro는 방산 제조 분야(연소관, 노즐, 항공 등)에 특화된 **MES/MRP 및 생산경영 시뮬레이션** 플랫폼입니다.
+실시간 생산 현황 모니터링, 계약/품목 기반 생산 시뮬레이션, 그리고 리스크 관리 기능을 제공합니다.
 
 ## 📋 주요 기능
 
 | 기능 | 경로 | 설명 |
 |------|------|------|
-| 메인 대시보드 | `/` | 생산 현황 종합 |
-| 프로젝트 대시보드 | `/projects` | Metronic 스타일 |
-| 킥오프 미팅 | `/kickoff` | 프로젝트 착수 준비 가이드 |
+| **경영계획 시뮬레이션** | `/plan/management` | 사업팀별(연소관, 노즐 등) 계약/품목 현황 및 진행율 모니터링 |
+| **계약 상세 모니터링** | `/plan/management/[teamId]` | 계약별 대표 제품/공정 간트 차트 (시뮬레이션 데이터) |
+| **생산 시뮬레이션** | `/plan/contract-simulation` | 계약 기반 상세 일정 시뮬레이션 (OR-Tools) |
+| 메인 대시보드 | `/` | 생산 현황 종합 (WIP) |
+| 프로젝트 대시보드 | `/projects` | Metronic 스타일 프로젝트 관리 |
 | 월간 생산계획 | `/plan/monthly` | PSI 계획 및 OR-Tools 최적화 |
-| AI Demo | `/ai-demo` | LUI + MCP + Agent Orchestration |
 
-## 🏗️ Clean Architecture 구조
+## 🏗️ 시스템 아키텍처
 
-```
-src/
-├── app/                        # Next.js App Router (Presentation Layer)
-│   ├── page.tsx                # 메인 대시보드
-│   ├── projects/               # 프로젝트 대시보드
-│   ├── kickoff/                # 킥오프 미팅 키트
-│   ├── plan/                   # 생산계획 관리
-│   │   ├── monthly/            # 월간 생산계획
-│   │   └── psi/                # PSI 계획
-│   ├── ai-demo/                # AI 데모 페이지
-│   └── api/                    # API Routes
-│
-├── domain/                     # Domain Layer (핵심 비즈니스 로직)
-│   ├── entities/               # 엔티티
-│   │   ├── Menu.ts
-│   │   ├── ScheduleResult.ts
-│   │   └── ...
-│   ├── repositories/           # 리포지토리 인터페이스
-│   │   ├── MenuRepository.ts
-│   │   └── ...
-│   └── value-objects/          # 값 객체
-│
-├── application/                # Application Layer (Use Cases)
-│   ├── use-cases/              # 유스케이스
-│   │   ├── menu/
-│   │   ├── schedule/
-│   │   └── ...
-│   ├── dto/                    # Data Transfer Objects
-│   └── services/               # 애플리케이션 서비스
-│
-├── infrastructure/             # Infrastructure Layer (외부 시스템 연동)
-│   ├── persistence/            # DB 연동
-│   │   └── prisma/             # Prisma Repository 구현
-│   ├── config/                 # 설정
-│   └── external/               # 외부 서비스
-│
-├── components/                 # UI 컴포넌트
-│   ├── dashboard/              # 대시보드 컴포넌트
-│   └── layout/                 # 레이아웃 컴포넌트
-│
-└── lib/                        # 공통 라이브러리
+Clean Architecture 패턴을 준수하며, Docker 컨테이너 기반으로 마이크로서비스가 구성되어 있습니다.
+
+```mermaid
+graph TD
+    User[Client Browser] --> |HTTP| FE[Frontend Container (Next.js)]
+    FE --> |API Proxy| BE[Backend Container (FastAPI)]
+    BE --> |SQL| DB[Database Container (PostgreSQL 15)]
+    BE --> |Solver| OR[OR-Tools Engine]
 ```
 
-### Clean Architecture 계층
-
+### 디렉토리 구조
 ```
-┌─────────────────────────────────────────────┐
-│             Presentation (app/)              │  UI, API Routes
-├─────────────────────────────────────────────┤
-│         Application (application/)           │  Use Cases, Services
-├─────────────────────────────────────────────┤
-│             Domain (domain/)                 │  Entities, Repositories
-├─────────────────────────────────────────────┤
-│       Infrastructure (infrastructure/)       │  DB, External APIs
-└─────────────────────────────────────────────┘
+spacepro/
+├── src/                        # Next.js Presentation Layer
+│   ├── app/                    # App Router (Pages & API Routes)
+│   ├── components/             # Reusable UI Components
+│   └── ...
+├── scheduling-service/         # Python FastAPI Backend
+│   ├── routers/                # API Endpoints (Master, Dashboard, Simulation)
+│   ├── main.py                 # App Entry Point
+│   └── requirements.txt        # Python Dependencies
+├── docker/                     # Docker Configs
+│   └── init-db.sql             # DB Initialization Script
+├── Dockerfile.frontend         # Frontend Build Config
+├── Dockerfile.backend          # Backend Build Config
+├── docker-compose.yml          # Service Orchestration
+└── docker.sh                   # Management Script
 ```
 
 ## 🛠️ 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Database | PostgreSQL + Prisma 7 |
-| OR-Tools | Python 마이크로서비스 (스케줄링 최적화) |
+| 분류 | 기술 | 버전/특징 |
+|------|------|-----------|
+| **Frontend** | Next.js | v16.0.10 (App Router) |
+| | React | v19.0.0 |
+| | Language | TypeScript |
+| | Styling | Tailwind CSS |
+| | UI Lib | Lucide React |
+| **Backend** | Python | v3.11 |
+| | Framework | FastAPI |
+| | Optimization | Google OR-Tools |
+| **Database** | PostgreSQL | v15 (Docker) |
+| | ORM | Prisma / Psycopg2 |
+| **Infra** | Docker | Compose 기반 오케스트레이션 |
 
-## 🎨 디자인 테마 (Metronic 스타일)
+## 🚀 설치 및 실행 (Docker 환경)
 
-| 색상 | 코드 | 용도 |
-|------|------|------|
-| Primary | `#3699FF` | 메인 액션 |
-| Success | `#1BC5BD` | 완료/성공 |
-| Warning | `#FFA800` | 주의/경고 |
-| Danger | `#F64E60` | 오류/위험 |
-| Dark | `#181C32` | 사이드바 배경 |
-| Background | `#F5F8FA` | 페이지 배경 |
+폐쇄망 환경을 고려하여 모든 의존성은 Docker 이미지로 패키징 가능합니다.
 
-## 🚀 시작하기
-
+### 1. 서비스 전체 시작
 ```bash
-# 의존성 설치
-npm install
+# 전체 서비스 빌드 및 실행 (DB 데이터 유지)
+./docker.sh up
 
-# 개발 서버 실행
-npm run dev
-
-# 브라우저 접속
-http://localhost:3000
+# 백그라운드 실행
+./docker.sh up -d
 ```
 
-## 📅 개발 현황
+### 2. 서비스 개별 관리
+```bash
+# 특정 서비스만 재빌드 (코드 수정 시)
+./docker.sh build frontend
+./docker.sh build backend
 
-### ✅ 완료
-- [x] Prisma 7 + PostgreSQL 연동
-- [x] Clean Architecture 구조 적용
-- [x] 동적 사이드바 메뉴 시스템
-- [x] 월간 생산계획 (`/plan/monthly`)
-- [x] AI Demo 페이지 (`/ai-demo`)
-- [x] Scheduling Service (Python OR-Tools)
-- [x] 공정 라우팅 마스터 (`/master/routing`) - CRUD
-- [x] 생산 시뮬레이션 (`/plan/simulation`) - OR-Tools/SPT/FIFO
-- [x] MRP 계산 (`/plan/mrp`)
-- [x] **scheduling-service 라우터 분리** (2025-12-31)
+# 서비스 재시작
+./docker.sh restart backend
+```
 
-### 🔄 진행 중
-- [ ] 품목/BOM 마스터 관리
-- [ ] 생산 오더 관리
+### 3. 접속 주소
+- **Frontend**: [http://localhost:3001](http://localhost:3001)
+- **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## 📁 관련 문서
+## 📅 최근 업데이트 내역 (2026.01)
 
-| 문서 | 설명 |
-|------|------|
-| `docs/DEVELOPMENT_ROADMAP.md` | 개발 로드맵 |
-| `docs/ENV_GUIDE.md` | 환경 변수 설정 가이드 |
-| `docs/PRISMA7_SETUP_GUIDE.md` | Prisma 7 설정 가이드 |
-| `docs/OR_TOOLS_INTEGRATION.md` | OR-Tools 연동 가이드 |
+### ✅ 경영계획 시뮬레이션 (최신)
+- [x] **사업팀별 현황 대시보드**: 연소관팀(C01) 등 팀별 계약/품목 수 및 진행율 카드뷰
+- [x] **계약별 상세 간트 차트**:
+    - O궁, SH, SD, SF 등 주요 제품군 통합 관리
+    - 공정별 진행 상태 (Done/In Progress/Pending) 시각화
+    - 제품별 타임라인 그룹핑 뷰 제공
+
+### ✅ 데이터 표준화
+- [x] **통합 계약 관리**: O궁/SH/SD/SF 제품군을 단일 계약(`23D220097`)으로 통합
+- [x] **Master Data 정비**: `sp_macode_info`, `sp_pr_detail` 등 표준 테이블 적용
+
+### ✅ 인프라
+- [x] **Docker 환경 구축**: Frontend, Backend, DB 컨테이너화 완료 및 연동 테스트 통과
+
+## 📁 주요 문서
+- `CONTEXT_SUMMARY.md`: 프로젝트 전체 맥락 및 현재 상태 요약
+- `implementation_plan.md`: 구현 계획 이력
 
 ---
-
-**Created**: 2024년 12월 17일  
-**Updated**: 2024년 12월 21일  
-**Author**: SpacePro Team
+**Updated**: 2026년 01월 24일

@@ -37,7 +37,8 @@ from routers import (
     capacity_router,
     mrp_router,
     schedule_router,
-    master_router
+    master_router,
+    dashboard_router  # Added
 )
 
 # 기본 라우터 (헬스체크, 스케줄 최적화)
@@ -50,7 +51,7 @@ app.include_router(worker_router)       # /worker/*
 app.include_router(capacity_router)     # /capacity/*
 app.include_router(mrp_router)          # /mrp/*
 app.include_router(master_router)       # /master/*
-
+app.include_router(dashboard_router)    # /dashboard/*
 
 if __name__ == "__main__":
     import uvicorn
