@@ -40,7 +40,8 @@ from routers import (
     master_router,
     dashboard_router,
     pr_detail_router,
-    data_format_router
+    data_format_router,
+    scheduler_router
 )
 
 # 기본 라우터 (헬스체크, 스케줄 최적화)
@@ -56,6 +57,7 @@ app.include_router(master_router)       # /master/*
 app.include_router(dashboard_router)    # /dashboard/*
 app.include_router(pr_detail_router)    # /pr-detail/*
 app.include_router(data_format_router)  # /data-format/*
+app.include_router(scheduler_router)    # /scheduler/*
 
 if __name__ == "__main__":
     import uvicorn

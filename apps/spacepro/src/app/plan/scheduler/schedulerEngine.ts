@@ -1,18 +1,30 @@
-import { Contract, RoutingStep, Resource, ScheduleEvent } from './types';
+// 스케줄러 엔진 (고도화 버전) - Forward Scheduling with Dependencies
+
+import {
+    Contract,
+    RoutingStep,
+    Resource,
+    ScheduleEvent,
+    Dependency,
+    ResourceAllocation,
+    SchedulerData,
+    TimelineConfig
+} from './types';
 
 interface SchedulingRequest {
     contracts: Contract[];
-    routings: Record<string, RoutingStep[]>; // Key: macode (제품 코드)
+    routings: Record<string, RoutingStep[]>;  // Key: macode
     resources: Resource[];
     startDate: Date;
+    workingHoursPerDay?: number;
 }
 
-export function scheduleProduction(request: SchedulingRequest): ScheduleEvent[] {
-    const { contracts, routings, resources, startDate } = request;
+export function scheduleProduction(request: SchedulingRequest): SchedulerData {
+    const { contracts, routings, resources, startDate, workingHoursPerDay = 8 } = request;
     const events: ScheduleEvent[] = [];
+    const dependencies: Dependency[] = [];
 
     // 1. 계약 정렬: 납기일 기준 오름차순 (납기 임박 순)
-    // 납기일이 없으면 먼 미래로 간주하여 후순위 배정
     const sortedContracts = [...contracts].sort((a, b) => {
         const dateA = a.due_date ? new Date(a.due_date).getTime() : Number.MAX_SAFE_INTEGER;
         const dateB = b.due_date ? new Date(b.due_date).getTime() : Number.MAX_SAFE_INTEGER;
@@ -20,10 +32,7 @@ export function scheduleProduction(request: SchedulingRequest): ScheduleEvent[] 
     });
 
     // 자원 가용 시간 추적기
-    // Map<bench_id, 해당 자원이 작업 가능한 시작 시간>
     const resourceAvailability = new Map<string, Date>();
-
-    // 모든 자원의 시작 시간을 시뮬레이션 시작 시간으로 초기화
     resources.forEach(res => {
         resourceAvailability.set(res.bench_id, new Date(startDate));
     });
@@ -40,49 +49,147 @@ export function scheduleProduction(request: SchedulingRequest): ScheduleEvent[] 
         const sortedSteps = [...steps].sort((a, b) => a.rn - b.rn);
 
         let previousStepEndTime = new Date(startDate);
+        let previousEventId: string | null = null;
 
         // 3. 각 라우팅 단계(공정)에 대해 반복
         for (const step of sortedSteps) {
             const resourceId = step.target_site;
 
-            // 대상 자원의 현재 가용 시간 확인
             let resourceFreeTime = resourceAvailability.get(resourceId);
             if (!resourceFreeTime) {
-                // 자원 정보가 맵에 없다면 시작 시간으로 초기화
                 resourceFreeTime = new Date(startDate);
                 resourceAvailability.set(resourceId, resourceFreeTime);
             }
 
-            // 4. 시작 시간 결정 (Forward Scheduling)
-            // 제약 조건: N번째 공정은 N-1번째 공정이 끝나야 시작 가능
-            // 시작 시간 = MAX(자원 가용 시간, 이전 공정 종료 시간)
-            const startTime = new Date(Math.max(resourceFreeTime.getTime(), previousStepEndTime.getTime()));
+            // 4. Forward Scheduling
+            const startTime = new Date(Math.max(
+                resourceFreeTime.getTime(),
+                previousStepEndTime.getTime()
+            ));
 
-            // 종료 시간 계산
-            // Contracted_Man_hours를 해당 공정의 소요 시간으로 가정
             const durationHours = step.Contracted_Man_hours;
             const endTime = new Date(startTime.getTime() + durationHours * 60 * 60 * 1000);
 
-            // 이벤트 생성
+            // 납기일 대비 상태 판정
+            const dueDate = contract.due_date ? new Date(contract.due_date) : null;
+            let status: ScheduleEvent['status'] = 'scheduled';
+            if (dueDate && endTime > dueDate) {
+                status = 'delayed';
+            }
+
+            const eventId = `${contract.contno}-${step.rn}`;
             const event: ScheduleEvent = {
-                id: `${contract.contno}-${step.rn}`,
+                id: eventId,
                 resourceId: resourceId,
-                title: `${contract.macode} (공정: ${step.prcode})`,
+                title: step.prname || step.prcode,
                 startDate: startTime,
                 endDate: endTime,
                 duration: durationHours,
-                status: 'scheduled',
+                status: status,
                 processCode: step.prcode,
-                contractNo: contract.contno
+                processName: step.prname,
+                contractNo: contract.contno,
+                sequenceNo: step.rn,
+                progress: 0
             };
 
             events.push(event);
 
-            // 상태 업데이트: 자원 가용 시간을 이 작업의 종료 시간으로 갱신
+            // 5. 의존성 생성 (이전 공정 → 현재 공정)
+            if (previousEventId) {
+                dependencies.push({
+                    fromEventId: previousEventId,
+                    toEventId: eventId,
+                    type: 'finish-to-start'
+                });
+            }
+
             resourceAvailability.set(resourceId, endTime);
             previousStepEndTime = endTime;
+            previousEventId = eventId;
         }
     }
 
-    return events;
+    // 6. 리소스 부하 계산
+    const allocations = calculateResourceAllocations(events, resources, startDate, workingHoursPerDay);
+
+    // 7. 타임라인 설정
+    const allDates = events.flatMap(e => [e.startDate, e.endDate]);
+    const minDate = allDates.length > 0 ? new Date(Math.min(...allDates.map(d => d.getTime()))) : startDate;
+    const maxDate = allDates.length > 0 ? new Date(Math.max(...allDates.map(d => d.getTime()))) : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const config: TimelineConfig = {
+        startDate: minDate,
+        endDate: maxDate,
+        pixelsPerHour: 40,
+        showDays: true,
+        showHours: true,
+        workingHoursPerDay
+    };
+
+    return {
+        resources,
+        events,
+        dependencies,
+        allocations,
+        config
+    };
+}
+
+function calculateResourceAllocations(
+    events: ScheduleEvent[],
+    resources: Resource[],
+    startDate: Date,
+    workingHoursPerDay: number
+): ResourceAllocation[] {
+    const allocations: ResourceAllocation[] = [];
+
+    // 전체 기간 계산 (일)
+    const allEndDates = events.map(e => e.endDate.getTime());
+    const endDate = allEndDates.length > 0
+        ? new Date(Math.max(...allEndDates))
+        : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const totalCapacityHours = totalDays * workingHoursPerDay;
+
+    for (const resource of resources) {
+        const resourceEvents = events.filter(e => e.resourceId === resource.bench_id);
+        const totalAllocatedHours = resourceEvents.reduce((sum, e) => sum + e.duration, 0);
+        const capacityHours = resource.daily_capacity
+            ? totalDays * resource.daily_capacity
+            : totalCapacityHours;
+
+        allocations.push({
+            resourceId: resource.bench_id,
+            totalAllocatedHours,
+            capacityHours,
+            utilizationPercent: capacityHours > 0 ? Math.min(100, (totalAllocatedHours / capacityHours) * 100) : 0,
+            taskCount: resourceEvents.length
+        });
+    }
+
+    return allocations;
+}
+
+// 유틸리티 함수: 날짜 포맷
+export function formatDateForTimeline(date: Date, showTime: boolean = false): string {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    if (showTime) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        return `${month}/${day} ${hours}:00`;
+    }
+    return `${month}월 ${day}일`;
+}
+
+// 유틸리티 함수: 시간 간격 계산
+export function getTimeSlots(startDate: Date, endDate: Date, intervalHours: number = 24): Date[] {
+    const slots: Date[] = [];
+    let current = new Date(startDate);
+    while (current <= endDate) {
+        slots.push(new Date(current));
+        current = new Date(current.getTime() + intervalHours * 60 * 60 * 1000);
+    }
+    return slots;
 }
