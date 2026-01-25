@@ -92,7 +92,7 @@ export default function WorkerMasterPage() {
     const [bulkCount, setBulkCount] = useState(100);
     const [bulkTeamSize, setBulkTeamSize] = useState(5);
 
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = 'http://localhost:8001';
 
     useEffect(() => {
         fetchWorkers();

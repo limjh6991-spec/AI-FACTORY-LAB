@@ -23,7 +23,7 @@ app = FastAPI(
 # CORS 설정 (Next.js 개발 서버 허용)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001", "http://localhost:3000"],
+    allow_origins=["http://localhost:3001", "http://localhost:3000", "http://localhost:3002"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,7 +38,9 @@ from routers import (
     mrp_router,
     schedule_router,
     master_router,
-    dashboard_router  # Added
+    dashboard_router,
+    pr_detail_router,
+    data_format_router
 )
 
 # 기본 라우터 (헬스체크, 스케줄 최적화)
@@ -52,6 +54,8 @@ app.include_router(capacity_router)     # /capacity/*
 app.include_router(mrp_router)          # /mrp/*
 app.include_router(master_router)       # /master/*
 app.include_router(dashboard_router)    # /dashboard/*
+app.include_router(pr_detail_router)    # /pr-detail/*
+app.include_router(data_format_router)  # /data-format/*
 
 if __name__ == "__main__":
     import uvicorn

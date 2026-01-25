@@ -15,3 +15,4 @@ pydantic>=2.5
 
 # CORS support
 python-multipart>=0.0.6
+asyncpg
