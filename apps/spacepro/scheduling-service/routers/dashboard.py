@@ -90,18 +90,19 @@ def get_team_status():
 def get_team_contracts(team_id: str):
     """
     Get contracts and simulated schedule for a team.
-    Returns list of contracts with their representative processes and simulated status.
+    Returns list of contracts with their products and simulated status.
+    Now includes contid (contract name) for display purposes.
     """
     try:
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute("SET search_path TO spacepro, public")
 
-        # 1. Get Contracts for the Team
+        # 1. Get distinct contracts for the team with contid from sp_macode_info
         query_contracts = """
-        SELECT DISTINCT c.contno, c.macode, m.maname 
+        SELECT DISTINCT c.contno, m.contid
         FROM sp_contract_info c
-        LEFT JOIN sp_macode_info m ON c.macode = m.macode
+        LEFT JOIN sp_macode_info m ON c.contno = m.contno
         WHERE c.undertaking_team_id = %s
         ORDER BY c.contno
         """
@@ -111,52 +112,70 @@ def get_team_contracts(team_id: str):
         result = []
         for cont in contracts:
             contno = cont['contno']
-            macode = cont['macode']
-            maname = cont['maname']
+            contid = cont['contid'] or contno  # fallback to contno if contid is null
             
-            # 2. Get Representative Processes
-            query_processes = """
-            SELECT prcode, prname, rn
-            FROM sp_contract_info
-            WHERE contno = %s AND macode = %s
-            ORDER BY rn
+            # 2. Get products for this contract
+            query_products = """
+            SELECT DISTINCT c.macode, m.maname 
+            FROM sp_contract_info c
+            LEFT JOIN sp_macode_info m ON c.macode = m.macode
+            WHERE c.contno = %s
+            ORDER BY c.macode
             """
-            cur.execute(query_processes, (contno, macode))
-            processes = cur.fetchall()
+            cur.execute(query_products, (contno,))
+            products = cur.fetchall()
             
-            # 3. Simulate Schedule & Status
-            simulated_processes = []
-            current_day = 1
-            
-            for idx, proc in enumerate(processes):
-                # Simulate duration: 2-3 days per process
-                duration = 2
-                start_day = current_day
-                end_day = current_day + duration
-                current_day = end_day 
+            product_list = []
+            for prod in products:
+                macode = prod['macode']
+                maname = prod['maname'] or macode
                 
-                # Simulate Status
-                if idx < 3:
-                    status = "Done"
-                elif idx < 5:
-                    status = "In Progress"
-                else:
-                    status = "Pending"
+                # 3. Get Representative Processes for this product
+                query_processes = """
+                SELECT prcode, prname, rn
+                FROM sp_contract_info
+                WHERE contno = %s AND macode = %s
+                ORDER BY rn
+                """
+                cur.execute(query_processes, (contno, macode))
+                processes = cur.fetchall()
+                
+                # 4. Simulate Schedule & Status
+                simulated_processes = []
+                current_day = 1
+                
+                for idx, proc in enumerate(processes):
+                    duration = 2
+                    start_day = current_day
+                    end_day = current_day + duration
+                    current_day = end_day 
                     
-                simulated_processes.append({
-                    "prcode": proc['prcode'],
-                    "prname": proc['prname'],
-                    "rn": proc['rn'],
-                    "start_day": start_day,
-                    "end_day": end_day,
-                    "status": status
+                    if idx < 3:
+                        status = "Done"
+                    elif idx < 5:
+                        status = "In Progress"
+                    else:
+                        status = "Pending"
+                        
+                    simulated_processes.append({
+                        "prcode": proc['prcode'],
+                        "prname": proc['prname'],
+                        "rn": proc['rn'],
+                        "start_day": start_day,
+                        "end_day": end_day,
+                        "status": status
+                    })
+                
+                product_list.append({
+                    "macode": macode,
+                    "maname": maname,
+                    "processes": simulated_processes
                 })
             
             result.append({
                 "contno": contno,
-                "macode": macode,
-                "maname": maname,
-                "processes": simulated_processes
+                "contid": contid,
+                "products": product_list
             })
 
         cur.close()
@@ -165,3 +184,4 @@ def get_team_contracts(team_id: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

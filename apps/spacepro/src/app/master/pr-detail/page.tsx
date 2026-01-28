@@ -43,6 +43,7 @@ const processColorPalette = [
 interface PrDetail {
     contno: string;
     macode: string;
+    maname: string; // 제품명 (표시용)
     prcode: string;
     prname: string;
     pr_seq: number;
@@ -68,6 +69,7 @@ interface ProcessGroup {
 
 interface ProductRouting {
     macode: string;
+    maname: string; // 제품명 (표시용)
     contno: string;
     wbs_vid: string; // 제품 계층 구조
     processes: ProcessGroup[];
@@ -107,8 +109,8 @@ export default function PrDetailPage() {
 
     // Filter options
     const [teams, setTeams] = useState<{ team_id: string; team_name: string; contract_count: number }[]>([]);
-    const [contracts, setContracts] = useState<{ contno: string; detail_count: number }[]>([]);
-    const [products, setProducts] = useState<{ macode: string; wbs_vid: string; detail_count: number }[]>([]);
+    const [contracts, setContracts] = useState<{ contno: string; contid: string; detail_count: number }[]>([]);
+    const [products, setProducts] = useState<{ macode: string; maname: string; wbs_vid: string; detail_count: number }[]>([]);
 
     // Selected filters (순서: 사업팀 → 계약 → 제품 → 공정)
     const [filterTeam, setFilterTeam] = useState('');
@@ -255,6 +257,7 @@ export default function PrDetailPage() {
             if (!productMap.has(item.macode)) {
                 productMap.set(item.macode, {
                     macode: item.macode,
+                    maname: item.maname || item.macode, // 제품명 추가
                     contno: item.contno,
                     wbs_vid: item.wbs_vid || '', // wbs_vid 추가
                     processes: [],
@@ -502,6 +505,7 @@ export default function PrDetailPage() {
         const newItem: PrDetail = {
             contno: editItem.contno,
             macode: editItem.macode,
+            maname: editItem.macode || '', // 새로 추가되는 항목은 macode를 임시로 사용
             prcode: editItem.prcode,
             prname: editItem.prname || '',
             pr_seq: editItem.pr_seq || 1,
@@ -737,45 +741,26 @@ export default function PrDetailPage() {
                     <select
                         value={filterContno}
                         onChange={(e) => setFilterContno(e.target.value)}
-                        className="px-4 py-2.5 rounded-lg border text-sm min-w-40"
+                        className="px-4 py-2.5 rounded-lg border text-sm min-w-48"
                         style={{ borderColor: colors.gray300 }}
                     >
                         <option value="">전체 계약</option>
                         {contracts.map(c => (
                             <option key={c.contno} value={c.contno}>
-                                {c.contno} ({c.detail_count})
+                                {c.contid} ({c.detail_count})
                             </option>
                         ))}
                     </select>
                     <select
                         value={filterMacode}
                         onChange={(e) => setFilterMacode(e.target.value)}
-                        className="px-4 py-2.5 rounded-lg border text-sm min-w-48"
+                        className="px-4 py-2.5 rounded-lg border text-sm min-w-56"
                         style={{ borderColor: colors.gray300 }}
                     >
                         <option value="">전체 제품</option>
-                        {products.map(p => {
-                            // wbs_vid로 들여쓰기 수준 계산 (1.1 = 1, 1.2.1 = 2, 1.2.3.1 = 3)
-                            const depth = p.wbs_vid ? (p.wbs_vid.split('.').length - 1) : 0;
-                            const indent = '　'.repeat(depth); // 전각 공백으로 들여쓰기
-                            const prefix = depth > 0 ? '└ ' : '';
-                            return (
-                                <option key={p.macode} value={p.macode}>
-                                    {indent}{prefix}{p.macode} ({p.detail_count})
-                                </option>
-                            );
-                        })}
-                    </select>
-                    <select
-                        value={selectedProcess}
-                        onChange={(e) => setSelectedProcess(e.target.value)}
-                        className="px-4 py-2.5 rounded-lg border text-sm min-w-40"
-                        style={{ borderColor: colors.gray300 }}
-                    >
-                        <option value="">전체 공정</option>
-                        {allProcesses.map(p => (
-                            <option key={p.code} value={p.code}>
-                                {p.name} ({p.code})
+                        {products.map(p => (
+                            <option key={p.macode} value={p.macode}>
+                                {p.maname} ({p.detail_count})
                             </option>
                         ))}
                     </select>
@@ -836,8 +821,7 @@ export default function PrDetailPage() {
                     <table className="w-full">
                         <thead style={{ background: colors.gray100 }}>
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold" style={{ color: colors.gray600, width: 40 }}></th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold" style={{ color: colors.gray600, width: 140 }}>제품코드</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold" style={{ color: colors.gray600, width: 160 }}>제품명</th>
                                 <th className="px-4 py-3 text-center text-xs font-semibold" style={{ color: colors.gray600, width: 80 }}>공정수</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold" style={{ color: colors.gray600 }}>공정 흐름</th>
                                 <th className="px-4 py-3 text-center text-xs font-semibold" style={{ color: colors.gray600, width: 80 }}>
@@ -862,13 +846,6 @@ export default function PrDetailPage() {
                                         style={{ borderColor: colors.gray200 }}
                                     >
                                         <td className="px-4 py-3" onClick={() => toggleExpand(product.macode)}>
-                                            {expandedProducts.has(product.macode) ? (
-                                                <ChevronUp className="w-4 h-4" style={{ color: colors.gray500 }} />
-                                            ) : (
-                                                <ChevronDown className="w-4 h-4" style={{ color: colors.gray500 }} />
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3" onClick={() => toggleExpand(product.macode)}>
                                             {(() => {
                                                 // wbs_vid로 들여쓰기 수준 계산 (1.1 = 1, 1.2.1 = 2, 1.2.3.1 = 3)
                                                 const depth = product.wbs_vid ? (product.wbs_vid.split('.').length - 1) : 0;
@@ -878,12 +855,14 @@ export default function PrDetailPage() {
                                                             <span className="text-xs" style={{ color: colors.gray400 }}>└</span>
                                                         )}
                                                         <Package className="w-4 h-4" style={{ color: colors.primary }} />
-                                                        <span className="font-medium text-sm" style={{ color: colors.gray900 }}>
-                                                            {product.macode}
-                                                        </span>
-                                                        <span className="text-xs" style={{ color: colors.gray400 }}>
-                                                            ({product.wbs_vid || '-'})
-                                                        </span>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium text-sm" style={{ color: colors.gray900 }}>
+                                                                {product.maname}
+                                                            </span>
+                                                            <span className="text-xs" style={{ color: colors.gray400 }}>
+                                                                ({product.macode})
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 );
                                             })()}
@@ -981,8 +960,8 @@ export default function PrDetailPage() {
                                                                         <div
                                                                             key={`${detail.prcode}-${detail.prname_detail}-${detail.pr_detail_seq}`}
                                                                             className={`flex items-center justify-between p-2 rounded transition-colors ${isPendingDelete
-                                                                                    ? 'bg-red-50 opacity-50'
-                                                                                    : 'bg-gray-50 hover:bg-gray-100'
+                                                                                ? 'bg-red-50 opacity-50'
+                                                                                : 'bg-gray-50 hover:bg-gray-100'
                                                                                 }`}
                                                                         >
                                                                             <div className="flex items-center gap-2">

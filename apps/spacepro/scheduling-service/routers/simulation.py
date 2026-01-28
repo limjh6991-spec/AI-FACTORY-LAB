@@ -844,3 +844,302 @@ async def get_resource_schedule(plan_month: str = None):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ====================================
+# Simulation Version Management APIs
+# ====================================
+
+@router.get("/versions/{contno}")
+async def list_simulation_versions(contno: str):
+    """계약별 시뮬레이션 버전 목록 조회"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT version_id, contno, version_name, status, 
+                           confirmed_at, confirmed_by, created_at
+                    FROM spacepro.sp_simulation_version
+                    WHERE contno = %s
+                    ORDER BY created_at DESC
+                """, (contno,))
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/versions/{contno}/create")
+async def create_simulation_version(contno: str, request: dict = None):
+    """
+    시뮬레이션 실행 → 버전 생성 (DRAFT)
+    
+    제약조건:
+    1. 자식제품 완료 후 부모제품 시작 (wbs_vid 기반 계층 구조)
+    2. 제품은 기본 1개 생산
+    3. 각 제품 내 공정은 순차 진행
+    """
+    try:
+        from datetime import datetime, timedelta
+        from collections import defaultdict
+        
+        version_name = request.get('version_name', f"v{datetime.now().strftime('%Y%m%d_%H%M')}") if request else f"v{datetime.now().strftime('%Y%m%d_%H%M')}"
+        start_date_str = request.get('start_date') if request else None
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else datetime.now().date()
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 1. 버전 생성
+                cur.execute("""
+                    INSERT INTO spacepro.sp_simulation_version (contno, version_name, status)
+                    VALUES (%s, %s, 'DRAFT')
+                    RETURNING version_id
+                """, (contno, version_name))
+                version_id = cur.fetchone()['version_id']
+                
+                # 2. 라우팅 정보 조회 (wbs_vid 포함)
+                cur.execute("""
+                    SELECT contno, macode, prcode, prname_detail, wbs_vid,
+                           COALESCE(working_day, 1) as working_day,
+                           COALESCE(pr_detail_seq, 0) as pr_detail_seq
+                    FROM spacepro.sp_prcode_detail_info
+                    WHERE contno = %s
+                    ORDER BY wbs_vid NULLS LAST, macode, prcode, pr_detail_seq
+                """, (contno,))
+                routes = cur.fetchall()
+                
+                # 3. 제품별 그룹화 및 wbs_vid 기반 계층 분석
+                products = defaultdict(list)
+                wbs_map = {}  # macode -> wbs_vid
+                
+                for route in routes:
+                    products[route['macode']].append(route)
+                    if route['wbs_vid']:
+                        wbs_map[route['macode']] = route['wbs_vid']
+                
+                # 4. wbs_vid 기반 계층 순서 결정
+                #    - 자식이 먼저 (더 긴 wbs_vid = 더 깊은 계층)
+                #    - 예: 1.2.1 < 1.2 < 1 (자식부터 처리)
+                def get_wbs_depth(macode):
+                    wbs = wbs_map.get(macode, '')
+                    if not wbs:
+                        return (999, '')  # wbs 없으면 마지막
+                    return (-len(wbs.split('.')), wbs)  # 깊은 게 먼저 (음수)
+                
+                sorted_products = sorted(products.keys(), key=get_wbs_depth)
+                
+                # 5. 계층별 완료일 추적 (부모는 자식 완료 후 시작)
+                product_completion = {}  # macode -> end_date
+                plan_records = []
+                
+                for macode in sorted_products:
+                    product_routes = products[macode]
+                    wbs_vid = wbs_map.get(macode, '')
+                    
+                    # 이 제품의 시작일 결정
+                    # - 자식 제품들이 완료된 후 시작해야 함
+                    product_start = start_date
+                    
+                    if wbs_vid:
+                        # 같은 부모를 가진 자식들 찾기 (이 제품의 자식)
+                        # 예: wbs_vid = "1.2" 이면, "1.2.1", "1.2.2" 등은 자식
+                        for other_macode, other_wbs in wbs_map.items():
+                            if other_wbs.startswith(wbs_vid + '.') and other_macode in product_completion:
+                                child_end = product_completion[other_macode]
+                                if child_end >= product_start:
+                                    product_start = child_end + timedelta(days=1)
+                    
+                    # 6. 제품 내 공정 순차 스케줄링
+                    current_date = product_start
+                    for route in product_routes:
+                        days = int(route['working_day']) or 1
+                        plan_start = current_date
+                        plan_end = current_date + timedelta(days=days - 1)
+                        
+                        plan_records.append({
+                            'version_id': version_id,
+                            'contno': contno,
+                            'macode': route['macode'],
+                            'prcode': route['prcode'],
+                            'prname_detail': route['prname_detail'],
+                            'plan_start_date': plan_start,
+                            'plan_end_date': plan_end,
+                            'plan_days': days
+                        })
+                        
+                        current_date = plan_end + timedelta(days=1)
+                    
+                    # 제품 완료일 기록
+                    product_completion[macode] = current_date - timedelta(days=1)
+                
+                # 7. 계획 레코드 저장
+                for rec in plan_records:
+                    cur.execute("""
+                        INSERT INTO spacepro.sp_simulation_plan 
+                        (version_id, contno, macode, prcode, prname_detail, 
+                         plan_start_date, plan_end_date, plan_days)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (rec['version_id'], rec['contno'], rec['macode'], 
+                          rec['prcode'], rec['prname_detail'],
+                          rec['plan_start_date'], rec['plan_end_date'], rec['plan_days']))
+                
+                # 8. 라우팅 동기화 상태 업데이트
+                cur.execute("""
+                    UPDATE spacepro.sp_prcode_detail_info 
+                    SET sim_sync_status = 'SYNCED', updated_at = NOW()
+                    WHERE contno = %s
+                """, (contno,))
+                
+                conn.commit()
+                
+        return {
+            "success": True, 
+            "version_id": version_id, 
+            "version_name": version_name,
+            "plan_count": len(plan_records),
+            "product_count": len(sorted_products)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.put("/versions/{version_id}/confirm")
+async def confirm_simulation_version(version_id: int, request: dict = None):
+    """버전 확정 (DRAFT → CONFIRMED)"""
+    try:
+        confirmed_by = request.get('confirmed_by', 'system') if request else 'system'
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE spacepro.sp_simulation_version
+                    SET status = 'CONFIRMED', 
+                        confirmed_at = NOW(),
+                        confirmed_by = %s
+                    WHERE version_id = %s AND status = 'DRAFT'
+                """, (confirmed_by, version_id))
+                
+                if cur.rowcount == 0:
+                    raise HTTPException(status_code=400, detail="Version not found or already confirmed")
+                
+                conn.commit()
+                
+        return {"success": True, "version_id": version_id, "status": "CONFIRMED"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/versions/{version_id}/plan")
+async def get_simulation_plan(version_id: int):
+    """
+    확정된 계획 조회 (오늘 기준 실적/계획 구분)
+    """
+    try:
+        from datetime import date
+        today = date.today()
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT p.*, v.status as version_status, v.version_name,
+                           CASE 
+                               WHEN p.plan_end_date < %s THEN 'ACTUAL'
+                               WHEN p.plan_start_date > %s THEN 'PLAN'
+                               ELSE 'IN_PROGRESS'
+                           END as data_type
+                    FROM spacepro.sp_simulation_plan p
+                    JOIN spacepro.sp_simulation_version v ON p.version_id = v.version_id
+                    WHERE p.version_id = %s
+                    ORDER BY p.plan_start_date, p.macode, p.prcode
+                """, (today, today, version_id))
+                
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/contracts/{contno}/confirmed-plan")
+async def get_confirmed_plan(contno: str):
+    """
+    계약의 최신 확정된 계획 조회 (간트차트용)
+    오늘 기준 이전 = 실적(읽기전용), 이후 = 계획(편집가능)
+    """
+    try:
+        from datetime import date
+        today = date.today()
+        
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # 최신 CONFIRMED 버전 조회
+                cur.execute("""
+                    SELECT v.version_id, v.version_name, v.confirmed_at
+                    FROM spacepro.sp_simulation_version v
+                    WHERE v.contno = %s AND v.status = 'CONFIRMED'
+                    ORDER BY v.confirmed_at DESC
+                    LIMIT 1
+                """, (contno,))
+                version = cur.fetchone()
+                
+                if not version:
+                    return {"message": "No confirmed plan found", "plans": [], "version": None}
+                
+                # 해당 버전의 계획 조회
+                cur.execute("""
+                    SELECT p.*,
+                           CASE 
+                               WHEN p.plan_end_date < %s THEN 'ACTUAL'
+                               WHEN p.plan_start_date > %s THEN 'PLAN'
+                               ELSE 'IN_PROGRESS'
+                           END as data_type,
+                           CASE 
+                               WHEN p.plan_end_date < %s THEN false
+                               ELSE true
+                           END as is_editable
+                    FROM spacepro.sp_simulation_plan p
+                    WHERE p.version_id = %s
+                    ORDER BY p.plan_start_date, p.macode, p.prcode
+                """, (today, today, today, version['version_id']))
+                
+                plans = cur.fetchall()
+                
+                return {
+                    "version": version,
+                    "today": str(today),
+                    "plans": plans
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/contracts/{contno}/sync-status")
+async def check_sync_status(contno: str):
+    """
+    라우팅 변경 여부 확인 (시뮬레이션 재실행 필요 여부)
+    """
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        COUNT(*) FILTER (WHERE sim_sync_status = 'MODIFIED') as modified_count,
+                        COUNT(*) FILTER (WHERE sim_sync_status = 'PENDING') as pending_count,
+                        COUNT(*) as total_count
+                    FROM spacepro.sp_prcode_detail_info
+                    WHERE contno = %s
+                """, (contno,))
+                result = cur.fetchone()
+                
+                needs_resim = (result['modified_count'] or 0) > 0 or (result['pending_count'] or 0) > 0
+                
+                return {
+                    "contno": contno,
+                    "needs_simulation": needs_resim,
+                    "modified_count": result['modified_count'] or 0,
+                    "pending_count": result['pending_count'] or 0,
+                    "total_count": result['total_count'] or 0
+                }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+

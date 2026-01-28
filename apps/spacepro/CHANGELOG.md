@@ -1,5 +1,68 @@
 # SpacePro Changelog
 
+## [2026-01-28] 시뮬레이션 통합 및 변경 이력 관리
+
+### 🚀 시뮬레이션 버전 관리 시스템
+
+**DB 스키마 추가:**
+- `sp_prcode_detail_info`: sim_sync_status, change_type, updated_at 컬럼 추가
+- `sp_simulation_version`: 시뮬레이션 버전 관리 테이블
+- `sp_simulation_plan`: 시뮬레이션 계획 결과 저장
+- `sp_change_log`: 변경 이력 추적 테이블
+
+**시뮬레이션 API:**
+- `POST /simulation/versions/{contno}/create` - 시뮬레이션 실행 및 버전 생성
+- `PUT /simulation/version-actions/{versionId}` - 버전 확정
+- `GET /simulation/contracts/{contno}/confirmed-plan` - 확정 계획 조회
+- `GET /simulation/contracts/{contno}/sync-status` - 변경 감지 상태
+
+---
+
+### 🔗 BOM 계층 제약조건
+
+**스케줄링 제약조건 구현:**
+1. 자식제품 완료 후 부모제품 시작 (wbs_vid 기반)
+2. 제품은 기본 1개 생산
+3. 각 제품 내 공정은 순차 진행
+
+**검증 결과:**
+- 1.2.1~1.2.6 (자식): 01/28~02/07 완료
+- 1.2 (부모): 02/08 시작 ✅
+
+---
+
+### 📝 변경 이력 관리
+
+**자동 로깅:**
+- 라우팅 생성/수정/삭제 시 자동 기록
+- 필드별 old_value → new_value 추적
+- sim_sync_status = 'MODIFIED' 자동 설정
+
+**API:**
+- `GET /pr-detail/change-log` - 변경 이력 조회
+- `GET /pr-detail/change-log/summary` - 일별 통계
+
+---
+
+### 🎨 UI 개선
+
+**계약별 진행 현황 화면:**
+- 동기화 상태 배지 (변경됨 🟡 / 동기화됨 🟢)
+- 시뮬레이션 버튼 (변경점 있을 때만 활성화)
+
+---
+
+### 🧹 프로젝트 정리
+
+**삭제된 파일 (30+개):**
+- 일회성 Python 스크립트 (migrate_*, inspect_*, generate_* 등)
+- 오래된 개발 로그 및 핸드오프 문서
+- Office/PDF 임시 파일
+- venv, __pycache__, 로그 파일
+
+---
+
+
 ## [2024-12-18] Clean Architecture & Production Planning
 
 ### 🏗️ Clean Architecture 리팩토링
